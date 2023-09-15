@@ -1,9 +1,31 @@
 import * as vg from "@uwdata/vgplot";
 
+// selectors
 const sidebarEl = document.querySelector("#sidebar");
 const tableEl = document.querySelector("#tableview");
 
+const datasetMenu = document.querySelector("#datasetSelect");
+datasetMenu.addEventListener("change", setDataset);
+
 let wasm;
+
+const datasets = {
+  dolly: {
+    name: "dolly",
+    filename: "dolly15k.parquet",
+    textColumns: ["instruction", "context", "response", "category"],
+  },
+  opus: {
+    name: "opus",
+    filename: "opus100_en_es.parquet",
+    textColumns: ["en", "es"],
+  },
+  squad: {
+    name: "squad",
+    filename: "squad_validation.parquet",
+    textColumns: ["title", "context", "question", "answers[0]"],
+  },
+};
 
 async function setDatabaseConnector(type, options) {
   let connector;
@@ -73,27 +95,22 @@ function getChartGroup(baseColName, datasetName, b) {
   return mainDiv;
 }
 
-async function run() {
+async function run({ name, filename, textColumns }) {
   await setDatabaseConnector("wasm");
-
-  let datasetName = "dolly";
-  let textColumns = ["instruction", "context", "response", "category"];
 
   await vg
     .coordinator()
-    .exec(
-      vg.loadParquet(datasetName, location.origin + "/data/dolly15k.parquet")
-    );
+    .exec(vg.loadParquet(name, location.origin + "/data/" + filename));
 
   const $brush = vg.Selection.crossfilter();
 
-  let allCharts = textColumns.map((c) => getChartGroup(c, datasetName, $brush));
+  let allCharts = textColumns.map((c) => getChartGroup(c, name, $brush));
 
   const profiles = vg.vconcat(allCharts);
   sidebarEl.replaceChildren(profiles);
 
   const tableChart = vg.table({
-    from: datasetName,
+    from: name,
     height: 1200,
     width: "100%",
     filterBy: $brush,
@@ -103,4 +120,9 @@ async function run() {
   tableEl.replaceChildren(tableChart);
 }
 
-run();
+function setDataset() {
+  const info = datasets[datasetMenu.value];
+  run(info);
+}
+
+setDataset();

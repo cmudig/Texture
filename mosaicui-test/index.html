@@ -4,30 +4,6 @@
 <head>
   <title>Mosaic tester</title>
   <link href="./style.css" rel="stylesheet">
-  <style>
-    .wrapper {
-      display: flex;
-      flex-direction: row;
-      border: 1px solid #E2E8F0;
-      padding: 5px
-    }
-
-    #sidebar {
-      width: 30%;
-      /* overflow-y: scroll; */
-      flex: 1;
-      overflow: scroll;
-      box-sizing: border-box;
-      height: 1200px;
-    }
-
-    #tableview {
-      margin-left: 10px;
-      width: 70%;
-      flex: 2;
-      box-sizing: border-box;
-    }
-  </style>
 </head>
 
 <body>
@@ -36,6 +12,14 @@
   <div>
     <div>
       <h2>Text data cross filtering</h2>
+      <div class="selectWrapper">
+        Dataset:
+        <select id="datasetSelect">
+          <option value="dolly">dolly</option>
+          <option value="opus">opus</option>
+          <option value="squad">squad</option>
+        </select>
+      </div>
     </div>
     <div class="wrapper">
       <div id="sidebar"></div>

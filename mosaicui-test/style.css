@@ -178,3 +178,30 @@ td {
 .columnChartWrapper {
   padding-left: 15px;
 }
+
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  border: 2px solid #e2e8f0;
+  padding: 5px;
+}
+
+#sidebar {
+  width: 30%;
+  /* overflow-y: scroll; */
+  flex: 1;
+  overflow: scroll;
+  box-sizing: border-box;
+  height: 1200px;
+}
+
+#tableview {
+  margin-left: 10px;
+  width: 70%;
+  flex: 2;
+  box-sizing: border-box;
+}
+
+.selectWrapper {
+  margin-bottom: 10px;
+}
