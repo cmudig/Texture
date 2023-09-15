@@ -139,7 +139,7 @@ th {
 
 td,
 th {
-  white-space: nowrap;
+  white-space: wrap;
   text-overflow: ellipsis;
   overflow: hidden;
   padding: 3px 6.5px 3px 0;
