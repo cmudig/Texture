@@ -1,0 +1,18 @@
+{
+  "name": "mosaicui-test",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^4.4.5"
+  },
+  "dependencies": {
+    "@uwdata/vgplot": "^0.3.3",
+    "yaml": "^2.3.2"
+  }
+}
