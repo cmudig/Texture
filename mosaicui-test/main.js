@@ -1,76 +1,106 @@
 import * as vg from "@uwdata/vgplot";
 
-const view = document.querySelector('#view');
+const sidebarEl = document.querySelector("#sidebar");
+const tableEl = document.querySelector("#tableview");
 
 let wasm;
 
 async function setDatabaseConnector(type, options) {
   let connector;
   switch (type) {
-    case 'socket':
+    case "socket":
       connector = vg.socketConnector(options);
       break;
-    case 'rest':
+    case "rest":
       connector = vg.restConnector(options);
       break;
-    case 'wasm':
-      connector = (wasm || (wasm = await vg.wasmConnector(options)));
+    case "wasm":
+      connector = wasm || (wasm = await vg.wasmConnector(options));
       break;
     default:
       throw new Error(`Unrecognized connector type: ${type}`);
   }
-  console.log('Database Connector', type);
+  console.log("Database Connector", type);
   vg.coordinator().databaseConnector(connector);
 }
 
-async function run() {
-  await setDatabaseConnector("rest");
-
-  await vg.coordinator().exec(
-    `CREATE TEMP TABLE IF NOT EXISTS flights10m AS SELECT GREATEST(-60, LEAST(ARR_DELAY, 180))::DOUBLE AS delay, DISTANCE AS distance, DEP_TIME AS time FROM 'https://uwdata.github.io/mosaic-datasets/data/flights-10m.parquet'`
+function getChart(columnName, datasetName, b) {
+  const p = vg.plot(
+    vg.rectY(vg.from(datasetName, { filterBy: b }), {
+      x: vg.bin(columnName),
+      y: vg.count(),
+      fill: "steelblue",
+      inset: 0.5,
+    }),
+    vg.intervalX({ as: b }),
+    vg.xDomain(vg.Fixed),
+    vg.marginLeft(55),
+    vg.width(400),
+    vg.height(150)
   );
+
+  return p;
+}
+
+function getChartGroup(baseColName, datasetName, b) {
+  const metaData = [
+    "text_length",
+    "num_words",
+    "max_word_length",
+    "avg_word_length",
+    "perc_special_chars",
+  ];
+
+  const charts = metaData.map((m) => {
+    const columnName = `${baseColName}_${m}`;
+    return getChart(columnName, datasetName, b);
+  });
+
+  // layout
+  const chartsVConcat = vg.vconcat(charts);
+
+  const mainDiv = document.createElement("div");
+  mainDiv.classList.add("columnProfile");
+  const h3Element = document.createElement("h3");
+  h3Element.textContent = baseColName;
+  const chartDiv = document.createElement("div");
+  chartDiv.classList.add("columnChartWrapper");
+
+  mainDiv.appendChild(h3Element);
+  chartDiv.appendChild(chartsVConcat);
+  mainDiv.appendChild(chartDiv);
+
+  return mainDiv;
+}
+
+async function run() {
+  await setDatabaseConnector("wasm");
+
+  let datasetName = "dolly";
+  let textColumns = ["instruction", "context", "response", "category"];
+
+  await vg
+    .coordinator()
+    .exec(
+      vg.loadParquet(datasetName, location.origin + "/data/dolly15k.parquet")
+    );
 
   const $brush = vg.Selection.crossfilter();
 
-  const child = vg.vconcat(
-    vg.plot(
-      vg.rectY(
-        vg.from("flights10m", { filterBy: $brush }),
-        { x: vg.bin("delay"), y: vg.count(), fill: "steelblue", inset: 0.5 }
-      ),
-      vg.intervalX({ as: $brush }),
-      vg.xDomain(vg.Fixed),
-      vg.marginLeft(75),
-      vg.width(600),
-      vg.height(200)
-    ),
-    vg.plot(
-      vg.rectY(
-        vg.from("flights10m", { filterBy: $brush }),
-        { x: vg.bin("time"), y: vg.count(), fill: "steelblue", inset: 0.5 }
-      ),
-      vg.intervalX({ as: $brush }),
-      vg.xDomain(vg.Fixed),
-      vg.marginLeft(75),
-      vg.width(600),
-      vg.height(200)
-    ),
-    vg.plot(
-      vg.rectY(
-        vg.from("flights10m", { filterBy: $brush }),
-        { x: vg.bin("distance"), y: vg.count(), fill: "steelblue", inset: 0.5 }
-      ),
-      vg.intervalX({ as: $brush }),
-      vg.xDomain(vg.Fixed),
-      vg.marginLeft(75),
-      vg.width(600),
-      vg.height(200)
-    ),
-    vg.table({ from: "flights10m", filterBy: $brush })
-  );
+  let allCharts = textColumns.map((c) => getChartGroup(c, datasetName, $brush));
 
-  view.replaceChildren(child)
+  const profiles = vg.vconcat(allCharts);
+  sidebarEl.replaceChildren(profiles);
 
+  const tableChart = vg.table({
+    from: datasetName,
+    height: 1200,
+    width: "100%",
+    filterBy: $brush,
+    columns: textColumns,
+  });
+
+  tableEl.replaceChildren(tableChart);
 }
 
-run()
+run();

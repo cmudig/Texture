@@ -1,11 +1,6 @@
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -34,34 +29,6 @@ h1 {
   line-height: 1.1;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vanilla:hover {
-  filter: drop-shadow(0 0 2em #f7df1eaa);
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -81,15 +48,133 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* mosaic default styles */
+
+.plot,
+.legend,
+.legend svg {
+  background: none !important;
+  line-height: initial;
+  user-select: none;
+}
+
+.plot-d6a7b5 {
+  background: none !important;
+}
+
+label {
+  margin-right: 0.5em;
+}
+
+.input {
+  margin-right: 1em;
+}
+
+.input > * {
+  vertical-align: middle;
+}
+
+select {
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  padding: revert;
+  border: revert;
+}
+
+input[type="text"] {
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding-left: 4px;
+}
+
+table {
+  display: table;
+  position: relative;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  box-sizing: border-box;
+  max-width: initial;
+  min-height: 33px;
+  margin: 0;
+  width: 100%;
+  font-size: 13px;
+  line-height: 15.6px;
+}
+
+thead tr th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  cursor: ns-resize;
+  border-bottom: solid 1px #ccc;
+}
+
+.dark thead tr th {
+  background: rgb(30, 30, 32);
+  border-bottom: solid 1px #444;
+}
+
+tbody tr:hover {
+  background: #eef;
+}
+
+.dark tbody tr:hover {
+  background: #224;
+}
+
+th {
+  color: #111;
+  text-align: left;
+  vertical-align: bottom;
+}
+
+td,
+th {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding: 3px 6.5px 3px 0;
+}
+
+.dark td,
+.dark th {
+  color: #ccc;
+}
+
+tbody tr:first-child td {
+  padding-top: 4px;
+}
+
+td,
+th {
+  border: none;
+}
+
+td,
+tr:not(:last-child) th {
+  border-bottom: solid 1px #eee;
+}
+
+.dark td,
+.dark tr:not(:last-child) th {
+  border-bottom: solid 1px #333;
+}
+
+td {
+  color: #444;
+  vertical-align: top;
+}
+
+/* layouts */
+.columnChartWrapper {
+  padding-left: 15px;
 }
