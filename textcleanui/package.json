@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@types/lodash": "^4.14.198",
+    "@uwdata/vgplot": "^0.3.3",
     "arquero": "^5.2.0",
     "d3-scale": "^4.0.2",
     "lodash": "^4.17.21"
