@@ -65,7 +65,8 @@ async function run() {
       vg.marginLeft(75),
       vg.width(600),
       vg.height(200)
-    )
+    ),
+    vg.table({ from: "flights10m", filterBy: $brush })
   );
 
   view.replaceChildren(child)
