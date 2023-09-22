@@ -6,8 +6,10 @@ authors = ["Will Epperson <willepp@live.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "3.10.*"
 pandas = "^2.1.0"
+sentence-transformers = "^2.2.2"
+pyod = "^1.1.0"
 
 
 [build-system]
