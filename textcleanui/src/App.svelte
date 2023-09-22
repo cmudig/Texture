@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
+  import type { DatasetInfo } from "./types";
 
   // selectors
   let wasm: any;
@@ -8,11 +9,12 @@
   let sidebarElement: HTMLElement;
   let tableElement: HTMLElement;
 
-  const datasets = {
+  const datasets: { [key: string]: DatasetInfo } = {
     dolly: {
       name: "dolly",
       filename: "dolly15k.parquet",
-      textColumns: ["instruction", "context", "response", "category"],
+      textColumns: ["instruction", "context", "response"],
+      metaColumns: ["category"], // in the dataset, not derived
     },
     opus: {
       name: "opus",
@@ -22,9 +24,30 @@
     squad: {
       name: "squad",
       filename: "squad_validation.parquet",
-      textColumns: ["title", "context", "question", "answers[0]"],
+      textColumns: ["context", "question", "answers[0]"],
+      metaColumns: ["title"], // in the dataset, not derived
     },
   };
+
+  const heuristicMetaCols = [
+    "text_length",
+    "num_words",
+    "max_word_length",
+    "avg_word_length",
+    "perc_special_chars",
+  ];
+
+  const modelMetaCols = [
+    "dist_from_mean_embed_all-mpnet-base-v2",
+    "outlier_score_ECOD_all-mpnet-base-v2",
+    "outlier_score_IForest_all-mpnet-base-v2",
+    "dist_from_mean_embed_all-MiniLM-L6-v2",
+    "outlier_score_ECOD_all-MiniLM-L6-v2",
+    "outlier_score_IForest_all-MiniLM-L6-v2",
+    "dist_from_mean_embed_distiluse-base-multilingual-cased-v1",
+    "outlier_score_ECOD_distiluse-base-multilingual-cased-v1",
+    "outlier_score_IForest_distiluse-base-multilingual-cased-v1",
+  ];
 
   async function setDatabaseConnector(type: string, options?: any) {
     let connector;
@@ -63,52 +86,70 @@
     return p;
   }
 
-  function getChartGroup(baseColName: string, datasetName: string, b) {
-    const metaData = [
-      "text_length",
-      "num_words",
-      "max_word_length",
-      "avg_word_length",
-      "perc_special_chars",
-    ];
-
-    const charts = metaData.map((m) => {
+  function getChartGroup(
+    baseColName: string,
+    datasetName: string,
+    b: any,
+    makeHeuristic = true
+  ) {
+    // Model charts
+    const model_charts = modelMetaCols.map((m) => {
       const columnName = `${baseColName}_${m}`;
       return getChart(columnName, datasetName, b);
     });
 
+    const modelDiv = document.createElement("div");
+    modelDiv.classList.add("ml-5");
+    const modelHeader = document.createElement("h3");
+    modelHeader.textContent = "Model";
+    modelDiv.appendChild(modelHeader);
+    modelDiv.appendChild(vg.vconcat(model_charts));
+
     // layout
-    const chartsVConcat = vg.vconcat(charts);
-
     const mainDiv = document.createElement("div");
-    mainDiv.classList.add("columnProfile");
-    const h3Element = document.createElement("h3");
-    h3Element.textContent = baseColName;
-    const chartDiv = document.createElement("div");
-    chartDiv.classList.add("columnChartWrapper");
+    const h2Element = document.createElement("h2");
+    h2Element.textContent = baseColName;
+    h2Element.classList.add("font-bold");
+    h2Element.classList.add("text-xl");
+    mainDiv.appendChild(h2Element);
 
-    mainDiv.appendChild(h3Element);
-    chartDiv.appendChild(chartsVConcat);
-    mainDiv.appendChild(chartDiv);
+    if (makeHeuristic) {
+      // Heuristic charts
+      const heuristic_charts = heuristicMetaCols.map((m) => {
+        const columnName = `${baseColName}_${m}`;
+        return getChart(columnName, datasetName, b);
+      });
+
+      const heuristicDiv = document.createElement("div");
+      heuristicDiv.classList.add("ml-5");
+      const heuristicHeader = document.createElement("h3");
+      heuristicHeader.textContent = "Heuristic";
+      heuristicDiv.appendChild(heuristicHeader);
+      heuristicDiv.appendChild(vg.vconcat(heuristic_charts));
+      mainDiv.appendChild(heuristicDiv);
+    }
+
+    mainDiv.appendChild(modelDiv);
 
     return mainDiv;
   }
 
-  async function run({ name, filename, textColumns }: any) {
+  async function run({ name, filename, textColumns }: DatasetInfo) {
+    // set up database
     await setDatabaseConnector("wasm");
-
     const file_path = location.origin + "/" + filename;
-
-    console.log("FILE PATH: ", file_path);
-
     await vg.coordinator().exec(vg.loadParquet(name, file_path));
 
+    // let r = await vg.coordinator().query(`DESCRIBE SELECT * FROM ${name}`);
+    // console.log("describe result is: ", r);
+
+    // construct charts
     const brush = vg.Selection.crossfilter();
-
-    let allCharts = textColumns.map((c) => getChartGroup(c, name, brush));
-
+    let allCharts = [getChartGroup("joint", name, brush, false)];
+    allCharts.push(
+      ...textColumns.map((c) => getChartGroup(c, name, brush, true))
+    );
     const profiles = vg.vconcat(allCharts);
-
     const tableChart = vg.table({
       from: name,
       height: 1200,
@@ -116,9 +157,6 @@
       filterBy: brush,
       columns: textColumns,
     });
-
-    console.log("created sidebar: ", profiles);
-    console.log("created table: ", tableChart);
 
     return { sidebar: profiles, table: tableChart };
   }
@@ -131,11 +169,8 @@
     sidebarElement.replaceChildren(result.sidebar);
     tableElement.replaceChildren(result.table);
 
-    // sidebarElement = result.sidebar;
-    // tableElement = result.table;
-
-    console.log("sidebar: ", sidebarElement);
-    console.log("table: ", tableElement);
+    console.log("updated sidebar: ", sidebarElement);
+    console.log("updatd table: ", tableElement);
   }
 
   setDataset();
@@ -163,11 +198,9 @@
 
 <div class="wrapper">
   <div id="sidebar">
-    <h2 class="text-xl">Profiles</h2>
     <div bind:this={sidebarElement} />
   </div>
   <div id="tableview">
-    <h2 class="text-xl">Data Table</h2>
     <div bind:this={tableElement} />
   </div>
 </div>
@@ -182,10 +215,8 @@
 
   #sidebar {
     width: 30%;
-    /* overflow-y: scroll; */
     flex: 1;
     overflow: scroll;
-    box-sizing: border-box;
     height: 1200px;
   }
 
@@ -193,6 +224,5 @@
     margin-left: 10px;
     width: 70%;
     flex: 2;
-    box-sizing: border-box;
   }
 </style>
