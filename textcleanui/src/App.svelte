@@ -141,24 +141,22 @@
   setDataset();
 </script>
 
-<div
-  class="bg-gradient-to-r from-blue-100 to-blue-700 dark:bg-sky-950 p-5 flex gap-2 flex-row"
->
+<div class="bg-gradient-to-r from-blue-100 to-blue-700 p-5 flex gap-2 flex-row">
   <span
     class="self-center whitespace-nowrap text-2xl font-semibold text-blue-900"
     >Text Clean</span
   >
   <div class="grow" />
   <div class="self-center">
-    <span class="text-white text-xl"> Dataset: </span>
+    <span class="text-white text-xl pr-2">Dataset: </span>
     <select
       class="h-10 text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
       bind:value={selectedValue}
       on:change={setDataset}
     >
-      <option value="opus">opus</option>
-      <option value="dolly">dolly</option>
-      <option value="squad">squad</option>
+      <option value="opus">Opus</option>
+      <option value="dolly">Dolly</option>
+      <option value="squad">Squad</option>
     </select>
   </div>
 </div>
@@ -196,66 +194,5 @@
     width: 70%;
     flex: 2;
     box-sizing: border-box;
-  }
-
-  table {
-    display: table;
-    position: relative;
-    table-layout: fixed;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-variant-numeric: tabular-nums;
-    box-sizing: border-box;
-    max-width: initial;
-    min-height: 33px;
-    margin: 0;
-    width: 100%;
-    font-size: 13px;
-    line-height: 15.6px;
-  }
-
-  thead tr th {
-    position: sticky;
-    top: 0;
-    background: #fff;
-    cursor: ns-resize;
-    border-bottom: solid 1px #ccc;
-  }
-
-  tbody tr:hover {
-    background: #eef;
-  }
-
-  th {
-    color: #111;
-    text-align: left;
-    vertical-align: bottom;
-  }
-
-  td,
-  th {
-    white-space: wrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    padding: 3px 6.5px 3px 0;
-  }
-
-  tbody tr:first-child td {
-    padding-top: 4px;
-  }
-
-  td,
-  th {
-    border: none;
-  }
-
-  td,
-  tr:not(:last-child) th {
-    border-bottom: solid 1px #eee;
-  }
-
-  td {
-    color: #444;
-    vertical-align: top;
   }
 </style>
