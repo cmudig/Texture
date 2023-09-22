@@ -2,6 +2,7 @@ import textclean
 import pandas as pd
 
 datasets = ["dolly15k", "opus100-en-es", "squad_validation"]
+model_names = ["all-mpnet-base-v2", "all-distilroberta-base-v2"]
 
 for d in datasets:
     df = pd.read_csv(f"datasets/raw/{d}.csv")
