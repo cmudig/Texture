@@ -34,6 +34,7 @@ def extract_all_metadata(
 ):
     original_columns = df.columns
     confirmed_text_columns = []
+    text_meta_columns = {}
 
     for colname in text_column_names:
         if is_string_series(df[colname]):
@@ -41,10 +42,12 @@ def extract_all_metadata(
             confirmed_text_columns.append(colname)
             heuristic_metadata = extract_col_heuristic_metadata(df[colname])
             df = df.join(heuristic_metadata)
+            text_meta_columns[colname] = list(heuristic_metadata.columns)
 
             if extract_model_meta:
                 model_meta = extract_col_model_metadata(df[colname], model_names)
                 df = df.join(model_meta)
+                text_meta_columns[colname].extend(model_meta.columns)
 
     if extract_model_meta and len(text_column_names) > 1:
         joint_col_name = generate_joint_column_name(original_columns)
@@ -54,14 +57,13 @@ def extract_all_metadata(
         df = df.join(row_model_meta)
 
         confirmed_text_columns.append(joint_col_name)
+        text_meta_columns[joint_col_name] = list(row_model_meta.columns)
 
     other_columns = [c for c in original_columns if c not in confirmed_text_columns]
     metadata = {
         "text_columns": confirmed_text_columns,
         "other_columns": other_columns,
-        "text_meta_columns": [
-            c for c in df if c not in confirmed_text_columns and c not in other_columns
-        ],
+        "text_meta_columns": text_meta_columns,
     }
 
     return df, metadata
