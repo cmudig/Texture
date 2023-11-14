@@ -9,14 +9,16 @@
     "location",
     "date"
   ],
-  "text_meta_columns": [
-    "message_text_length",
-    "message_num_words",
-    "message_max_word_length",
-    "message_avg_word_length",
-    "message_perc_special_chars",
-    "message_dist_from_mean_embed_all-mpnet-base-v2",
-    "message_outlier_score_ECOD_all-mpnet-base-v2",
-    "message_outlier_score_IForest_all-mpnet-base-v2"
-  ]
+  "text_meta_columns": {
+    "message": [
+      "message_text_length",
+      "message_num_words",
+      "message_max_word_length",
+      "message_avg_word_length",
+      "message_perc_special_chars",
+      "message_dist_from_mean_embed_all-mpnet-base-v2",
+      "message_outlier_score_ECOD_all-mpnet-base-v2",
+      "message_outlier_score_IForest_all-mpnet-base-v2"
+    ]
+  }
 }
