@@ -1,5 +1,7 @@
 import pandas as pd
 import string
+import random
+
 from textclean.model_metrics import extract_col_model_metadata
 
 
@@ -12,35 +14,57 @@ class TextCleaner:
     model_names: models to use for embedding. Can by any models on https://www.sbert.net/docs/pretrained_models.html
     """
 
-    def __init__(self, df, text_columns, model_names):
+    def __init__(self, df, text_columns, model_names, extract_model_meta=True):
         self.df = df
         self.text_columns = text_columns
         self.model_names = model_names
+        self.extract_model_meta = extract_model_meta and (len(self.model_names) > 0)
 
     def process(self):
-        return extract_all_metadata(self.df, self.text_columns, self.model_names)
-
-    # def transform_and_save(self, path="transformed_data.csv"):
-    #     data = self.process()
-    #     data.to_csv(path, index=False)
+        return extract_all_metadata(
+            self.df, self.text_columns, self.model_names, self.extract_model_meta
+        )
 
 
 def extract_all_metadata(
-    df: pd.DataFrame, column_names: list[str], model_names: list[str]
+    df: pd.DataFrame,
+    text_column_names: list[str],
+    model_names: list[str],
+    extract_model_meta=True,
 ):
-    for colname in column_names:
+    original_columns = df.columns
+    confirmed_text_columns = []
+
+    for colname in text_column_names:
         if is_string_series(df[colname]):
             print("extracting metadata for", colname)
+            confirmed_text_columns.append(colname)
             heuristic_metadata = extract_col_heuristic_metadata(df[colname])
-            model_meta = extract_col_model_metadata(df[colname], model_names)
             df = df.join(heuristic_metadata)
-            df = df.join(model_meta)
 
-    df = join_text_columns(df, column_names)
-    row_model_meta = extract_col_model_metadata(df["joint"], model_names)
-    df = df.join(row_model_meta)
+            if extract_model_meta:
+                model_meta = extract_col_model_metadata(df[colname], model_names)
+                df = df.join(model_meta)
 
-    return df
+    if extract_model_meta and len(text_column_names) > 1:
+        joint_col_name = generate_joint_column_name(original_columns)
+
+        df = join_text_columns(df, text_column_names, col_name=joint_col_name)
+        row_model_meta = extract_col_model_metadata(df[joint_col_name], model_names)
+        df = df.join(row_model_meta)
+
+        confirmed_text_columns.append(joint_col_name)
+
+    other_columns = [c for c in original_columns if c not in confirmed_text_columns]
+    metadata = {
+        "text_columns": confirmed_text_columns,
+        "other_columns": other_columns,
+        "text_meta_columns": [
+            c for c in df if c not in confirmed_text_columns and c not in other_columns
+        ],
+    }
+
+    return df, metadata
 
 
 def is_string_series(s: pd.Series):
@@ -104,14 +128,19 @@ def clean_value(x):
     return ""
 
 
-def join_text_columns(df: pd.DataFrame, text_columns: list[str]):
+def join_text_columns(df: pd.DataFrame, text_columns: list[str], col_name="joint"):
     # TODO: this will create column even if all text columns are null, should prob not
-
-    df["joint"] = df[text_columns].apply(
+    df[col_name] = df[text_columns].apply(
         lambda x: " ".join(
             [f"{col}: {clean_value(val)}" for col, val in zip(text_columns, x)]
         ),
         axis=1,
     )
-
     return df
+
+
+def generate_joint_column_name(all_column_names) -> str:
+    joint_column_name = "joint"
+    while joint_column_name in all_column_names:
+        joint_column_name = "joint" + str(random.randint(0, 10000))
+    return joint_column_name

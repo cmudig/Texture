@@ -35,7 +35,9 @@ def get_outlier_scores(data, detector_name="ECOD"):
 
 def extract_col_model_metadata(col: pd.Series, model_names: list[str]):
     """
-    Returns a dataframe with model based metadata extracted.
+    Returns:
+      - a dataframe with model based metadata extracted.
+      - list of column name suffixes where the column is {col}_{suffix}
 
     NOTE: the returned dataframe will filter out the null values in the column. It may not have
     the same size, but will maintain the col index for joins
@@ -49,13 +51,11 @@ def extract_col_model_metadata(col: pd.Series, model_names: list[str]):
         print("calculating embeddings for", col_name, "with", model_name)
         embeddings = calculate_embeddings(nonNullCol.values, model_name)
 
-        results[
-            f"{col_name}_dist_from_mean_embed_{model_name}"
-        ] = get_mean_embeddings_dist(embeddings)
+        s = f"dist_from_mean_embed_{model_name}"
+        results[f"{col_name}_{s}"] = get_mean_embeddings_dist(embeddings)
 
         for detector_name in ["ECOD", "IForest"]:
-            results[
-                f"{col_name}_outlier_score_{detector_name}_{model_name}"
-            ] = get_outlier_scores(embeddings, detector_name)
+            s = f"outlier_score_{detector_name}_{model_name}"
+            results[f"{col_name}_{s}"] = get_outlier_scores(embeddings, detector_name)
 
     return pd.DataFrame(results, index=nonNullCol.index)
