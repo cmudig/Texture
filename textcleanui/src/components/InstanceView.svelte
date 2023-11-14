@@ -1,9 +1,9 @@
 <script lang="ts">
+  import type { DatasetInfo } from "../shared/types";
   import * as vg from "@uwdata/vgplot";
   import { onMount } from "svelte";
 
-  export let textColumns: string[];
-  export let datasetName: string;
+  export let datasetInfo: DatasetInfo;
   export let brush: any;
 
   let el: HTMLElement;
@@ -11,11 +11,12 @@
   function renderChart() {
     vg.table({
       element: el,
-      from: datasetName,
+      from: datasetInfo.name,
       height: 1200,
       width: "100%",
       filterBy: brush,
-      columns: textColumns,
+      // TODO in the future, add toggle to render datasetInfo.metadata.other_columns as well
+      columns: datasetInfo.metadata.text_columns,
     });
   }
 

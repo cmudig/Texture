@@ -2,23 +2,21 @@
   import * as vg from "@uwdata/vgplot";
   import { datasets } from "./shared/colConfig";
   import type { DatabaseConnection } from "./database/db";
+  import type { DatasetInfo } from "./shared/types";
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
 
   export let databaseConnection: DatabaseConnection;
 
-  // selectors
-  let selectedValue: string = "opus";
-  let textColumns: string[];
-  let datasetName = selectedValue;
+  let selectedValue: string = Object.keys(datasets)[0];
+  let datasetInfo: DatasetInfo;
 
   const brush = vg.Selection.crossfilter();
 
   async function setDataset() {
     const info = datasets[selectedValue];
     await databaseConnection.initAndLoad(info.name, info.filename);
-    textColumns = info.textColumns;
-    datasetName = info.name;
+    datasetInfo = info;
   }
 
   function updateData() {
@@ -41,9 +39,11 @@
       bind:value={selectedValue}
       on:change={updateData}
     >
-      <option value="opus">Opus</option>
-      <option value="dolly">Dolly</option>
-      <option value="squad">Squad</option>
+      {#each Object.keys(datasets) as datasetKey}
+        <option value={datasets[datasetKey].name}
+          >{datasets[datasetKey].name}</option
+        >
+      {/each}
     </select>
   </div>
 </div>
@@ -53,10 +53,10 @@
 {:then}
   <div class="flex flex-row">
     <div class="w-1/3 h-screen overflow-scroll">
-      <Sidebar {textColumns} {datasetName} {brush} />
+      <Sidebar {datasetInfo} {brush} />
     </div>
     <div class="w-2/3 h-screen overflow-scroll">
-      <InstanceView {textColumns} {datasetName} {brush} />
+      <InstanceView {datasetInfo} {brush} />
     </div>
   </div>
 {:catch error}
