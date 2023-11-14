@@ -9,15 +9,14 @@
   let el: HTMLElement;
 
   function renderChart() {
-    let table: HTMLElement = vg.table({
+    vg.table({
+      element: el,
       from: datasetName,
       height: 1200,
       width: "100%",
       filterBy: brush,
       columns: textColumns,
     });
-
-    el.replaceChildren(table);
   }
 
   onMount(renderChart);
