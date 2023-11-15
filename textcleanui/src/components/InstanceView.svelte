@@ -23,6 +23,6 @@
   onMount(renderChart);
 </script>
 
-<div class="border-2 border-slate-50">
+<div id="instanceTable" class="border-2 border-slate-50">
   <div bind:this={el} />
 </div>
