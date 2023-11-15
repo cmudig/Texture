@@ -1,5 +1,7 @@
 import type { DatasetInfo } from "./types";
 
+// TODO: in the future this will be stored server side and fetched
+
 export const datasets: { [key: string]: DatasetInfo } = {
   dolly: {
     name: "dolly",
