@@ -1,10 +1,10 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
-  import { onMount } from "svelte";
+  import { afterUpdate } from "svelte";
+  import { brush } from "../../stores";
 
   export let datasetName: string;
   export let columnName: string;
-  export let brush: any;
 
   let el: HTMLElement;
 
@@ -21,7 +21,7 @@
         fillOpacity: 0.2,
         sort: { y: "-x" },
       }),
-      vg.barX(vg.from(datasetName, { filterBy: brush }), {
+      vg.barX(vg.from(datasetName, { filterBy: $brush }), {
         x: vg.count(),
         y: columnName,
         fill: "steelblue",
@@ -40,7 +40,7 @@
     el.replaceChildren(c);
   }
 
-  onMount(renderChart);
+  afterUpdate(renderChart);
 </script>
 
 <div bind:this={el} />

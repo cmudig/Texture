@@ -8,9 +8,8 @@
   export let displayCol: Column;
   export let plotCols: Column[];
   export let datasetName: string;
-  export let brush: any;
 
-  let active = false;
+  let active = true;
 </script>
 
 <div>
@@ -30,7 +29,7 @@
   <div class="w-full">
     {#if active}
       <div transition:slide|local={{ duration: 200 }} class="ml-4 mt-2">
-        <ChartGroup columns={plotCols} {datasetName} {brush} />
+        <ChartGroup columns={plotCols} {datasetName} />
       </div>
     {/if}
   </div>

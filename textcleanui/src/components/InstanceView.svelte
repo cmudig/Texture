@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { afterUpdate } from "svelte";
   import type { DatasetInfo, TableOption } from "../shared/types";
   import * as vg from "@uwdata/vgplot";
-  import { afterUpdate } from "svelte";
+  import { brush } from "../stores";
 
   export let datasetInfo: DatasetInfo;
-  export let brush: any;
   export let tableOption: TableOption = "text";
 
   let el: HTMLElement;
@@ -27,12 +27,13 @@
   }
 
   function renderChart(cols: string[]) {
+    console.log("[Render] Instance view");
     let c = vg.table({
       // element: el, // doesnt work on updates?
       from: datasetInfo.name,
       height: 1200,
       width: "100%",
-      filterBy: brush,
+      filterBy: $brush,
       columns: cols,
     });
 

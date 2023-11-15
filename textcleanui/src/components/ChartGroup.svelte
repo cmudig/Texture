@@ -5,7 +5,6 @@
   import type { Column } from "../shared/types";
 
   export let columns: Column[];
-  export let brush: any;
   export let datasetName: string;
 </script>
 
@@ -14,11 +13,11 @@
 <div class="flex flex-col">
   {#each columns as col}
     {#if col.type === "number"}
-      <Histogram {datasetName} columnName={col.name} {brush} />
+      <Histogram {datasetName} columnName={col.name} />
     {:else if col.type === "categorical"}
-      <CategoricalChart {datasetName} columnName={col.name} {brush} />
+      <CategoricalChart {datasetName} columnName={col.name} />
     {:else if col.type === "date"}
-      <!-- <DateChart {datasetName} columnName={col.name} {brush} /> -->
+      <!-- <DateChart {datasetName} columnName={col.name} /> -->
       TODO: Date chart...
     {:else}
       <div>{col.name}: Unsupported column type ({col.type})</div>

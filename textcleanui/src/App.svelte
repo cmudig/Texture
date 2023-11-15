@@ -5,12 +5,12 @@
   import type { DatasetInfo, TableOption } from "./shared/types";
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
+  import { brush } from "./stores";
 
   export let databaseConnection: DatabaseConnection;
 
   let selectedValue: string = Object.keys(datasets)[0];
   let datasetInfo: DatasetInfo;
-  let brush: any;
   let tableOption: TableOption = "all";
 
   async function setDataset() {
@@ -18,11 +18,15 @@
     await databaseConnection.initAndLoad(info.name, info.filename);
     datasetInfo = info;
     // create new brush to clear selections from old dataset
-    brush = vg.Selection.crossfilter();
+    $brush = vg.Selection.crossfilter();
   }
 
   function updateData() {
     dataPromise = setDataset();
+  }
+
+  function resetBrush() {
+    $brush = vg.Selection.crossfilter();
   }
 
   let dataPromise: Promise<any> = setDataset();
@@ -34,10 +38,14 @@
     >Text Clean</span
   >
   <div class="grow" />
+
+  <button class="py-2 px-4 rounded bg-white" on:click={resetBrush}>
+    Reset filters
+  </button>
   <div class="self-center">
     <span class="text-white text-xl pr-2">Table: </span>
     <select
-      class="text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+      class="text-gray-900 bg-gray-50 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
       bind:value={tableOption}
     >
       <option value="all">All cols</option>
@@ -47,7 +55,7 @@
   <div class="self-center">
     <span class="text-white text-xl pr-2">Data: </span>
     <select
-      class="text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+      class="text-gray-900 bg-gray-50 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
       bind:value={selectedValue}
       on:change={updateData}
     >
@@ -65,10 +73,10 @@
 {:then}
   <div class="flex flex-row">
     <div class="w-1/3 h-screen overflow-scroll">
-      <Sidebar {datasetInfo} {brush} />
+      <Sidebar {datasetInfo} />
     </div>
     <div class="w-2/3 h-screen overflow-scroll">
-      <InstanceView {datasetInfo} {brush} {tableOption} />
+      <InstanceView {datasetInfo} {tableOption} />
     </div>
   </div>
 {:catch error}

@@ -1,10 +1,9 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
-  import { onMount } from "svelte";
+  import { afterUpdate } from "svelte";
 
   export let datasetName: string;
   export let columnName: string;
-  export let brush: any;
 
   let el: HTMLElement;
 
@@ -28,7 +27,7 @@
     // el.replaceChildren(c);
   }
 
-  onMount(renderChart);
+  afterUpdate(renderChart);
 </script>
 
 <div bind:this={el} />
