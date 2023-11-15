@@ -11,6 +11,9 @@ export class DatabaseConnection {
 
   async initAndLoad(name: string, filename: string) {
     // TODO probably dont need to call setDatabaseConnector every time?
+    console.log("Init and load: ", name);
+    // await vg.coordinator().clear();
+
     await this.setDatabaseConnector("wasm");
     const file_path = location.origin + "/" + filename;
     await vg.coordinator().exec(vg.loadParquet(name, file_path));

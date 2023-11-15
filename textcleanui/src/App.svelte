@@ -11,12 +11,14 @@
   let selectedValue: string = Object.keys(datasets)[0];
   let datasetInfo: DatasetInfo;
 
-  const brush = vg.Selection.crossfilter();
+  let brush: any;
 
   async function setDataset() {
     const info = datasets[selectedValue];
     await databaseConnection.initAndLoad(info.name, info.filename);
     datasetInfo = info;
+    // create new brush to clear selections from old dataset
+    brush = vg.Selection.crossfilter();
   }
 
   function updateData() {
