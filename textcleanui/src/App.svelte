@@ -51,7 +51,7 @@
 </div>
 
 {#await dataPromise}
-  <div>Loading data...</div>
+  <div class="p-4">Loading data...</div>
 {:then}
   <div class="flex flex-row">
     <div class="w-1/3 h-screen overflow-scroll">
