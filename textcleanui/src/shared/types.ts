@@ -9,3 +9,5 @@ export type DatasetMetadata = {
   other_columns: string[];
   text_meta_columns: { [key: string]: string[] };
 };
+
+export type DataType = "text" | "number" | "date" | "categorical";

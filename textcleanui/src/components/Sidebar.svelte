@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { DatasetInfo } from "../shared/types";
-  import ChartGroup from "./ChartGroup.svelte";
+  import ColumnProfile from "./ColumnProfile.svelte";
 
   export let datasetInfo: DatasetInfo;
   export let brush: any;
@@ -8,15 +8,12 @@
 
 <div class="border-2 border-slate-50">
   {#each datasetInfo.metadata.text_columns as colName}
-    <div>
-      <h2 class="font-bold">{colName}</h2>
-      <div class="ml-4">
-        <ChartGroup
-          colNames={datasetInfo.metadata.text_meta_columns[colName]}
-          datasetName={datasetInfo.name}
-          {brush}
-        />
-      </div>
-    </div>
+    <ColumnProfile
+      {colName}
+      colType={"text"}
+      chartColNames={datasetInfo.metadata.text_meta_columns[colName]}
+      datasetName={datasetInfo.name}
+      {brush}
+    />
   {/each}
 </div>
