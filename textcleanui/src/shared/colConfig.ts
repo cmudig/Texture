@@ -224,7 +224,7 @@ export const datasets: { [key: string]: DatasetInfo } = {
         { name: "question", type: "text" },
         { name: "answers[0]", type: "text" },
       ],
-      other_columns: [{ name: "title", type: "text" }],
+      other_columns: [{ name: "title", type: "categorical" }],
       text_meta_columns: {
         context: [
           { name: "context_text_length", type: "number" },
@@ -364,13 +364,13 @@ export const datasets: { [key: string]: DatasetInfo } = {
     metadata: {
       text_columns: [{ name: "message", type: "text" }],
       other_columns: [
-        { name: "type", type: "text" },
-        { name: "date(yyyyMMddHHmmss)", type: "text" },
-        { name: "author", type: "text" },
-        { name: "latitude", type: "text" },
-        { name: "longitude", type: "text" },
-        { name: "location", type: "text" },
-        { name: "date", type: "text" },
+        { name: "type", type: "categorical" },
+        { name: "date(yyyyMMddHHmmss)", type: "number" },
+        { name: "author", type: "categorical" },
+        { name: "latitude", type: "number" },
+        { name: "longitude", type: "number" },
+        { name: "location", type: "categorical" },
+        { name: "date", type: "date" },
       ],
       text_meta_columns: {
         message: [

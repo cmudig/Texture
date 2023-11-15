@@ -15,4 +15,12 @@
       {brush}
     />
   {/each}
+  {#each datasetInfo.metadata.other_columns as col}
+    <ColumnProfile
+      displayCol={col}
+      plotCols={[col]}
+      datasetName={datasetInfo.name}
+      {brush}
+    />
+  {/each}
 </div>
