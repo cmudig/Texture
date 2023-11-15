@@ -2,7 +2,7 @@
   import * as vg from "@uwdata/vgplot";
   import { datasets } from "./shared/colConfig";
   import type { DatabaseConnection } from "./database/db";
-  import type { DatasetInfo } from "./shared/types";
+  import type { DatasetInfo, TableOption } from "./shared/types";
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
 
@@ -10,8 +10,8 @@
 
   let selectedValue: string = Object.keys(datasets)[0];
   let datasetInfo: DatasetInfo;
-
   let brush: any;
+  let tableOption: TableOption = "all";
 
   async function setDataset() {
     const info = datasets[selectedValue];
@@ -35,9 +35,19 @@
   >
   <div class="grow" />
   <div class="self-center">
-    <span class="text-white text-xl pr-2">Dataset: </span>
+    <span class="text-white text-xl pr-2">Table: </span>
     <select
-      class="h-10 text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+      class="text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+      bind:value={tableOption}
+    >
+      <option value="all">All cols</option>
+      <option value="text">Only text</option>
+    </select>
+  </div>
+  <div class="self-center">
+    <span class="text-white text-xl pr-2">Data: </span>
+    <select
+      class="text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
       bind:value={selectedValue}
       on:change={updateData}
     >
@@ -58,7 +68,7 @@
       <Sidebar {datasetInfo} {brush} />
     </div>
     <div class="w-2/3 h-screen overflow-scroll">
-      <InstanceView {datasetInfo} {brush} />
+      <InstanceView {datasetInfo} {brush} {tableOption} />
     </div>
   </div>
 {:catch error}

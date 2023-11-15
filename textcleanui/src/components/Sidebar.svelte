@@ -7,11 +7,10 @@
 </script>
 
 <div class="border-2 border-slate-50">
-  {#each datasetInfo.metadata.text_columns as colName}
+  {#each datasetInfo.metadata.text_columns as col}
     <ColumnProfile
-      {colName}
-      colType={"text"}
-      chartColNames={datasetInfo.metadata.text_meta_columns[colName]}
+      displayCol={col}
+      plotCols={datasetInfo.metadata.text_meta_columns[col.name]}
       datasetName={datasetInfo.name}
       {brush}
     />

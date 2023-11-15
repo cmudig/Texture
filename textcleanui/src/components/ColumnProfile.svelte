@@ -1,14 +1,12 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
-  import type { DataType } from "../shared/types";
+  import type { Column } from "../shared/types";
 
   import ChartGroup from "./ChartGroup.svelte";
   import DataTypeIcon from "./DataTypeIcon.svelte";
 
-  export let colName: string;
-  export let colType: DataType;
-
-  export let chartColNames: string[];
+  export let displayCol: Column;
+  export let plotCols: Column[];
   export let datasetName: string;
   export let brush: any;
 
@@ -23,16 +21,16 @@
       active = !active;
     }}
   >
-    <DataTypeIcon type={colType} />
+    <DataTypeIcon type={displayCol.type} />
 
     <p class:font-medium={active} class="text-left flex-1">
-      {colName}
+      {displayCol.name}
     </p>
   </button>
   <div class="w-full">
     {#if active}
       <div transition:slide|local={{ duration: 200 }} class="ml-4 mt-2">
-        <ChartGroup colNames={chartColNames} {datasetName} {brush} />
+        <ChartGroup columns={plotCols} {datasetName} {brush} />
       </div>
     {/if}
   </div>
