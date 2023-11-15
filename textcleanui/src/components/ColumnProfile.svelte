@@ -12,7 +12,7 @@
   export let datasetName: string;
   export let brush: any;
 
-  let active = false;
+  let active = true;
 </script>
 
 <div>
