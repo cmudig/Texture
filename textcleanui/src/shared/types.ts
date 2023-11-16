@@ -18,3 +18,7 @@ export type Column = {
 };
 
 export type TableOption = "all" | "text";
+
+export type FilterWrapper = {
+  brush: any;
+};

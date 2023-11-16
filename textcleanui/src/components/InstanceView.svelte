@@ -2,7 +2,7 @@
   import { afterUpdate } from "svelte";
   import type { DatasetInfo, TableOption } from "../shared/types";
   import * as vg from "@uwdata/vgplot";
-  import { brush } from "../stores";
+  import { filters } from "../stores";
 
   export let datasetInfo: DatasetInfo;
   export let tableOption: TableOption = "text";
@@ -33,7 +33,7 @@
       from: datasetInfo.name,
       height: 1200,
       width: "100%",
-      filterBy: $brush,
+      filterBy: $filters.brush,
       columns: cols,
     });
 

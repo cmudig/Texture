@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate } from "svelte";
-  import { brush } from "../../stores";
+  import { filters } from "../../stores";
 
   export let datasetName: string;
   export let columnName: string;
@@ -12,13 +12,13 @@
     console.log("[Render] Histogram");
 
     let c = vg.plot(
-      vg.rectY(vg.from(datasetName, { filterBy: $brush }), {
+      vg.rectY(vg.from(datasetName, { filterBy: $filters.brush }), {
         x: vg.bin(columnName),
         y: vg.count(),
         fill: "steelblue",
         inset: 0.5,
       }),
-      vg.intervalX({ as: $brush }),
+      vg.intervalX({ as: $filters.brush }),
       vg.xDomain(vg.Fixed),
       vg.marginLeft(55),
       vg.width(400),

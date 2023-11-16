@@ -5,7 +5,7 @@
   import type { DatasetInfo, TableOption } from "./shared/types";
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
-  import { brush } from "./stores";
+  import { filters } from "./stores";
 
   export let databaseConnection: DatabaseConnection;
 
@@ -18,7 +18,9 @@
     await databaseConnection.initAndLoad(info.name, info.filename);
     datasetInfo = info;
     // create new brush to clear selections from old dataset
-    $brush = vg.Selection.crossfilter();
+    $filters = {
+      brush: vg.Selection.crossfilter(),
+    };
   }
 
   function updateData() {
@@ -26,7 +28,9 @@
   }
 
   function resetBrush() {
-    $brush = vg.Selection.crossfilter();
+    $filters = {
+      brush: vg.Selection.crossfilter(),
+    };
   }
 
   let dataPromise: Promise<any> = setDataset();
