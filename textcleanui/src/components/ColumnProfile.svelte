@@ -4,6 +4,7 @@
 
   import ChartGroup from "./ChartGroup.svelte";
   import DataTypeIcon from "./DataTypeIcon.svelte";
+  import SearchBar from "./charts/SearchBar.svelte";
 
   export let displayCol: Column;
   export let plotCols: Column[];
@@ -29,6 +30,9 @@
   <div class="w-full">
     {#if active}
       <div transition:slide|local={{ duration: 200 }} class="ml-4 mt-2">
+        {#if displayCol.type === "text"}
+          <SearchBar {datasetName} columnName={displayCol.name} />
+        {/if}
         <ChartGroup columns={plotCols} {datasetName} />
       </div>
     {/if}

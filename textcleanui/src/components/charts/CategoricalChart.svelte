@@ -13,7 +13,6 @@
   Either need to (1) reset brush on destory (suboptimal) or 
   (2) preserve brush by binding to parent where toggle happens or smth
   */
-  console.log("creating filter in cat chart...");
   const selectCat = vg.Selection.single();
 
   function renderChart() {
@@ -86,4 +85,4 @@
   afterUpdate(renderChart);
 </script>
 
-<div bind:this={el} />
+<div class="summaryChart" bind:this={el} />

@@ -2,6 +2,8 @@
   import Histogram from "./charts/Histogram.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";
+  import SearchBar from "./charts/SearchBar.svelte";
+
   import type { Column } from "../shared/types";
 
   export let columns: Column[];
@@ -15,6 +17,7 @@
     {#if col.type === "number"}
       <Histogram {datasetName} columnName={col.name} />
     {:else if col.type === "categorical"}
+      <SearchBar {datasetName} columnName={col.name} />
       <CategoricalChart {datasetName} columnName={col.name} />
     {:else if col.type === "date"}
       <!-- <DateChart {datasetName} columnName={col.name} /> -->
