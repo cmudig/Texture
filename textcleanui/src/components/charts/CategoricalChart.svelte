@@ -17,6 +17,31 @@
   const selectCat = vg.Selection.single();
 
   function renderChart() {
+    // let c = vg.plot(
+    //   vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
+    //     x: vg.count(),
+    //     y: columnName,
+    //     order: columnName,
+    //     fill: "steelblue",
+    //     sort: { y: "-x", limit: 10 },
+    //   }),
+    //   vg.highlight({ by: selectCat }),
+    //   vg.toggleY({ as: selectCat }),
+    //   vg.toggleY({ as: $filters.brush }),
+    //   vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
+    //     x: vg.count(),
+    //     y: columnName,
+    //     order: columnName,
+    //     sort: { y: "-x", limit: 10 },
+    //     text: vg.count(),
+    //     dx: 5,
+    //     textAnchor: "start",
+    //   }),
+    //   vg.yLabel(null),
+    //   vg.marginLeft(80),
+    //   vg.width(400)
+    // );
+
     let c = vg.plot(
       // including this breaks the click interation and doesnt cut off text?
       // vg.axisY({
