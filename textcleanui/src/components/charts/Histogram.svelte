@@ -9,7 +9,7 @@
   let el: HTMLElement;
 
   function renderChart() {
-    console.log("[Render] Histogram");
+    // console.log("[Render] Histogram");
 
     let c = vg.plot(
       vg.rectY(vg.from(datasetName, { filterBy: $filters.brush }), {
