@@ -3,9 +3,15 @@
   import { datasets } from "./shared/colConfig";
   import type { DatabaseConnection } from "./database/db";
   import type { DatasetInfo, TableOption } from "./shared/types";
+  import { filters } from "./stores";
+
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
-  import { filters } from "./stores";
+  import { Button, Select, Popover } from "flowbite-svelte";
+  import {
+    AdjustmentsHorizontalOutline,
+    InfoCircleOutline,
+  } from "flowbite-svelte-icons";
 
   export let databaseConnection: DatabaseConnection;
 
@@ -16,6 +22,7 @@
   let datasetSize: number;
 
   async function setDataset() {
+    console.log("setting dataset...");
     const info = datasets[selectedValue];
     await databaseConnection.initAndLoad(info.name, info.filename);
     datasetInfo = info;
@@ -53,10 +60,60 @@
     Total size: {datasetSize}
   </div>
 
-  <button class="py-2 px-4 rounded bg-white" on:click={resetBrush}>
-    Reset filters
-  </button>
-  <div class="self-center">
+  <!-- <Button id="settingsToggle" on:click={resetBrush} color="light">
+  </Button> -->
+  <div>
+    <Button color="light" outline id="settingsToggle">
+      <AdjustmentsHorizontalOutline size="sm" />
+    </Button>
+    <Popover
+      triggeredBy="#settingsToggle"
+      class="w-64 text-sm font-light text-gray-500 bg-white z-10"
+      title="Settings"
+    >
+      <div class="p-3 flex flex-col gap-2">
+        <Button size="sm" on:click={resetBrush} color="light"
+          >Reset filters</Button
+        >
+
+        <Select
+          size="sm"
+          items={[
+            { value: "all", name: "All cols" },
+            { value: "text", name: "Only text" },
+          ]}
+          placeholder="Select columns"
+          bind:value={tableOption}
+        />
+      </div>
+    </Popover>
+  </div>
+
+  <div>
+    <Button color="light" outline id="demoToggle">
+      <InfoCircleOutline size="sm" />
+    </Button>
+    <Popover
+      triggeredBy="#demoToggle"
+      class="w-64 text-sm font-light text-gray-500 bg-white z-10"
+      title="Demo"
+    >
+      <div class="p-3 flex flex-col gap-2">
+        <Select
+          size="sm"
+          items={Object.keys(datasets).map((k) => ({
+            value: datasets[k].name,
+            name: datasets[k].name,
+          }))}
+          placeholder="Select dataset"
+          bind:value={selectedValue}
+          on:change={updateData}
+        />
+      </div>
+    </Popover>
+  </div>
+
+  <!-- <div class="self-center">
     <span class="text-white text-l pr-2">Table: </span>
     <select
       class="text-gray-900 bg-gray-50 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
@@ -79,7 +136,7 @@
         >
       {/each}
     </select>
-  </div>
+  </div> -->
 </div>
 
 {#await dataPromise}
