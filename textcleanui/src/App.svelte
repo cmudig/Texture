@@ -13,6 +13,8 @@
   let datasetInfo: DatasetInfo;
   let tableOption: TableOption = "all";
 
+  let datasetSize: number;
+
   async function setDataset() {
     const info = datasets[selectedValue];
     await databaseConnection.initAndLoad(info.name, info.filename);
@@ -21,6 +23,10 @@
     $filters = {
       brush: vg.Selection.crossfilter(),
     };
+
+    let q = vg.Query.from(info.name).select({ count: vg.count() });
+    let r = await vg.coordinator().query(q, { type: "json" });
+    datasetSize = r[0]?.["count"];
   }
 
   function updateData() {
@@ -43,11 +49,15 @@
   >
   <div class="grow" />
 
+  <div class="self-center text-l text-white">
+    Total size: {datasetSize}
+  </div>
+
   <button class="py-2 px-4 rounded bg-white" on:click={resetBrush}>
     Reset filters
   </button>
   <div class="self-center">
-    <span class="text-white text-xl pr-2">Table: </span>
+    <span class="text-white text-l pr-2">Table: </span>
     <select
       class="text-gray-900 bg-gray-50 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
       bind:value={tableOption}
@@ -57,7 +67,7 @@
     </select>
   </div>
   <div class="self-center">
-    <span class="text-white text-xl pr-2">Data: </span>
+    <span class="text-white text-l pr-2">Data: </span>
     <select
       class="text-gray-900 bg-gray-50 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
       bind:value={selectedValue}
