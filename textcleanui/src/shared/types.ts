@@ -17,8 +17,6 @@ export type Column = {
   type: DataType;
 };
 
-export type TableOption = "all" | "text";
-
 export type FilterWrapper = {
   brush: any;
 };

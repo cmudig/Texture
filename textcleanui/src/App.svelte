@@ -2,12 +2,12 @@
   import * as vg from "@uwdata/vgplot";
   import { datasets } from "./shared/colConfig";
   import type { DatabaseConnection } from "./database/db";
-  import type { DatasetInfo, TableOption } from "./shared/types";
+  import type { DatasetInfo } from "./shared/types";
   import { filters } from "./stores";
 
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
-  import { Button, Select, Popover } from "flowbite-svelte";
+  import { Button, Select, Popover, Toggle, Label } from "flowbite-svelte";
   import {
     AdjustmentsHorizontalOutline,
     InfoCircleOutline,
@@ -17,15 +17,28 @@
 
   let selectedValue: string = Object.keys(datasets)[0];
   let datasetInfo: DatasetInfo;
-  let tableOption: TableOption = "all";
+  let currentColumns: string[] = [];
+  let currentColToggleStates: Record<string, boolean> = {};
 
   let datasetSize: number;
 
   async function setDataset() {
-    console.log("setting dataset...");
     const info = datasets[selectedValue];
     await databaseConnection.initAndLoad(info.name, info.filename);
     datasetInfo = info;
+    currentColumns = [
+      ...info.metadata.text_columns.map((c) => c.name),
+      ...info.metadata.other_columns.map((c) => c.name),
+    ];
+
+    currentColToggleStates = currentColumns.reduce(
+      (acc: Record<string, boolean>, col) => {
+        acc[col] = true;
+        return acc;
+      },
+      {}
+    );
+
     // create new brush to clear selections from old dataset
     $filters = {
       brush: vg.Selection.crossfilter(),
@@ -60,8 +73,6 @@
     Total size: {datasetSize}
   </div>
 
-  <!-- <Button id="settingsToggle" on:click={resetBrush} color="light">
-  </Button> -->
   <div>
     <Button color="light" outline id="settingsToggle">
       <AdjustmentsHorizontalOutline size="sm" />
@@ -76,15 +87,18 @@
           >Reset filters</Button
         >
 
-        <Select
-          size="sm"
-          items={[
-            { value: "all", name: "All cols" },
-            { value: "text", name: "Only text" },
-          ]}
-          placeholder="Select columns"
-          bind:value={tableOption}
-        />
+        <div>
+          <Label>Display in table</Label>
+          <div class="ml-2 flex flex-col gap-1">
+            {#each currentColumns as col}
+              <Toggle bind:checked={currentColToggleStates[col]}>
+                <span class="text-ellipsis overflow-hidden">
+                  {col}
+                </span>
+              </Toggle>
+            {/each}
+          </div>
+        </div>
       </div>
     </Popover>
   </div>
@@ -112,31 +126,6 @@
       </div>
     </Popover>
   </div>
-
-  <!-- <div class="self-center">
-    <span class="text-white text-l pr-2">Table: </span>
-    <select
-      class="text-gray-900 bg-gray-50 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
-      bind:value={tableOption}
-    >
-      <option value="all">All cols</option>
-      <option value="text">Only text</option>
-    </select>
-  </div>
-  <div class="self-center">
-    <span class="text-white text-l pr-2">Data: </span>
-    <select
-      class="text-gray-900 bg-gray-50 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
-      bind:value={selectedValue}
-      on:change={updateData}
-    >
-      {#each Object.keys(datasets) as datasetKey}
-        <option value={datasets[datasetKey].name}
-          >{datasets[datasetKey].name}</option
-        >
-      {/each}
-    </select>
-  </div> -->
 </div>
 
 {#await dataPromise}
@@ -147,7 +136,7 @@
       <Sidebar {datasetInfo} />
     </div>
     <div class="w-2/3 h-screen overflow-scroll">
-      <InstanceView {datasetInfo} {tableOption} />
+      <InstanceView {datasetInfo} {currentColToggleStates} />
     </div>
   </div>
 {:catch error}

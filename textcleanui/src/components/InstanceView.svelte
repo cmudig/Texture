@@ -5,37 +5,27 @@
   import { filters } from "../stores";
 
   export let datasetInfo: DatasetInfo;
-  export let tableOption: TableOption = "text";
+  export let currentColToggleStates: Record<string, boolean> = {};
 
   let el: HTMLElement;
   let plot_cols: string[];
 
-  function getPlotColumns(
-    option: "all" | "text",
-    dsInfo: DatasetInfo
-  ): string[] {
-    let text_col_names: string[] = dsInfo.metadata.text_columns.map(
-      (c) => c.name
-    );
-
-    if (option === "all") {
-      let other_cols = dsInfo.metadata.other_columns.map((c) => c.name);
-      return text_col_names.concat(other_cols);
-    }
-
-    return text_col_names;
-  }
-
   function renderChart(cols: string[]) {
-    console.log("[Render] Instance view");
-    let c = vg.table({
-      // element: el, // doesnt work on updates?
-      from: datasetInfo.name,
-      height: 1200,
-      width: "100%",
-      filterBy: $filters.brush,
-      columns: cols,
-    });
+    let c;
+
+    if (cols.length > 0) {
+      c = vg.table({
+        // element: el, // doesnt work on updates?
+        from: datasetInfo.name,
+        height: 1200,
+        width: "100%",
+        filterBy: $filters.brush,
+        columns: cols,
+      });
+    } else {
+      c = document.createElement("p");
+      c.textContent = "Select at least one column to display in table view.";
+    }
 
     if (el) {
       el.replaceChildren(c);
@@ -43,7 +33,9 @@
   }
 
   $: {
-    plot_cols = getPlotColumns(tableOption, datasetInfo);
+    plot_cols = Object.keys(currentColToggleStates).filter(
+      (col) => currentColToggleStates[col]
+    );
   }
 
   afterUpdate(() => {
