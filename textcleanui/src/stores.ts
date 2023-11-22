@@ -30,9 +30,20 @@ export const selectionDisplay = derived(
 function updateValue(mosaicSelection: any): SelectionMap {
   if (mosaicSelection?.clauses) {
     let r = mosaicSelection.clauses.reduce((d: SelectionMap, clause: any) => {
-      let colName = clause.predicate.columns[0];
-      let val = clause.value.flat();
-      d[colName] = val;
+      // TODO use object type to get values out, there must be a better method for this
+      try {
+        let colName = clause.predicate.columns[0];
+        console.log("Col name: ", colName);
+        console.log("clause ", clause);
+
+        let v = clause.value;
+        let val = Array.isArray(v) ? v.flat() : [v];
+
+        d[colName] = val;
+      } catch (error) {
+        console.error(error);
+      }
+
       return d;
     }, {});
 
