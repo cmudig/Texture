@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SelectionRange } from "../shared/types";
-  import { formatNumber } from "../shared/formatters";
+  import { formatNumber } from "../shared/utils";
 
   export let colName: string;
   export let filterRange: SelectionRange;

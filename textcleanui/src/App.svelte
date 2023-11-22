@@ -2,8 +2,8 @@
   import * as vg from "@uwdata/vgplot";
   import { datasets } from "./shared/colConfig";
   import type { DatabaseConnection } from "./database/db";
-  import { getCount } from "./database/queries";
-  import type { DatasetInfo } from "./shared/types";
+  import { getCount, getColSummaries } from "./database/queries";
+  import type { DatasetInfo, ColumnSummary } from "./shared/types";
   import { filters, selectionDisplay, showBackgroundDist } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
@@ -23,7 +23,7 @@
     BarsSolid,
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
-  import { formatNumber } from "./shared/formatters";
+  import { formatNumber } from "./shared/utils";
 
   export let databaseConnection: DatabaseConnection;
 
@@ -33,6 +33,7 @@
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
   let filterPanelHidden = true;
+  let datasetColSummaries: ColumnSummary[];
 
   async function setDataset() {
     const info = datasets[selectedValue];
@@ -57,6 +58,7 @@
     };
 
     datasetSize = await getCount(info.name);
+    datasetColSummaries = await getColSummaries(info.name);
   }
 
   function updateData() {
@@ -184,7 +186,7 @@
 
   <div class="flex flex-row">
     <div class="w-1/3 h-screen overflow-scroll">
-      <Sidebar {datasetInfo} />
+      <Sidebar {datasetInfo} {datasetColSummaries} />
     </div>
     <div class="w-2/3 h-screen overflow-scroll">
       <InstanceView {datasetInfo} {currentColToggleStates} />

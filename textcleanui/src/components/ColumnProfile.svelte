@@ -1,17 +1,21 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
-  import type { Column } from "../shared/types";
-
+  import type { Column, ColumnSummary } from "../shared/types";
+  import { getUUID } from "../shared/utils";
   import DataTypeIcon from "./DataTypeIcon.svelte";
   import Histogram from "./charts/Histogram.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";
   import SearchBar from "./charts/SearchBar.svelte";
+  import NullDisplay from "./charts/NullDisplay.svelte";
+  import { Tooltip } from "flowbite-svelte";
 
   export let displayCol: Column;
   export let plotCols: Column[];
   export let datasetName: string;
+  export let colSummary: ColumnSummary | undefined = undefined;
 
   let active = true;
+  let id = getUUID(); // should be unique for each instance of ColumnProfile
 </script>
 
 <div>
@@ -24,9 +28,28 @@
   >
     <DataTypeIcon type={displayCol.type} />
 
-    <p class:font-medium={active} class="text-left flex-1">
+    <p
+      class:font-medium={active}
+      class="text-left text-ellipsis overflow-hidden max-w-sm"
+    >
       {displayCol.name}
     </p>
+
+    <div class="grow" />
+
+    {#if colSummary?.null_percentage}
+      <div id="null-display-{id}">
+        <NullDisplay nullPercentage={parseFloat(colSummary.null_percentage)} />
+      </div>
+      <Tooltip
+        class="z-10"
+        triggeredBy="#null-display-{id}"
+        type="dark"
+        placement="bottom"
+      >
+        {colSummary.null_percentage} null values
+      </Tooltip>
+    {/if}
   </button>
   <div class="w-full">
     {#if active}
