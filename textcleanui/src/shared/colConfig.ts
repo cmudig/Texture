@@ -3,6 +3,43 @@ import type { DatasetInfo } from "./types";
 // TODO: in the future this will be stored server side and fetched
 
 export const datasets: { [key: string]: DatasetInfo } = {
+  vast2021: {
+    name: "vast2021",
+    filename: "vast2021.parquet",
+    metadata: {
+      text_columns: [{ name: "message", type: "text" }],
+      other_columns: [
+        { name: "type", type: "categorical" },
+        { name: "date(yyyyMMddHHmmss)", type: "number" },
+        { name: "author", type: "categorical" },
+        { name: "latitude", type: "number" },
+        { name: "longitude", type: "number" },
+        { name: "location", type: "categorical" },
+        { name: "date", type: "date" },
+      ],
+      text_meta_columns: {
+        message: [
+          { name: "message_text_length", type: "number" },
+          { name: "message_num_words", type: "number" },
+          { name: "message_max_word_length", type: "number" },
+          { name: "message_avg_word_length", type: "number" },
+          { name: "message_perc_special_chars", type: "number" },
+          {
+            name: "message_dist_from_mean_embed_all-mpnet-base-v2",
+            type: "number",
+          },
+          {
+            name: "message_outlier_score_ECOD_all-mpnet-base-v2",
+            type: "number",
+          },
+          {
+            name: "message_outlier_score_IForest_all-mpnet-base-v2",
+            type: "number",
+          },
+        ],
+      },
+    },
+  },
   dolly: {
     name: "dolly",
     filename: "dolly15k.parquet",
@@ -352,43 +389,6 @@ export const datasets: { [key: string]: DatasetInfo } = {
           },
           {
             name: "answers[0]_outlier_score_IForest_distiluse-base-multilingual-cased-v1",
-            type: "number",
-          },
-        ],
-      },
-    },
-  },
-  vast2021: {
-    name: "vast2021",
-    filename: "vast2021.parquet",
-    metadata: {
-      text_columns: [{ name: "message", type: "text" }],
-      other_columns: [
-        { name: "type", type: "categorical" },
-        { name: "date(yyyyMMddHHmmss)", type: "number" },
-        { name: "author", type: "categorical" },
-        { name: "latitude", type: "number" },
-        { name: "longitude", type: "number" },
-        { name: "location", type: "categorical" },
-        { name: "date", type: "date" },
-      ],
-      text_meta_columns: {
-        message: [
-          { name: "message_text_length", type: "number" },
-          { name: "message_num_words", type: "number" },
-          { name: "message_max_word_length", type: "number" },
-          { name: "message_avg_word_length", type: "number" },
-          { name: "message_perc_special_chars", type: "number" },
-          {
-            name: "message_dist_from_mean_embed_all-mpnet-base-v2",
-            type: "number",
-          },
-          {
-            name: "message_outlier_score_ECOD_all-mpnet-base-v2",
-            type: "number",
-          },
-          {
-            name: "message_outlier_score_IForest_all-mpnet-base-v2",
             type: "number",
           },
         ],

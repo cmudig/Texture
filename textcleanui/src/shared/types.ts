@@ -20,3 +20,9 @@ export type Column = {
 export type FilterWrapper = {
   brush: any;
 };
+
+export type SelectionMap = {
+  [key: string]: SelectionRange;
+};
+
+export type SelectionRange = number[] | string[];

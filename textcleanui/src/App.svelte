@@ -2,16 +2,28 @@
   import * as vg from "@uwdata/vgplot";
   import { datasets } from "./shared/colConfig";
   import type { DatabaseConnection } from "./database/db";
+  import { getCount } from "./database/queries";
   import type { DatasetInfo } from "./shared/types";
-  import { filters } from "./stores";
-
+  import { filters, selectionDisplay } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
-  import { Button, Select, Popover, Toggle, Label } from "flowbite-svelte";
+  import FilterDisplay from "./components/FilterDisplay.svelte";
+  import {
+    Button,
+    Select,
+    Popover,
+    Toggle,
+    Label,
+    Drawer,
+    CloseButton,
+    Tooltip,
+  } from "flowbite-svelte";
   import {
     AdjustmentsHorizontalOutline,
-    InfoCircleOutline,
+    BarsSolid,
   } from "flowbite-svelte-icons";
+  import { sineIn } from "svelte/easing";
+  import { formatNumber } from "./shared/formatters";
 
   export let databaseConnection: DatabaseConnection;
 
@@ -19,8 +31,8 @@
   let datasetInfo: DatasetInfo;
   let currentColumns: string[] = [];
   let currentColToggleStates: Record<string, boolean> = {};
-
   let datasetSize: number;
+  let hidden = true;
 
   async function setDataset() {
     const info = datasets[selectedValue];
@@ -44,9 +56,7 @@
       brush: vg.Selection.crossfilter(),
     };
 
-    let q = vg.Query.from(info.name).select({ count: vg.count() });
-    let r = await vg.coordinator().query(q, { type: "json" });
-    datasetSize = r[0]?.["count"];
+    datasetSize = await getCount(info.name);
   }
 
   function updateData() {
@@ -70,67 +80,100 @@
   <div class="grow" />
 
   <div class="self-center text-l text-white">
-    Total size: {datasetSize}
+    Total size: {formatNumber(datasetSize)}
   </div>
 
-  <div>
-    <Button color="light" outline id="settingsToggle">
-      <AdjustmentsHorizontalOutline size="sm" />
-    </Button>
-    <Popover
-      triggeredBy="#settingsToggle"
-      class="w-64 text-sm font-light text-gray-500 bg-white z-10"
-      title="Settings"
-    >
-      <div class="p-3 flex flex-col gap-2">
-        <Button size="sm" on:click={resetBrush} color="light"
-          >Reset filters</Button
-        >
-
-        <div>
-          <Label>Display in table</Label>
-          <div class="ml-2 flex flex-col gap-1">
-            {#each currentColumns as col}
-              <Toggle bind:checked={currentColToggleStates[col]}>
-                <span class="text-ellipsis overflow-hidden">
-                  {col}
-                </span>
-              </Toggle>
-            {/each}
-          </div>
+  <AdjustmentsHorizontalOutline
+    id="settingsToggle"
+    size="md"
+    class="text-white hover:text-gray-200 self-center mx-1"
+  />
+  <Popover
+    triggeredBy="#settingsToggle"
+    class="w-64 text-sm font-light text-gray-500 bg-white z-10"
+    title="Settings"
+  >
+    <div class="p-3 flex flex-col gap-2">
+      <Select
+        size="sm"
+        items={Object.keys(datasets).map((k) => ({
+          value: datasets[k].name,
+          name: datasets[k].name,
+        }))}
+        placeholder="Select dataset"
+        bind:value={selectedValue}
+        on:change={updateData}
+      />
+      <div class="mt-2">
+        <Label>Display in table</Label>
+        <div class="mt-2 flex flex-col gap-1">
+          {#each currentColumns as col}
+            <Toggle bind:checked={currentColToggleStates[col]}>
+              <span class="text-ellipsis overflow-hidden">
+                {col}
+              </span>
+            </Toggle>
+          {/each}
         </div>
       </div>
-    </Popover>
-  </div>
+    </div>
+  </Popover>
 
-  <div>
-    <Button color="light" outline id="demoToggle">
-      <InfoCircleOutline size="sm" />
-    </Button>
-    <Popover
-      triggeredBy="#demoToggle"
-      class="w-64 text-sm font-light text-gray-500 bg-white z-10"
-      title="Demo"
-    >
-      <div class="p-3 flex flex-col gap-2">
-        <Select
-          size="sm"
-          items={Object.keys(datasets).map((k) => ({
-            value: datasets[k].name,
-            name: datasets[k].name,
-          }))}
-          placeholder="Select dataset"
-          bind:value={selectedValue}
-          on:change={updateData}
-        />
-      </div>
-    </Popover>
-  </div>
+  <BarsSolid
+    id="filterToggle"
+    on:click={() => (hidden = false)}
+    class="text-white hover:text-gray-200 self-center mx-1"
+    size="md"
+  />
+  <Tooltip class="z-10" triggeredBy="#filterToggle" type="light"
+    >Display filters</Tooltip
+  >
 </div>
 
 {#await dataPromise}
   <div class="p-4">Loading data...</div>
 {:then}
+  <div>
+    <Drawer
+      placement="right"
+      transitionType="fly"
+      transitionParams={{
+        x: 320,
+        duration: 200,
+        easing: sineIn,
+      }}
+      bind:hidden
+      id="sidebar"
+    >
+      <div class="flex items-center">
+        <h3
+          id="drawer-label"
+          class="inline-flex items-center mb-4 text-base font-semibold"
+        >
+          Applied filters
+        </h3>
+        <CloseButton
+          on:click={() => (hidden = true)}
+          class="mb-4 dark:text-white"
+        />
+      </div>
+      <div class="flex flex-col gap-2">
+        {#if Object.keys($selectionDisplay).length === 0}
+          <div class="italic">No filters applied</div>
+        {:else}
+          {#each Object.keys($selectionDisplay) as k}
+            <FilterDisplay colName={k} filterRange={$selectionDisplay[k]} />
+          {/each}
+        {/if}
+      </div>
+      <div>
+        <Button class="mt-6 w-full" on:click={resetBrush}
+          >Reset all filters</Button
+        >
+      </div>
+    </Drawer>
+  </div>
+
   <div class="flex flex-row">
     <div class="w-1/3 h-screen overflow-scroll">
       <Sidebar {datasetInfo} />
