@@ -5,6 +5,8 @@ export const filters: Writable<FilterWrapper> = writable({
   brush: undefined,
 });
 
+export const showBackgroundDist: Writable<boolean> = writable(true);
+
 let initialSM: SelectionMap = {};
 
 export const selectionDisplay = derived(

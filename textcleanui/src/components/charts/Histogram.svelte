@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate } from "svelte";
-  import { filters } from "../../stores";
+  import { filters, showBackgroundDist } from "../../stores";
 
   export let datasetName: string;
   export let columnName: string;
@@ -9,21 +9,44 @@
   let el: HTMLElement;
 
   function renderChart() {
-    // console.log("[Render] Histogram");
+    let c;
 
-    let c = vg.plot(
-      vg.rectY(vg.from(datasetName, { filterBy: $filters.brush }), {
-        x: vg.bin(columnName),
-        y: vg.count(),
-        fill: "steelblue",
-        inset: 0.5,
-      }),
-      vg.intervalX({ as: $filters.brush }),
-      vg.xDomain(vg.Fixed),
-      vg.marginLeft(55),
-      vg.width(400),
-      vg.height(150)
-    );
+    if ($showBackgroundDist) {
+      c = vg.plot(
+        vg.rectY(vg.from(datasetName), {
+          x: vg.bin(columnName),
+          y: vg.count(),
+          fill: "#ccc",
+          fillOpacity: 0.4,
+          inset: 0.5,
+        }),
+        vg.rectY(vg.from(datasetName, { filterBy: $filters.brush }), {
+          x: vg.bin(columnName),
+          y: vg.count(),
+          fill: "steelblue",
+          inset: 0.5,
+        }),
+        vg.intervalX({ as: $filters.brush }),
+        vg.xDomain(vg.Fixed),
+        vg.marginLeft(55),
+        vg.width(400),
+        vg.height(150)
+      );
+    } else {
+      c = vg.plot(
+        vg.rectY(vg.from(datasetName, { filterBy: $filters.brush }), {
+          x: vg.bin(columnName),
+          y: vg.count(),
+          fill: "steelblue",
+          inset: 0.5,
+        }),
+        vg.intervalX({ as: $filters.brush }),
+        vg.xDomain(vg.Fixed),
+        vg.marginLeft(55),
+        vg.width(400),
+        vg.height(150)
+      );
+    }
 
     el.replaceChildren(c);
   }

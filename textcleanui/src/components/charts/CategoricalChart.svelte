@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate } from "svelte";
-  import { filters } from "../../stores";
+  import { filters, showBackgroundDist } from "../../stores";
 
   export let datasetName: string;
   export let columnName: string;
@@ -16,68 +16,72 @@
   const selectCat = vg.Selection.single();
 
   function renderChart() {
-    // let c = vg.plot(
-    //   vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
-    //     x: vg.count(),
-    //     y: columnName,
-    //     order: columnName,
-    //     fill: "steelblue",
-    //     sort: { y: "-x", limit: 10 },
-    //   }),
-    //   vg.highlight({ by: selectCat }),
-    //   vg.toggleY({ as: selectCat }),
-    //   vg.toggleY({ as: $filters.brush }),
-    //   vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
-    //     x: vg.count(),
-    //     y: columnName,
-    //     order: columnName,
-    //     sort: { y: "-x", limit: 10 },
-    //     text: vg.count(),
-    //     dx: 5,
-    //     textAnchor: "start",
-    //   }),
-    //   vg.yLabel(null),
-    //   vg.marginLeft(80),
-    //   vg.width(400)
-    // );
+    let c;
 
-    let c = vg.plot(
-      // including this breaks the click interation and doesnt cut off text?
-      // vg.axisY({
-      //   textOverflow: "ellipsis",
-      //   lineWidth: 50,
-      // }),
-      vg.barX(vg.from(datasetName), {
-        x: vg.count(),
-        y: columnName,
-        order: columnName,
-        fill: "#ccc",
-        fillOpacity: 0.2,
-        sort: { y: "-x", limit: 10 },
-      }),
-      vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
-        x: vg.count(),
-        y: columnName,
-        order: columnName,
-        fill: "steelblue",
-        sort: { y: "-x", limit: 10 },
-      }),
-      vg.highlight({ by: selectCat }),
-      vg.toggleY({ as: selectCat }),
-      vg.toggleY({ as: $filters.brush }),
-      vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
-        x: vg.count(),
-        y: columnName,
-        order: columnName,
-        sort: { y: "-x", limit: 10 },
-        text: vg.count(),
-        dx: 5,
-        textAnchor: "start",
-      }),
-      vg.yLabel(null),
-      vg.marginLeft(80),
-      vg.width(400)
-    );
+    if ($showBackgroundDist) {
+      c = vg.plot(
+        // including this breaks the click interation and doesnt cut off text?
+        // vg.axisY({
+        //   textOverflow: "ellipsis",
+        //   lineWidth: 50,
+        // }),
+        vg.barX(vg.from(datasetName), {
+          x: vg.count(),
+          y: columnName,
+          order: columnName,
+          fill: "#ccc",
+          fillOpacity: 0.4,
+          sort: { y: "-x", limit: 10 },
+        }),
+        vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
+          x: vg.count(),
+          y: columnName,
+          order: columnName,
+          fill: "steelblue",
+          sort: { y: "-x", limit: 10 },
+        }),
+        vg.highlight({ by: selectCat }),
+        vg.toggleY({ as: selectCat }),
+        vg.toggleY({ as: $filters.brush }),
+        vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
+          x: vg.count(),
+          y: columnName,
+          order: columnName,
+          sort: { y: "-x", limit: 10 },
+          text: vg.count(),
+          dx: 5,
+          textAnchor: "start",
+        }),
+        vg.yLabel(null),
+        vg.marginLeft(80),
+        vg.width(400)
+      );
+    } else {
+      c = vg.plot(
+        vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
+          x: vg.count(),
+          y: columnName,
+          order: columnName,
+          fill: "steelblue",
+          sort: { y: "-x", limit: 10 },
+        }),
+        vg.highlight({ by: selectCat }),
+        vg.toggleY({ as: selectCat }),
+        vg.toggleY({ as: $filters.brush }),
+        vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
+          x: vg.count(),
+          y: columnName,
+          order: columnName,
+          sort: { y: "-x", limit: 10 },
+          text: vg.count(),
+          dx: 5,
+          textAnchor: "start",
+        }),
+        vg.yLabel(null),
+        vg.marginLeft(80),
+        vg.width(400)
+      );
+    }
 
     el.replaceChildren(c);
   }

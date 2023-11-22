@@ -4,7 +4,7 @@
   import type { DatabaseConnection } from "./database/db";
   import { getCount } from "./database/queries";
   import type { DatasetInfo } from "./shared/types";
-  import { filters, selectionDisplay } from "./stores";
+  import { filters, selectionDisplay, showBackgroundDist } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
@@ -32,7 +32,7 @@
   let currentColumns: string[] = [];
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
-  let hidden = true;
+  let filterPanelHidden = true;
 
   async function setDataset() {
     const info = datasets[selectedValue];
@@ -105,6 +105,14 @@
         on:change={updateData}
       />
       <div class="mt-2">
+        <Label>Background distributions</Label>
+
+        <Toggle class="mt-2" bind:checked={$showBackgroundDist}
+          >Show in plot</Toggle
+        >
+      </div>
+
+      <div class="mt-2">
         <Label>Display in table</Label>
         <div class="mt-2 flex flex-col gap-1">
           {#each currentColumns as col}
@@ -121,7 +129,7 @@
 
   <BarsSolid
     id="filterToggle"
-    on:click={() => (hidden = false)}
+    on:click={() => (filterPanelHidden = false)}
     class="text-white hover:text-gray-200 self-center mx-1"
     size="md"
   />
@@ -142,7 +150,7 @@
         duration: 200,
         easing: sineIn,
       }}
-      bind:hidden
+      bind:hidden={filterPanelHidden}
       id="sidebar"
     >
       <div class="flex items-center">
@@ -153,7 +161,7 @@
           Applied filters
         </h3>
         <CloseButton
-          on:click={() => (hidden = true)}
+          on:click={() => (filterPanelHidden = true)}
           class="mb-4 dark:text-white"
         />
       </div>
