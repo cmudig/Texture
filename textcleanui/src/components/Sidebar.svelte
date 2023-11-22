@@ -6,7 +6,7 @@
   export let datasetColSummaries: ColumnSummary[];
 </script>
 
-<div class="border-2 border-slate-50">
+<div>
   {#each datasetInfo.metadata.text_columns as col}
     <ColumnProfile
       displayCol={col}

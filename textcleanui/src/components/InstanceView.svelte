@@ -44,6 +44,6 @@
   });
 </script>
 
-<div id="instanceTable" class="border-2 border-slate-50">
+<div id="instanceTable">
   <div bind:this={el} />
 </div>

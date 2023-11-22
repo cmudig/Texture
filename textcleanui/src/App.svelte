@@ -8,6 +8,7 @@
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
+  import QualityView from "./components/QualityView.svelte";
   import {
     Button,
     Select,
@@ -17,10 +18,14 @@
     Drawer,
     CloseButton,
     Tooltip,
+    Spinner,
   } from "flowbite-svelte";
   import {
     AdjustmentsHorizontalOutline,
-    BarsSolid,
+    FilterSolid,
+    ChartMixedSolid,
+    TableSolid,
+    ShieldCheckSolid,
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
   import { formatNumber } from "./shared/utils";
@@ -72,6 +77,8 @@
   }
 
   let dataPromise: Promise<any> = setDataset();
+
+  import { Tabs, TabItem } from "flowbite-svelte";
 </script>
 
 <div class="bg-gradient-to-r from-blue-100 to-blue-700 p-5 flex gap-2 flex-row">
@@ -88,7 +95,7 @@
   <AdjustmentsHorizontalOutline
     id="settingsToggle"
     size="md"
-    class="text-white hover:text-gray-200 self-center mx-1"
+    class="text-white hover:text-primary-700 self-center mx-1"
   />
   <Popover
     triggeredBy="#settingsToggle"
@@ -129,10 +136,10 @@
     </div>
   </Popover>
 
-  <BarsSolid
+  <FilterSolid
     id="filterToggle"
     on:click={() => (filterPanelHidden = false)}
-    class="text-white hover:text-gray-200 self-center mx-1"
+    class="text-white hover:text-primary-700 self-center mx-1"
     size="md"
   />
   <Tooltip class="z-10" triggeredBy="#filterToggle" type="light"
@@ -141,7 +148,9 @@
 </div>
 
 {#await dataPromise}
-  <div class="p-4">Loading data...</div>
+  <div class="p-4">
+    <Spinner />
+  </div>
 {:then}
   <div>
     <Drawer
@@ -186,10 +195,35 @@
 
   <div class="flex flex-row">
     <div class="w-1/3 h-screen overflow-scroll">
-      <Sidebar {datasetInfo} {datasetColSummaries} />
+      <Tabs style="underline" contentClass="">
+        <TabItem open>
+          <div slot="title" class="flex items-center gap-2">
+            <ChartMixedSolid size="sm" />
+            Explore
+          </div>
+
+          <Sidebar {datasetInfo} {datasetColSummaries} />
+        </TabItem>
+        <TabItem>
+          <div slot="title" class="flex items-center gap-2">
+            <ShieldCheckSolid size="sm" />
+            Quality
+          </div>
+          <QualityView />
+        </TabItem>
+      </Tabs>
     </div>
     <div class="w-2/3 h-screen overflow-scroll">
-      <InstanceView {datasetInfo} {currentColToggleStates} />
+      <Tabs style="underline" contentClass="border-l-2 border-slate-50">
+        <TabItem open>
+          <div slot="title" class="flex items-center gap-2">
+            <TableSolid size="sm" />
+            Table
+          </div>
+
+          <InstanceView {datasetInfo} {currentColToggleStates} />
+        </TabItem>
+      </Tabs>
     </div>
   </div>
 {:catch error}
