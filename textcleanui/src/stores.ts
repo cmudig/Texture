@@ -53,8 +53,8 @@ function updateValue(mosaicSelection: any): SelectionMap {
       // TODO use object type to get values out, there must be a better method for this
       try {
         let colName = clause.predicate.columns[0];
-        console.log("Col name: ", colName);
-        console.log("clause ", clause);
+        // console.log("Col name: ", colName);
+        // console.log("clause ", clause);
 
         let v = clause.value;
         let val = Array.isArray(v) ? v.flat() : [v];
