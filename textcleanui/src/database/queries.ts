@@ -3,7 +3,7 @@ import type { ColumnSummary } from "../shared/types";
 
 export async function getCount(
   datasetName: string,
-  selection?: vg.Selection
+  selection?: any
 ): Promise<number> {
   let q = vg.Query.from(datasetName).select({ count: vg.count() });
   if (selection) {

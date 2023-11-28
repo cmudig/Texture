@@ -1,5 +1,3 @@
-import * as vg from "@uwdata/vgplot";
-
 export type DatasetInfo = {
   name: string;
   filename: string;
@@ -20,7 +18,7 @@ export type Column = {
 };
 
 export type FilterWrapper = {
-  brush: vg.Selection;
+  brush: any;
   datasetName: string;
 };
 

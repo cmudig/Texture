@@ -1,0 +1,6 @@
+These files are type declarations for external libraries that don't have their own type declarations. They are not included in the `tsconfig.json` file, so they are not compiled. They are only used by the TypeScript compiler to check the types of the external libraries. 
+They mostly serve to stop typescript compiler warnings.
+
+For more info see this SO post: https://stackoverflow.com/questions/41292559/could-not-find-a-declaration-file-for-module-module-name-path-to-module-nam
+
+TODO: hopefully in future these packages will be typed and can remove the .d.ts files
