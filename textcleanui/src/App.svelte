@@ -4,7 +4,12 @@
   import type { DatabaseConnection } from "./database/db";
   import { getCount, getColSummaries } from "./database/queries";
   import type { DatasetInfo, ColumnSummary } from "./shared/types";
-  import { filters, selectionDisplay, showBackgroundDist } from "./stores";
+  import {
+    filters,
+    selectionDisplay,
+    showBackgroundDist,
+    filteredCount,
+  } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
@@ -60,6 +65,7 @@
     // create new brush to clear selections from old dataset
     $filters = {
       brush: vg.Selection.crossfilter(),
+      datasetName: info.name,
     };
 
     datasetSize = await getCount(info.name);
@@ -73,6 +79,7 @@
   function resetBrush() {
     $filters = {
       brush: vg.Selection.crossfilter(),
+      datasetName: datasetInfo.name,
     };
   }
 
@@ -89,7 +96,7 @@
   <div class="grow" />
 
   <div class="self-center text-l text-white">
-    Total size: {formatNumber(datasetSize)}
+    {formatNumber($filteredCount)} / {formatNumber(datasetSize)} rows
   </div>
 
   <AdjustmentsHorizontalOutline

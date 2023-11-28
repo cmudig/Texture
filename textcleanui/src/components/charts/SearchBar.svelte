@@ -9,6 +9,7 @@
   let el: HTMLElement;
 
   function renderChart() {
+    // TODO: the suggestions here are not distinct for some reason? They are supposed to be...
     let c = vg.search({
       as: $filters.brush,
       from: datasetName,

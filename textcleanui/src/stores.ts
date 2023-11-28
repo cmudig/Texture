@@ -1,8 +1,10 @@
-import { type Writable, writable, derived } from "svelte/store";
+import { type Writable, type Readable, writable, derived } from "svelte/store";
 import type { FilterWrapper, SelectionMap } from "./shared/types";
+import { getCount } from "./database/queries";
 
 export const filters: Writable<FilterWrapper> = writable({
   brush: undefined,
+  datasetName: "",
 });
 
 export const showBackgroundDist: Writable<boolean> = writable(true);
@@ -25,6 +27,24 @@ export const selectionDisplay = derived(
     }
   },
   initialSM
+);
+
+export const filteredCount: Readable<number | undefined> = derived(
+  filters,
+  ($filters, set) => {
+    if ($filters.brush && $filters.datasetName) {
+      $filters.brush.addEventListener("value", async () => {
+        let v = await getCount($filters.datasetName, $filters.brush);
+        set(v);
+      });
+      // event listener not triggered on initial set so call manually
+      let v = getCount($filters.datasetName, $filters.brush).then((v) =>
+        set(v)
+      );
+    } else {
+      set(undefined);
+    }
+  }
 );
 
 function updateValue(mosaicSelection: any): SelectionMap {

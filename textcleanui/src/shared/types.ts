@@ -1,3 +1,5 @@
+import * as vg from "@uwdata/vgplot";
+
 export type DatasetInfo = {
   name: string;
   filename: string;
@@ -18,7 +20,8 @@ export type Column = {
 };
 
 export type FilterWrapper = {
-  brush: any;
+  brush: vg.Selection;
+  datasetName: string;
 };
 
 export type SelectionMap = {
