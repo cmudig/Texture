@@ -1,6 +1,6 @@
 <script lang="ts">
   import { afterUpdate } from "svelte";
-  import type { DatasetInfo, TableOption } from "../shared/types";
+  import type { DatasetInfo } from "../shared/types";
   import * as vg from "@uwdata/vgplot";
   import { filters } from "../stores";
 

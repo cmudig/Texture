@@ -4,6 +4,8 @@
 
   export let datasetInfo: DatasetInfo;
   export let datasetColSummaries: ColumnSummary[];
+
+  // probably better to turn datasetColSummaries into a Map then index rather than find cuz that slow
 </script>
 
 <div>

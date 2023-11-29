@@ -2,12 +2,14 @@
   import type { Column } from "../../shared/types";
   import Histogram from "../charts/Histogram.svelte";
 
-  export let pii_col: Column;
+  export let pii_col: Column | undefined = undefined;
 </script>
 
-<div class="flex flex-col gap-1">
-  <p>Num PII detected</p>
-  <div class="pl-4">
-    <Histogram columnName={pii_col.name} />
+{#if pii_col}
+  <div class="flex flex-col gap-1">
+    <p>Num PII detected</p>
+    <div class="pl-4">
+      <Histogram columnName={pii_col.name} />
+    </div>
   </div>
-</div>
+{/if}
