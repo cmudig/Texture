@@ -3,3 +3,4 @@ __pycache__
 .ipynb_checkpoints
 
 datasets/local/*
+datasets/processed/embedding_cache/*

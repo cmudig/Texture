@@ -4,18 +4,7 @@ import sentence_transformers
 from pyod.models.ecod import ECOD
 from pyod.models.iforest import IForest
 
-
-def calculate_embeddings(col: np.ndarray, model_name: str):
-    """
-    Calcs the embeddings.
-    TODO: My understanding is the sentence_transformers library cuts off inputs longer than
-    384 words. Need to fix that for longer docs probably by chunking text into longest amount and
-    then averaging the resulting embeddings
-    """
-    model = sentence_transformers.SentenceTransformer(model_name)
-    e = model.encode(col)
-    print("Created embedding of shape", e.shape, "with", model_name)
-    return e
+from textclean.embeddings import calculate_embeddings
 
 
 def get_mean_embeddings_dist(embeddings: np.ndarray):

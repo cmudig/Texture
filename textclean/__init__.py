@@ -4,3 +4,6 @@ from textclean.model_metrics import (
     calculate_embeddings,
     get_mean_embeddings_dist,
 )
+
+from textclean.duplicates import detect_duplicates
+from textclean.embeddings import calculate_embeddings
