@@ -3,7 +3,6 @@
   import { afterUpdate } from "svelte";
   import { filters, showBackgroundDist } from "../../stores";
 
-  export let datasetName: string;
   export let columnName: string;
 
   let el: HTMLElement;
@@ -25,7 +24,7 @@
         //   textOverflow: "ellipsis",
         //   lineWidth: 50,
         // }),
-        vg.barX(vg.from(datasetName), {
+        vg.barX(vg.from($filters.datasetName), {
           x: vg.count(),
           y: columnName,
           order: columnName,
@@ -33,7 +32,7 @@
           fillOpacity: 0.4,
           sort: { y: "-x", limit: 10 },
         }),
-        vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.barX(vg.from($filters.datasetName, { filterBy: $filters.brush }), {
           x: vg.count(),
           y: columnName,
           order: columnName,
@@ -43,7 +42,7 @@
         vg.highlight({ by: selectCat }),
         vg.toggleY({ as: selectCat }),
         vg.toggleY({ as: $filters.brush }),
-        vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.text(vg.from($filters.datasetName, { filterBy: $filters.brush }), {
           x: vg.count(),
           y: columnName,
           order: columnName,
@@ -58,7 +57,7 @@
       );
     } else {
       c = vg.plot(
-        vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.barX(vg.from($filters.datasetName, { filterBy: $filters.brush }), {
           x: vg.count(),
           y: columnName,
           order: columnName,
@@ -68,7 +67,7 @@
         vg.highlight({ by: selectCat }),
         vg.toggleY({ as: selectCat }),
         vg.toggleY({ as: $filters.brush }),
-        vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.text(vg.from($filters.datasetName, { filterBy: $filters.brush }), {
           x: vg.count(),
           y: columnName,
           order: columnName,

@@ -11,7 +11,6 @@
     <ColumnProfile
       displayCol={col}
       plotCols={datasetInfo.metadata.text_meta_columns[col.name]}
-      datasetName={datasetInfo.name}
       colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
     />
   {/each}
@@ -19,7 +18,6 @@
     <ColumnProfile
       displayCol={col}
       plotCols={[col]}
-      datasetName={datasetInfo.name}
       colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
     />
   {/each}

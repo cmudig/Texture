@@ -3,7 +3,6 @@
   import { afterUpdate } from "svelte";
   import { filters, showBackgroundDist } from "../../stores";
 
-  export let datasetName: string;
   export let columnName: string;
 
   let el: HTMLElement;
@@ -13,14 +12,14 @@
 
     if ($showBackgroundDist) {
       c = vg.plot(
-        vg.rectY(vg.from(datasetName), {
+        vg.rectY(vg.from($filters.datasetName), {
           x: vg.bin(columnName),
           y: vg.count(),
           fill: "#ccc",
           fillOpacity: 0.4,
           inset: 0.5,
         }),
-        vg.rectY(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.rectY(vg.from($filters.datasetName, { filterBy: $filters.brush }), {
           x: vg.bin(columnName),
           y: vg.count(),
           fill: "steelblue",
@@ -34,7 +33,7 @@
       );
     } else {
       c = vg.plot(
-        vg.rectY(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.rectY(vg.from($filters.datasetName, { filterBy: $filters.brush }), {
           x: vg.bin(columnName),
           y: vg.count(),
           fill: "steelblue",

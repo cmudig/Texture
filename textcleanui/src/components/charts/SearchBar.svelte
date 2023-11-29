@@ -3,7 +3,6 @@
   import { afterUpdate } from "svelte";
   import { filters } from "../../stores";
 
-  export let datasetName: string;
   export let columnName: string;
 
   let el: HTMLElement;
@@ -12,7 +11,7 @@
     // TODO: the suggestions here are not distinct for some reason? They are supposed to be...
     let c = vg.search({
       as: $filters.brush,
-      from: datasetName,
+      from: $filters.datasetName,
       column: columnName,
       type: "contains",
     });

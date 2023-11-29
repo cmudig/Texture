@@ -9,7 +9,6 @@
 
   export let displayCol: Column;
   export let plotCols: Column[];
-  export let datasetName: string;
   export let colSummary: ColumnSummary | undefined = undefined;
 
   let active = true;
@@ -42,16 +41,16 @@
     {#if active}
       <div transition:slide|local={{ duration: 200 }} class="ml-4 mt-2">
         {#if displayCol.type === "text"}
-          <SearchBar {datasetName} columnName={displayCol.name} />
+          <SearchBar columnName={displayCol.name} />
         {/if}
 
         <div class="flex flex-col">
           {#each plotCols as col}
             {#if col.type === "number"}
-              <Histogram {datasetName} columnName={col.name} />
+              <Histogram columnName={col.name} />
             {:else if col.type === "categorical"}
-              <SearchBar {datasetName} columnName={col.name} />
-              <CategoricalChart {datasetName} columnName={col.name} />
+              <SearchBar columnName={col.name} />
+              <CategoricalChart columnName={col.name} />
             {:else if col.type === "date"}
               <!-- <DateChart {datasetName} columnName={col.name} /> -->
               TODO: Date chart...
