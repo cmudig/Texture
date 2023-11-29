@@ -82,10 +82,12 @@ def detect_duplicates(text_col, embeddings):
     clusters_comm = get_clusters_comm_detection(embeddings)
     clusters_hdb = get_clusters_hdbscan(embeddings)
 
+    name = text_col.name
+
     return pd.DataFrame(
         {
-            text_col.name: text_col,
-            "cluster_id_comm": clusters_comm,
-            "cluster_id_hdb": clusters_hdb,
+            name: text_col,
+            f"{name}_cluster_id_comm": clusters_comm,
+            f"{name}_cluster_id_hdb": clusters_hdb,
         }
     )
