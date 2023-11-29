@@ -8,6 +8,13 @@ export type DatasetMetadata = {
   text_columns: Column[];
   other_columns: Column[];
   text_meta_columns: { [key: string]: Column[] };
+  text_quality_info?: QualityInfo[];
+};
+
+export type QualityInfo = {
+  type: string;
+  text_column: Column;
+  plot_columns?: Column[];
 };
 
 export type DataType = "text" | "number" | "date" | "categorical";

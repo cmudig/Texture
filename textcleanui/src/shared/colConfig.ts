@@ -38,6 +38,16 @@ export const datasets: { [key: string]: DatasetInfo } = {
           },
         ],
       },
+      text_quality_info: [
+        {
+          type: "duplicates",
+          text_column: { name: "message", type: "text" },
+          plot_columns: [
+            { name: "message_cluster_id_comm", type: "categorical" },
+            { name: "message_cluster_id_hdb", type: "categorical" },
+          ],
+        },
+      ],
     },
   },
   dolly: {

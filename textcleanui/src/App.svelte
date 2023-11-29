@@ -216,7 +216,7 @@
             <ShieldCheckSolid size="sm" />
             Quality
           </div>
-          <QualityView />
+          <QualityView {datasetInfo} />
         </TabItem>
       </Tabs>
     </div>
