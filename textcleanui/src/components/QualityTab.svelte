@@ -2,6 +2,7 @@
   import { slide } from "svelte/transition";
   import type { QualityInfo } from "../shared/types";
   import DuplicatesView from "./quality/DuplicatesView.svelte";
+  import PIIView from "./quality/PIIView.svelte";
 
   export let qualityInfo: QualityInfo;
 
@@ -33,6 +34,8 @@
             text_column={qualityInfo.text_column}
             cluster_columns={qualityInfo.plot_columns ?? []}
           />
+        {:else if qualityInfo.type === "pii"}
+          <PIIView pii_col={qualityInfo.plot_columns?.[0]} />
         {:else}
           <p>Unkown quality type!</p>
         {/if}

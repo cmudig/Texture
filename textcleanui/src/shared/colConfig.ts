@@ -47,6 +47,11 @@ export const datasets: { [key: string]: DatasetInfo } = {
             { name: "message_cluster_id_hdb", type: "categorical" },
           ],
         },
+        {
+          type: "pii",
+          text_column: { name: "message", type: "text" },
+          plot_columns: [{ name: "message_pii_count", type: "number" }],
+        },
       ],
     },
   },
