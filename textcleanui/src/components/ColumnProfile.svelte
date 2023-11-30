@@ -5,6 +5,7 @@
   import Histogram from "./charts/Histogram.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";
   import SearchBar from "./charts/SearchBar.svelte";
+  import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
 
   export let displayCol: Column;
@@ -52,8 +53,7 @@
               <SearchBar columnName={col.name} />
               <CategoricalChart columnName={col.name} />
             {:else if col.type === "date"}
-              <!-- <DateChart {datasetName} columnName={col.name} /> -->
-              TODO: Date chart...
+              <DateChart columnName={col.name} />
             {:else}
               <div>{col.name}: Unsupported column type ({col.type})</div>
             {/if}
