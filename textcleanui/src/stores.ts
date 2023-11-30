@@ -50,12 +50,8 @@ export const filteredCount: Readable<number | undefined> = derived(
 function updateValue(mosaicSelection: any): SelectionMap {
   if (mosaicSelection?.clauses) {
     let r = mosaicSelection.clauses.reduce((d: SelectionMap, clause: any) => {
-      // TODO use object type to get values out, there must be a better method for this
       try {
         let colName = clause.predicate.columns[0];
-        // console.log("Col name: ", colName);
-        // console.log("clause ", clause);
-
         let v = clause.value;
         let val = Array.isArray(v) ? v.flat() : [v];
 
@@ -67,7 +63,16 @@ function updateValue(mosaicSelection: any): SelectionMap {
       return d;
     }, {});
 
+    console.log("selection map: ", r);
+
+    // Just get predicate as string
+    // let smap2 = mosaicSelection.clauses.map((c: any) => ({
+    //   value: c.value,
+    //   sql: String(c.predicate),
+    // }));
+
     return r;
   }
+
   return {};
 }
