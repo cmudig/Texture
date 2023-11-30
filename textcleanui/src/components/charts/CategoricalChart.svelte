@@ -8,14 +8,22 @@
 
   let el: HTMLElement;
 
-  async function getDatasetName(mainDatasetName: string, cName: string) {
+  async function getDatasetName(
+    mainDatasetName: string,
+    cName: string,
+    pltNullsFlag: boolean
+  ) {
     let viewName = `${mainDatasetName}NoNulls${cName}`;
 
-    if (!plotNulls) {
+    if (!pltNullsFlag) {
       await vg
         .coordinator()
         .exec(
-          vg.sql`create view if not exists ${viewName} as select * from ${mainDatasetName} where ${cName} is not null;`
+          vg.sql`create view if not exists ${vg.column(
+            viewName
+          )} as select * from ${vg.column(mainDatasetName)} where ${vg.column(
+            cName
+          )} is not null;`
         );
 
       return viewName;
@@ -30,13 +38,17 @@
   (2) preserve brush by binding to parent where toggle happens or smth
   */
 
-  async function renderChart(mainDsName: string, cName: string) {
+  async function renderChart(
+    mainDsName: string,
+    cName: string,
+    pltNullsFlag: boolean
+  ) {
     let c;
 
     const selectCat = vg.Selection.single();
 
     // let datasetName = await getDatasetName($filters.datasetName);
-    let datasetName = await getDatasetName(mainDsName, cName);
+    let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
 
     if ($showBackgroundDist) {
       c = vg.plot(
@@ -107,7 +119,7 @@
   }
 
   afterUpdate(() => {
-    renderChart($filters.datasetName, columnName);
+    renderChart($filters.datasetName, columnName, plotNulls);
   });
 </script>
 
