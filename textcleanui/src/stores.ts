@@ -63,8 +63,6 @@ function updateValue(mosaicSelection: any): SelectionMap {
       return d;
     }, {});
 
-    console.log("selection map: ", r);
-
     // Just get predicate as string
     // let smap2 = mosaicSelection.clauses.map((c: any) => ({
     //   value: c.value,
