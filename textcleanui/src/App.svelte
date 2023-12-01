@@ -91,7 +91,7 @@
 <div class="bg-gradient-to-r from-blue-100 to-blue-700 p-5 flex gap-2 flex-row">
   <span
     class="self-center whitespace-nowrap text-2xl font-semibold text-blue-900"
-    >Text Clean</span
+    >Text Profiler</span
   >
   <div class="grow" />
 
