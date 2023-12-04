@@ -1,6 +1,13 @@
-import { type Writable, type Readable, writable, derived } from "svelte/store";
+import {
+  type Writable,
+  type Readable,
+  writable,
+  derived,
+  readable,
+} from "svelte/store";
 import type { FilterWrapper, SelectionMap } from "./shared/types";
 import { getCount } from "./database/queries";
+import { TextProfileClient, DefaultService } from "./backendapi";
 
 export const filters: Writable<FilterWrapper> = writable({
   brush: undefined,
@@ -74,3 +81,14 @@ function updateValue(mosaicSelection: any): SelectionMap {
 
   return {};
 }
+
+// Backend API
+
+// This needs to match API url
+const API_URL = "http://localhost:8000/api";
+
+export const backendService: Readable<DefaultService> = readable(
+  new TextProfileClient({
+    BASE: API_URL,
+  }).default
+);

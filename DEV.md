@@ -1,11 +1,27 @@
+# TL;DR
+
+Terminal 1:
+
+```bash
+cd textclean
+poetry install
+```
+
+Terminal 2:
+
+```bash
+cd textcleanui
+npm run dev
+```
+
 # Dev loop for python package `textclean`
+
+## First time
 
 Pre-requisites
 
 1. Install conda
 2. Install poetry
-
-## First time
 
 Make a new conda environment, can be called whatever
 
@@ -36,16 +52,16 @@ import textclean
 
 # Dev loop for UI `textcleanui`
 
+## First time
+
 Pre-requisites
 
 1. install node / npm
 
-## First time
-
 First time
 
 ```bash
-cd slicecompareui
+cd textcleanui
 npm install # install packages
 ```
 
@@ -54,6 +70,24 @@ npm install # install packages
 Will start local server and hot re-load changes
 
 ```bash
-cd slicecompareui
+cd textcleanui
 npm run dev
+```
+
+## server
+
+Run server
+
+```bash
+cd backend
+uvicorn --factory server:get_server --reload
+```
+
+When add or edit a route, go to frontend and re-generate the api client (server must be running when this happens!).
+
+This will generate the ts code in `src/backendapi`
+
+```bash
+cd textcleanui
+npm run gen-api
 ```

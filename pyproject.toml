@@ -11,6 +11,7 @@ pandas = "^2.1.0"
 sentence-transformers = "^2.2.2"
 pyod = "^1.1.0"
 torch = "^2.1.1"
+fastapi = "^0.104.1"
 
 
 [build-system]
