@@ -24,6 +24,8 @@
     CloseButton,
     Tooltip,
     Spinner,
+    Tabs,
+    TabItem,
   } from "flowbite-svelte";
   import {
     AdjustmentsHorizontalOutline,
@@ -84,8 +86,6 @@
   }
 
   let dataPromise: Promise<any> = setDataset();
-
-  import { Tabs, TabItem } from "flowbite-svelte";
 </script>
 
 <div class="bg-gradient-to-r from-blue-100 to-blue-700 p-5 flex gap-2 flex-row">
