@@ -61,7 +61,7 @@
         acc[col] = true;
         return acc;
       },
-      {},
+      {}
     );
 
     // create new brush to clear selections from old dataset
