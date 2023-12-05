@@ -1,9 +1,10 @@
 [tool.poetry]
-name = "textclean"
-version = "0.1.0"
-description = "process and clean text datasets interactively"
+name = "textprofile"
+version = "0.0.1"
+description = "Process and profile text datasets interactively"
 authors = ["Will Epperson <willepp@live.com>"]
 readme = "README.md"
+packages = [{ include = "textprofilerbackend" }]
 
 [tool.poetry.dependencies]
 python = "3.10.*"
