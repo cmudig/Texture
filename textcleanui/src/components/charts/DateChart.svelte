@@ -20,7 +20,7 @@
       vg.xDomain(vg.Fixed),
       vg.marginLeft(55),
       vg.width(400),
-      vg.height(150)
+      vg.height(150),
     );
 
     el.replaceChildren(c);

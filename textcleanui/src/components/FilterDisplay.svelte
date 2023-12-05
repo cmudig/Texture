@@ -12,12 +12,12 @@
 </script>
 
 <div
-  class="flex flex-col border-2 rounded p-1 items-center {isString
+  class="flex flex-col items-center rounded border-2 p-1 {isString
     ? 'bg-orange-200'
     : 'bg-blue-200'}"
 >
   <span
-    class="w-full text-center text-ellipsis overflow-hidden whitespace-nowrap"
+    class="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center"
     >{colName}</span
   >
   <div class="w-full text-center font-light">
@@ -25,7 +25,7 @@
       {filterRange.join(", ")}
     {:else}
       [{formatNumber(Number(filterRange[0]))}, {formatNumber(
-        Number(filterRange[1])
+        Number(filterRange[1]),
       )}]
     {/if}
   </div>

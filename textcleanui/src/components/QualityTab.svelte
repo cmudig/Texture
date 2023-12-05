@@ -11,7 +11,7 @@
 
 <div>
   <button
-    class="px-2 flex space-between items-center gap-2 justify-between w-full hover:bg-gray-100 h-9"
+    class="space-between flex h-9 w-full items-center justify-between gap-2 px-2 hover:bg-gray-100"
     class:bg-gray-50={active}
     on:click={() => {
       active = !active;
@@ -19,7 +19,7 @@
   >
     <p
       class:font-medium={active}
-      class="text-left text-ellipsis overflow-hidden max-w-sm"
+      class="max-w-sm overflow-hidden text-ellipsis text-left"
     >
       {qualityInfo.type}
     </p>

@@ -61,7 +61,7 @@
         acc[col] = true;
         return acc;
       },
-      {}
+      {},
     );
 
     // create new brush to clear selections from old dataset
@@ -88,28 +88,28 @@
   let dataPromise: Promise<any> = setDataset();
 </script>
 
-<div class="bg-gradient-to-r from-blue-100 to-blue-700 p-5 flex gap-2 flex-row">
+<div class="flex flex-row gap-2 bg-gradient-to-r from-blue-100 to-blue-700 p-5">
   <span
     class="self-center whitespace-nowrap text-2xl font-semibold text-blue-900"
     >Text Profiler</span
   >
   <div class="grow" />
 
-  <div class="self-center text-l text-white">
+  <div class="text-l self-center text-white">
     {formatNumber($filteredCount)} / {formatNumber(datasetSize)} rows
   </div>
 
   <AdjustmentsHorizontalOutline
     id="settingsToggle"
     size="md"
-    class="text-white hover:text-primary-700 self-center mx-1"
+    class="mx-1 self-center text-white hover:text-primary-700"
   />
   <Popover
     triggeredBy="#settingsToggle"
-    class="w-64 text-sm font-light text-gray-500 bg-white z-10"
+    class="z-10 w-64 bg-white text-sm font-light text-gray-500"
     title="Settings"
   >
-    <div class="p-3 flex flex-col gap-2">
+    <div class="flex flex-col gap-2 p-3">
       <Select
         size="sm"
         items={Object.keys(datasets).map((k) => ({
@@ -133,7 +133,7 @@
         <div class="mt-2 flex flex-col gap-1">
           {#each currentColumns as col}
             <Toggle bind:checked={currentColToggleStates[col]}>
-              <span class="text-ellipsis overflow-hidden">
+              <span class="overflow-hidden text-ellipsis">
                 {col}
               </span>
             </Toggle>
@@ -146,7 +146,7 @@
   <FilterSolid
     id="filterToggle"
     on:click={() => (filterPanelHidden = false)}
-    class="text-white hover:text-primary-700 self-center mx-1"
+    class="mx-1 self-center text-white hover:text-primary-700"
     size="md"
   />
   <Tooltip class="z-10" triggeredBy="#filterToggle" type="light"
@@ -174,7 +174,7 @@
       <div class="flex items-center">
         <h3
           id="drawer-label"
-          class="inline-flex items-center mb-4 text-base font-semibold"
+          class="mb-4 inline-flex items-center text-base font-semibold"
         >
           Applied filters
         </h3>
@@ -201,7 +201,7 @@
   </div>
 
   <div class="flex flex-row">
-    <div class="w-1/3 h-screen overflow-scroll">
+    <div class="h-screen w-1/3 overflow-scroll">
       <Tabs style="underline" contentClass="">
         <TabItem open>
           <div slot="title" class="flex items-center gap-2">
@@ -220,7 +220,7 @@
         </TabItem>
       </Tabs>
     </div>
-    <div class="w-2/3 h-screen overflow-scroll">
+    <div class="h-screen w-2/3 overflow-scroll">
       <Tabs style="underline" contentClass="border-l-2 border-slate-50">
         <TabItem open>
           <div slot="title" class="flex items-center gap-2">

@@ -5,6 +5,7 @@ import {
   derived,
   readable,
 } from "svelte/store";
+
 import type { FilterWrapper, SelectionMap } from "./shared/types";
 import { getCount } from "./database/queries";
 import { TextProfileClient, DefaultService } from "./backendapi";
@@ -33,7 +34,7 @@ export const selectionDisplay = derived(
       set({});
     }
   },
-  initialSM
+  initialSM,
 );
 
 export const filteredCount: Readable<number | undefined> = derived(
@@ -46,12 +47,12 @@ export const filteredCount: Readable<number | undefined> = derived(
       });
       // event listener not triggered on initial set so call manually
       let v = getCount($filters.datasetName, $filters.brush).then((v) =>
-        set(v)
+        set(v),
       );
     } else {
       set(undefined);
     }
-  }
+  },
 );
 
 function updateValue(mosaicSelection: any): SelectionMap {
@@ -90,5 +91,5 @@ const API_URL = "http://localhost:8000/api";
 export const backendService: Readable<DefaultService> = readable(
   new TextProfileClient({
     BASE: API_URL,
-  }).default
+  }).default,
 );

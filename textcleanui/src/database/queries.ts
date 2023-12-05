@@ -3,7 +3,7 @@ import type { ColumnSummary } from "../shared/types";
 
 export async function getCount(
   datasetName: string,
-  selection?: any
+  selection?: any,
 ): Promise<number> {
   let q = vg.Query.from(datasetName).select({ count: vg.count() });
   if (selection) {
@@ -16,7 +16,7 @@ export async function getCount(
 }
 
 export async function getColSummaries(
-  datasetName: string
+  datasetName: string,
 ): Promise<ColumnSummary[]> {
   let q = vg.sql`summarize ${datasetName}`;
   let r = await vg.coordinator().query(q, { type: "json" });

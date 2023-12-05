@@ -11,7 +11,7 @@
   async function getDatasetName(
     mainDatasetName: string,
     cName: string,
-    pltNullsFlag: boolean
+    pltNullsFlag: boolean,
   ) {
     let viewName = `${mainDatasetName}NoNulls${cName}`;
 
@@ -20,10 +20,10 @@
         .coordinator()
         .exec(
           vg.sql`create view if not exists ${vg.column(
-            viewName
+            viewName,
           )} as select * from ${vg.column(mainDatasetName)} where ${vg.column(
-            cName
-          )} is not null;`
+            cName,
+          )} is not null;`,
         );
 
       return viewName;
@@ -41,7 +41,7 @@
   async function renderChart(
     mainDsName: string,
     cName: string,
-    pltNullsFlag: boolean
+    pltNullsFlag: boolean,
   ) {
     let c;
 
@@ -86,7 +86,7 @@
         }),
         vg.yLabel(null),
         vg.marginLeft(80),
-        vg.width(400)
+        vg.width(400),
       );
     } else {
       c = vg.plot(
@@ -111,7 +111,7 @@
         }),
         vg.yLabel(null),
         vg.marginLeft(80),
-        vg.width(400)
+        vg.width(400),
       );
     }
 
