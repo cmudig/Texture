@@ -1,6 +1,7 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
-  import type { Column, ColumnSummary } from "../shared/types";
+  import type { ColumnSummary } from "../shared/types";
+  import type { Column } from "../backendapi/models/Column";
   import DataTypeIcon from "./DataTypeIcon.svelte";
   import Histogram from "./charts/Histogram.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";

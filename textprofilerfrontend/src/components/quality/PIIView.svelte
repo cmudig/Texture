@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Column } from "../../shared/types";
+  import type { Column } from "../../backendapi/models/Column";
   import Histogram from "../charts/Histogram.svelte";
 
   export let pii_col: Column | undefined = undefined;

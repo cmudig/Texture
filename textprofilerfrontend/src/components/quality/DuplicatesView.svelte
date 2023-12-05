@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Column } from "../../shared/types";
+  import type { Column } from "../../backendapi/models/Column";
   import CategoricalChart from "../charts/CategoricalChart.svelte";
   import { Select } from "flowbite-svelte";
 

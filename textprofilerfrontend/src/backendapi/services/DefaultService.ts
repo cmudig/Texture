@@ -2,6 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { DatasetInfo } from "../models/DatasetInfo";
+
 import type { CancelablePromise } from "../core/CancelablePromise";
 import type { BaseHttpRequest } from "../core/BaseHttpRequest";
 
@@ -9,37 +11,27 @@ export class DefaultService {
   constructor(public readonly httpRequest: BaseHttpRequest) {}
 
   /**
-   * Read Root
+   * Read All Dataset Names
    * @returns string Successful Response
    * @throws ApiError
    */
-  public readRoot(): CancelablePromise<string> {
+  public readAllDatasetNames(): CancelablePromise<Array<string>> {
     return this.httpRequest.request({
       method: "GET",
-      url: "/",
+      url: "/dataset_names",
     });
   }
 
   /**
-   * Read Item
-   * @param itemId
-   * @param q
-   * @returns any Successful Response
+   * Read Dataset Info
+   * Get the datasets available along with a summary of their columns
+   * @returns DatasetInfo Successful Response
    * @throws ApiError
    */
-  public readItem(itemId: number, q?: string | null): CancelablePromise<any> {
+  public readDatasetInfo(): CancelablePromise<Array<DatasetInfo>> {
     return this.httpRequest.request({
       method: "GET",
-      url: "/items/{item_id}",
-      path: {
-        item_id: itemId,
-      },
-      query: {
-        q: q,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
+      url: "/all_dataset_info",
     });
   }
 }

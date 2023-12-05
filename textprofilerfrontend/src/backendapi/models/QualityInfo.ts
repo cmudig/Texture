@@ -3,8 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ValidationError = {
-  loc: Array<string | number>;
-  msg: string;
+import type { Column } from "./Column";
+
+export type QualityInfo = {
   type: string;
+  text_column: Column;
+  plot_columns?: Array<Column>;
 };

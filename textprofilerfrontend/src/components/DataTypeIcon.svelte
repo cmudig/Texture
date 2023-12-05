@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { DataType } from "../shared/types";
+  import type { Column } from "../backendapi/models/Column";
   import { Tooltip } from "flowbite-svelte";
   import { getUUID } from "../shared/utils";
 
-  export let type: DataType;
+  export let type: Column.type;
 
-  function getIcon(type: DataType) {
+  function getIcon(type: Column.type) {
     switch (type) {
       case "text":
         return "T";

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { DatasetInfo, ColumnSummary } from "../shared/types";
+  import type { ColumnSummary } from "../shared/types";
+  import type { DatasetInfo } from "../backendapi/models/DatasetInfo";
   import ColumnProfile from "./ColumnProfile.svelte";
 
   export let datasetInfo: DatasetInfo;

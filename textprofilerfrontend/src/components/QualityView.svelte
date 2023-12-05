@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DatasetInfo } from "../shared/types";
+  import type { DatasetInfo } from "../backendapi/models/DatasetInfo";
   import QualityTab from "./QualityTab.svelte";
 
   export let datasetInfo: DatasetInfo;

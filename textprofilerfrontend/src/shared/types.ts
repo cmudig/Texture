@@ -1,28 +1,4 @@
-export type DatasetInfo = {
-  name: string;
-  filename: string;
-  metadata: DatasetMetadata;
-};
-
-export type DatasetMetadata = {
-  text_columns: Column[];
-  other_columns: Column[];
-  text_meta_columns: { [key: string]: Column[] };
-  text_quality_info?: QualityInfo[];
-};
-
-export type QualityInfo = {
-  type: string;
-  text_column: Column;
-  plot_columns?: Column[];
-};
-
-export type DataType = "text" | "number" | "date" | "categorical";
-
-export type Column = {
-  name: string;
-  type: DataType;
-};
+// Front end only types
 
 export type FilterWrapper = {
   brush: any;

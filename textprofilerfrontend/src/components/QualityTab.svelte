@@ -1,6 +1,6 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
-  import type { QualityInfo } from "../shared/types";
+  import type { QualityInfo } from "../backendapi/models/QualityInfo";
   import DuplicatesView from "./quality/DuplicatesView.svelte";
   import PIIView from "./quality/PIIView.svelte";
 

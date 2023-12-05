@@ -1,6 +1,6 @@
 <script lang="ts">
   import { afterUpdate } from "svelte";
-  import type { DatasetInfo } from "../shared/types";
+  import type { DatasetInfo } from "../backendapi/models/DatasetInfo";
   import * as vg from "@uwdata/vgplot";
   import { filters } from "../stores";
 
@@ -34,7 +34,7 @@
 
   $: {
     plot_cols = Object.keys(currentColToggleStates).filter(
-      (col) => currentColToggleStates[col],
+      (col) => currentColToggleStates[col]
     );
   }
 

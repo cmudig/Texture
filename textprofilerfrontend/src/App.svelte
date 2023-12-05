@@ -1,9 +1,9 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
-  import { datasets } from "./shared/colConfig";
   import type { DatabaseConnection } from "./database/db";
   import { getCount, getColSummaries } from "./database/queries";
-  import type { DatasetInfo, ColumnSummary } from "./shared/types";
+  import type { ColumnSummary } from "./shared/types";
+  import type { DatasetInfo } from "./backendapi/models/DatasetInfo";
   import {
     filters,
     selectionDisplay,
@@ -36,19 +36,41 @@
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
   import { formatNumber } from "./shared/utils";
+  import { TextProfileClient, DefaultService } from "./backendapi";
+  import { setContext } from "svelte";
+
+  // CLIENT INIT
+  // This needs to match API url
+  const API_URL = "http://localhost:8000/api";
+
+  const backendService: DefaultService = new TextProfileClient({
+    BASE: API_URL,
+  }).default;
+
+  setContext("backendService", backendService);
 
   export let databaseConnection: DatabaseConnection;
 
-  let selectedValue: string = Object.keys(datasets)[0];
+  let datasets: DatasetInfo[];
+  let selectedValue: string;
   let datasetInfo: DatasetInfo;
   let currentColumns: string[] = [];
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
   let filterPanelHidden = true;
   let datasetColSummaries: ColumnSummary[];
+  let dataPromise: Promise<any> = init();
+
+  async function init() {
+    let d = await backendService.readDatasetInfo();
+    datasets = d;
+    selectedValue = datasets[0].name;
+
+    return setDataset();
+  }
 
   async function setDataset() {
-    const info = datasets[selectedValue];
+    const info = datasets.find((c) => c.name === selectedValue) ?? datasets[0];
     await databaseConnection.initAndLoad(info.name, info.filename);
     datasetInfo = info;
     currentColumns = [
@@ -84,8 +106,6 @@
       datasetName: datasetInfo.name,
     };
   }
-
-  let dataPromise: Promise<any> = setDataset();
 </script>
 
 <div class="flex flex-row gap-2 bg-gradient-to-r from-blue-100 to-blue-700 p-5">
@@ -112,9 +132,9 @@
     <div class="flex flex-col gap-2 p-3">
       <Select
         size="sm"
-        items={Object.keys(datasets).map((k) => ({
-          value: datasets[k].name,
-          name: datasets[k].name,
+        items={datasets.map((k) => ({
+          value: k.name,
+          name: k.name,
         }))}
         placeholder="Select dataset"
         bind:value={selectedValue}
