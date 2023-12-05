@@ -3,8 +3,9 @@ from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 
-
-# TODO: use pydantic for classes
+from textprofilerbackend.database import DatabaseConnection
+from textprofilerbackend.return_types import DatasetInfo
+from textprofilerbackend.example_data import EXAMPLE_DATASETS
 
 
 def custom_generate_unique_id(route: APIRoute):
@@ -16,6 +17,27 @@ def custom_generate_unique_id(route: APIRoute):
     return route.name
 
 
+def init_db():
+    duckdbconn = DatabaseConnection()
+
+    print("Loading example data...")
+
+    datasets = [
+        {"name": "dolly", "path": "raw_data/dolly15k.parquet"},
+        {"name": "opus", "path": "raw_data/opus100_en_es.parquet"},
+        {"name": "squad", "path": "raw_data/squad_validation.parquet"},
+        {"name": "vast2021", "path": "raw_data/vast2021.parquet"},
+    ]
+
+    # TODO load some example datasets into memory?
+    for dataset in datasets:
+        duckdbconn.load_dataset(dataset["name"], dataset["path"])
+
+    print("Example data loaded.")
+
+    return duckdbconn
+
+
 def get_server() -> FastAPI:
     app = FastAPI(
         title="Backend server",
@@ -25,18 +47,31 @@ def get_server() -> FastAPI:
         title="Text Profiler API", generate_unique_id_function=custom_generate_unique_id
     )
 
-    # Actual API
+    duckdb_conn = init_db()
 
     @api_app.get(
-        "/",
-        response_model=str,
+        "/dataset_names",
+        response_model=list[str],
     )
-    def read_root():
-        return "Hello world this is the root."
+    def read_all_dataset_names():
+        r = duckdb_conn.query("show tables;")
+        print("result is: ", r)
+        return ["dolly", "opus", "squad", "vast2021"]
 
-    @api_app.get("/items/{item_id}")
-    def read_item(item_id: int, q: Union[str, None] = None):
-        return {"item_id": item_id, "q": q}
+    @api_app.get(
+        "/all_dataset_info",
+        response_model=list[DatasetInfo],
+    )
+    def read_dataset_info():
+        """
+        Get the datasets available along with a summary of their columns
+        """
+
+        return EXAMPLE_DATASETS
+
+    # @api_app.get("/items/{item_id}")
+    # def read_item(item_id: int, q: Union[str, None] = None):
+    #     return {"item_id": item_id, "q": q}
 
     # this needs to be equal to frontend port vite hosts on...
     origins = ["http://localhost:5173"]

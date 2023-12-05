@@ -5,3 +5,5 @@ __pycache__
 datasets/local/*
 datasets/processed/embedding_cache/*
 analysis/_scratch.ipynb
+
+.textprofiler_cache/
