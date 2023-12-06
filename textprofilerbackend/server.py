@@ -58,7 +58,6 @@ def get_server() -> FastAPI:
     )
     def read_all_dataset_names():
         r = duckdb_conn.query("show tables;")
-        print("result is: ", r)
         return ["dolly", "opus", "squad", "vast2021"]
 
     @api_app.get(
@@ -79,27 +78,27 @@ def get_server() -> FastAPI:
         """
         return duckdb_conn._handle_json_message(data)
 
-    @api_app.get("/duckdb_query_arrow")
+    @api_app.post("/duckdb_query_arrow")
     async def duckdb_query_arrow(data: DuckQueryData):
         """
         Execute a query on the database
         """
         return duckdb_conn._handle_arrow_message(data)
 
-    @api_app.get("/example_arrow")
-    async def example_arrow():
-        """
-        Execute a query on the database
-        """
+    # @api_app.get("/example_arrow")
+    # async def example_arrow():
+    #     """
+    #     Execute a query on the database
+    #     """
 
-        data = DuckQueryData(
-            uuid="test",
-            sql="select * from 'vast2021' limit 10;",
-            type="arrow",
-            buffers=[],
-        )
+    #     data = DuckQueryData(
+    #         uuid="test",
+    #         sql="select * from 'vast2021' limit 10;",
+    #         type="arrow",
+    #         buffers=[],
+    #     )
 
-        return duckdb_conn._handle_arrow_message(data)
+    #     return duckdb_conn._handle_arrow_message(data)
 
     # this needs to be equal to frontend port vite hosts on...
     origins = ["http://localhost:5173"]

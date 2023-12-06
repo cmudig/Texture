@@ -58,16 +58,14 @@ class DatabaseConnection:
         self.execute(
             f"CREATE TABLE IF NOT EXISTS '{dataset_name}' AS (SELECT * FROM read_parquet('{str(p)}'));"
         )
-        print("loaded: ", dataset_name)
 
     def _handle_json_message(self, data: DuckQueryData) -> DuckQueryResult:
         """
         From: https://github.com/uwdata/mosaic/blob/main/packages/widget/mosaic_widget/__init__.py
         """
-        print(f"\n\t[_handle_json_message]: {data=}")
         uuid = data.uuid
         sql = data.sql
-        start = time.time()
+        # start = time.time()
         response_message = None
 
         try:
@@ -77,8 +75,6 @@ class DatabaseConnection:
             elif data.type == "json":
                 query_result = self.connection.query(sql).df()
                 json = query_result.to_dict(orient="records")
-
-                print("RESULTING JSON: ", json)
 
                 response_message = JsonResponse(type="json", uuid=uuid, result=json)
 
@@ -91,18 +87,17 @@ class DatabaseConnection:
             print("ERROR: ", e)
             response_message = ErrorResponse(error=str(e), uuid=uuid)
 
-        total = round((time.time() - start) * 1_000)
-        print(f"DONE. Query { uuid } took { total } ms.\n{ sql }")
+        # total = round((time.time() - start) * 1_000)
+        # print(f"DONE. Query { uuid } took { total } ms.\n{ sql }")
         return response_message
 
     def _handle_arrow_message(self, data: DuckQueryData):
         """
         Arrow handler. Different function since returns Response; might be able to coalese in future
         """
-        print(f"\n\t[_handle_arrow_message]: {data=}")
         uuid = data.uuid
         sql = data.sql
-        start = time.time()
+        # start = time.time()
         response_message = None
 
         try:
@@ -121,8 +116,6 @@ class DatabaseConnection:
                     # headers={"type": "arrow", "uuid": uuid}, # dont think this does anything
                 )
 
-                print("arrow response is: ", response_message)
-
             else:
                 response_message = ErrorResponse(
                     error=f"Unsupported response type: {data.type}", uuid=uuid
@@ -131,7 +124,7 @@ class DatabaseConnection:
             print("ERROR: ", e)
             response_message = ErrorResponse(error=str(e), uuid=uuid)
 
-        total = round((time.time() - start) * 1_000)
-        print(f"DONE. Query { uuid } took { total } ms.\n{ sql }")
+        # total = round((time.time() - start) * 1_000)
+        # print(f"DONE. Query { uuid } took { total } ms.\n{ sql }")
 
         return response_message
