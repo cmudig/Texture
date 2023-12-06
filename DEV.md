@@ -1,20 +1,22 @@
 # TL;DR
 
-Terminal 1:
+Terminal 1: Backend python server
 
 ```bash
-cd textclean
-poetry install
+cd textprofilerbackend
+uvicorn --factory server:get_server --reload
 ```
 
-Terminal 2:
+Terminal 2: frontend svelte / vite UI
 
 ```bash
-cd textcleanui
+cd textprofilerfrontend
 npm run dev
 ```
 
-# Dev loop for python package `textclean`
+# Dev loop for python package `textprofilerbackend`
+
+The backend hosts a FastAPI server and data processing functions along with the in process duckdb database for storing and filtering data.
 
 ## First time
 
@@ -26,10 +28,8 @@ Pre-requisites
 Make a new conda environment, can be called whatever
 
 ```bash
-conda create -n text-clean python
+conda create -n text-profiler python=3.10 # python 3.10 recommended for some package compatability
 ```
-
-## Dev loop
 
 Installs dependencies AND builds in dev mode in current conda env
 
@@ -37,7 +37,27 @@ Installs dependencies AND builds in dev mode in current conda env
 poetry install
 ```
 
-publish (only do this if you know you want to)
+## Backend dev loop
+
+To start server:
+
+```bash
+cd textprofilerbackend
+uvicorn --factory server:get_server --reload
+```
+
+If you add a new python package, do it with poetry since will also install in current conda env with `poetry add name`.
+
+If you add a new route or model to the backend, you can re-generate the api client in the frontend automatically (server must be running when this happens!). **NOTE:** be careful about what files get changed since some like the request handling and some types are manually edited.
+
+```bash
+cd textprofilerfrontend
+npm run gen-api
+```
+
+## Release
+
+To publish (only do this if you know you want to):
 
 ```bash
 poetry build
@@ -50,7 +70,9 @@ This will install the python package in the current conda env so can be imported
 import textclean
 ```
 
-# Dev loop for UI `textcleanui`
+# Dev loop for UI `textprofilerfrontend`
+
+The frontend is a svelte / vite app that uses the generated api client to communicate with the backend.
 
 ## First time
 
@@ -61,7 +83,7 @@ Pre-requisites
 First time
 
 ```bash
-cd textcleanui
+cd textprofilerfrontend
 npm install # install packages
 ```
 
@@ -70,24 +92,6 @@ npm install # install packages
 Will start local server and hot re-load changes
 
 ```bash
-cd textcleanui
+cd textctextprofilerfrontendleanui
 npm run dev
-```
-
-## server
-
-Run server
-
-```bash
-cd backend
-uvicorn --factory server:get_server --reload
-```
-
-When add or edit a route, go to frontend and re-generate the api client (server must be running when this happens!).
-
-This will generate the ts code in `src/backendapi`
-
-```bash
-cd textcleanui
-npm run gen-api
 ```
