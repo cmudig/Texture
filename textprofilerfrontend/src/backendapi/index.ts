@@ -13,6 +13,12 @@ export type { OpenAPIConfig } from "./core/OpenAPI";
 export { Column } from "./models/Column";
 export type { DatasetInfo } from "./models/DatasetInfo";
 export type { DatasetMetadata } from "./models/DatasetMetadata";
+export { DuckQueryData } from "./models/DuckQueryData";
+export type { ErrorResponse } from "./models/ErrorResponse";
+export type { ExecResponse } from "./models/ExecResponse";
+export type { HTTPValidationError } from "./models/HTTPValidationError";
+export type { JsonResponse } from "./models/JsonResponse";
 export type { QualityInfo } from "./models/QualityInfo";
+export type { ValidationError } from "./models/ValidationError";
 
 export { DefaultService } from "./services/DefaultService";

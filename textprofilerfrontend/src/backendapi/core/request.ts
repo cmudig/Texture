@@ -10,7 +10,7 @@ import type { OnCancel } from "./CancelablePromise";
 import type { OpenAPIConfig } from "./OpenAPI";
 
 export const isDefined = <T>(
-  value: T | null | undefined,
+  value: T | null | undefined
 ): value is Exclude<T, null | undefined> => {
   return value !== undefined && value !== null;
 };
@@ -103,7 +103,7 @@ const getUrl = (config: OpenAPIConfig, options: ApiRequestOptions): string => {
 };
 
 export const getFormData = (
-  options: ApiRequestOptions,
+  options: ApiRequestOptions
 ): FormData | undefined => {
   if (options.formData) {
     const formData = new FormData();
@@ -135,7 +135,7 @@ type Resolver<T> = (options: ApiRequestOptions) => Promise<T>;
 
 export const resolve = async <T>(
   options: ApiRequestOptions,
-  resolver?: T | Resolver<T>,
+  resolver?: T | Resolver<T>
 ): Promise<T | undefined> => {
   if (typeof resolver === "function") {
     return (resolver as Resolver<T>)(options);
@@ -145,7 +145,7 @@ export const resolve = async <T>(
 
 export const getHeaders = async (
   config: OpenAPIConfig,
-  options: ApiRequestOptions,
+  options: ApiRequestOptions
 ): Promise<Headers> => {
   const token = await resolve(options, config.TOKEN);
   const username = await resolve(options, config.USERNAME);
@@ -163,7 +163,7 @@ export const getHeaders = async (
         ...headers,
         [key]: String(value),
       }),
-      {} as Record<string, string>,
+      {} as Record<string, string>
     );
 
   if (isStringWithValue(token)) {
@@ -214,7 +214,7 @@ export const sendRequest = async (
   body: any,
   formData: FormData | undefined,
   headers: Headers,
-  onCancel: OnCancel,
+  onCancel: OnCancel
 ): Promise<Response> => {
   const controller = new AbortController();
 
@@ -236,7 +236,7 @@ export const sendRequest = async (
 
 export const getResponseHeader = (
   response: Response,
-  responseHeader?: string,
+  responseHeader?: string
 ): string | undefined => {
   if (responseHeader) {
     const content = response.headers.get(responseHeader);
@@ -254,10 +254,21 @@ export const getResponseBody = async (response: Response): Promise<any> => {
       if (contentType) {
         const jsonTypes = ["application/json", "application/problem+json"];
         const isJSON = jsonTypes.some((type) =>
-          contentType.toLowerCase().startsWith(type),
+          contentType.toLowerCase().startsWith(type)
         );
+
+        const isBinary = contentType.toLowerCase().startsWith("image/");
+
+        const isBuffer = contentType
+          .toLowerCase()
+          .startsWith("application/vnd.apache.arrow.stream");
+
         if (isJSON) {
           return await response.json();
+        } else if (isBinary) {
+          return await response.blob();
+        } else if (isBuffer) {
+          return await response.arrayBuffer();
         } else {
           return await response.text();
         }
@@ -271,7 +282,7 @@ export const getResponseBody = async (response: Response): Promise<any> => {
 
 export const catchErrorCodes = (
   options: ApiRequestOptions,
-  result: ApiResult,
+  result: ApiResult
 ): void => {
   const errors: Record<number, string> = {
     400: "Bad Request",
@@ -303,7 +314,7 @@ export const catchErrorCodes = (
     throw new ApiError(
       options,
       result,
-      `Generic Error: status: ${errorStatus}; status text: ${errorStatusText}; body: ${errorBody}`,
+      `Generic Error: status: ${errorStatus}; status text: ${errorStatusText}; body: ${errorBody}`
     );
   }
 };
@@ -317,7 +328,7 @@ export const catchErrorCodes = (
  */
 export const request = <T>(
   config: OpenAPIConfig,
-  options: ApiRequestOptions,
+  options: ApiRequestOptions
 ): CancelablePromise<T> => {
   return new CancelablePromise(async (resolve, reject, onCancel) => {
     try {
@@ -334,12 +345,12 @@ export const request = <T>(
           body,
           formData,
           headers,
-          onCancel,
+          onCancel
         );
         const responseBody = await getResponseBody(response);
         const responseHeader = getResponseHeader(
           response,
-          options.responseHeader,
+          options.responseHeader
         );
 
         const result: ApiResult = {

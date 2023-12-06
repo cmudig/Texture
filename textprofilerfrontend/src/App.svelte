@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
-  import type { DatabaseConnection } from "./database/db";
+  import { DatabaseConnection } from "./database/db";
   import { getCount, getColSummaries } from "./database/queries";
   import type { ColumnSummary } from "./shared/types";
   import type { DatasetInfo } from "./backendapi/models/DatasetInfo";
@@ -42,15 +42,13 @@
   // CLIENT INIT
   // This needs to match API url
   const API_URL = "http://localhost:8000/api";
-
   const backendService: DefaultService = new TextProfileClient({
     BASE: API_URL,
   }).default;
-
   setContext("backendService", backendService);
+  let databaseConnection = new DatabaseConnection(backendService);
 
-  export let databaseConnection: DatabaseConnection;
-
+  // Locals
   let datasets: DatasetInfo[];
   let selectedValue: string;
   let datasetInfo: DatasetInfo;
@@ -71,7 +69,6 @@
 
   async function setDataset() {
     const info = datasets.find((c) => c.name === selectedValue) ?? datasets[0];
-    await databaseConnection.initAndLoad(info.name, info.filename);
     datasetInfo = info;
     currentColumns = [
       ...info.metadata.text_columns.map((c) => c.name),
