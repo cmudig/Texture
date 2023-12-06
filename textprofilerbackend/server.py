@@ -1,10 +1,10 @@
-from typing import Union
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import ORJSONResponse
 
 from textprofilerbackend.database import DatabaseConnection
-from textprofilerbackend.return_types import DatasetInfo
+from textprofilerbackend.models import DatasetInfo, DuckQueryData, DuckQueryResult
 from textprofilerbackend.example_data import EXAMPLE_DATASETS
 
 
@@ -44,7 +44,10 @@ def get_server() -> FastAPI:
     )
 
     api_app = FastAPI(
-        title="Text Profiler API", generate_unique_id_function=custom_generate_unique_id
+        title="Text Profiler API",
+        generate_unique_id_function=custom_generate_unique_id,
+        # TODO: unsure if this is necessary...
+        default_response_class=ORJSONResponse,
     )
 
     duckdb_conn = init_db()
@@ -69,9 +72,34 @@ def get_server() -> FastAPI:
 
         return EXAMPLE_DATASETS
 
-    # @api_app.get("/items/{item_id}")
-    # def read_item(item_id: int, q: Union[str, None] = None):
-    #     return {"item_id": item_id, "q": q}
+    @api_app.post("/duckdb_query_json", response_model=DuckQueryResult)
+    def duckdb_query_json(data: DuckQueryData):
+        """
+        Execute a query on the database
+        """
+        return duckdb_conn._handle_json_message(data)
+
+    @api_app.get("/duckdb_query_arrow")
+    async def duckdb_query_arrow(data: DuckQueryData):
+        """
+        Execute a query on the database
+        """
+        return duckdb_conn._handle_arrow_message(data)
+
+    @api_app.get("/example_arrow")
+    async def example_arrow():
+        """
+        Execute a query on the database
+        """
+
+        data = DuckQueryData(
+            uuid="test",
+            sql="select * from 'vast2021' limit 10;",
+            type="arrow",
+            buffers=[],
+        )
+
+        return duckdb_conn._handle_arrow_message(data)
 
     # this needs to be equal to frontend port vite hosts on...
     origins = ["http://localhost:5173"]

@@ -1,6 +1,15 @@
-import duckdb
 from pathlib import Path
-
+import time
+import duckdb
+import pyarrow as pa
+from textprofilerbackend.models import (
+    DuckQueryData,
+    DuckQueryResult,
+    ExecResponse,
+    JsonResponse,
+    ErrorResponse,
+)
+from fastapi.responses import Response
 
 # NOTE: this path is affected by where the server is run from, assuming it is run in textprofilerbackend for now
 CACHE_PATH = ".textprofiler_cache/"
@@ -43,7 +52,86 @@ class DatabaseConnection:
         """
         p = Path(CACHE_PATH) / dataset_path
 
+        # TODO: should maybe use the register function, especially for arrow data like parquet?
+        #  See: https://duckdb.org/docs/archive/0.9.2/api/python/data_ingestion#dataframes--arrow-tables
+
         self.execute(
             f"CREATE TABLE IF NOT EXISTS '{dataset_name}' AS (SELECT * FROM read_parquet('{str(p)}'));"
         )
         print("loaded: ", dataset_name)
+
+    def _handle_json_message(self, data: DuckQueryData) -> DuckQueryResult:
+        """
+        From: https://github.com/uwdata/mosaic/blob/main/packages/widget/mosaic_widget/__init__.py
+        """
+        print(f"\n\t[_handle_json_message]: {data=}")
+        uuid = data.uuid
+        sql = data.sql
+        start = time.time()
+        response_message = None
+
+        try:
+            if data.type == "exec":
+                self.connection.execute(sql)
+                response_message = ExecResponse(type="exec", uuid=uuid)
+            elif data.type == "json":
+                query_result = self.connection.query(sql).df()
+                json = query_result.to_dict(orient="records")
+
+                print("RESULTING JSON: ", json)
+
+                response_message = JsonResponse(type="json", uuid=uuid, result=json)
+
+            else:
+                response_message = ErrorResponse(
+                    error=f"Unsupported response type: {data.type}", uuid=uuid
+                )
+
+        except Exception as e:
+            print("ERROR: ", e)
+            response_message = ErrorResponse(error=str(e), uuid=uuid)
+
+        total = round((time.time() - start) * 1_000)
+        print(f"DONE. Query { uuid } took { total } ms.\n{ sql }")
+        return response_message
+
+    def _handle_arrow_message(self, data: DuckQueryData):
+        """
+        Arrow handler. Different function since returns Response; might be able to coalese in future
+        """
+        print(f"\n\t[_handle_arrow_message]: {data=}")
+        uuid = data.uuid
+        sql = data.sql
+        start = time.time()
+        response_message = None
+
+        try:
+            if data.type == "arrow":
+                query_result = self.connection.query(sql).arrow()
+
+                sink = pa.BufferOutputStream()
+
+                with pa.ipc.new_stream(sink, query_result.schema) as writer:
+                    writer.write(query_result)
+
+                pybytes = sink.getvalue().to_pybytes()
+                response_message = Response(
+                    content=pybytes,
+                    media_type="application/vnd.apache.arrow.stream",
+                    # headers={"type": "arrow", "uuid": uuid}, # dont think this does anything
+                )
+
+                print("arrow response is: ", response_message)
+
+            else:
+                response_message = ErrorResponse(
+                    error=f"Unsupported response type: {data.type}", uuid=uuid
+                )
+        except Exception as e:
+            print("ERROR: ", e)
+            response_message = ErrorResponse(error=str(e), uuid=uuid)
+
+        total = round((time.time() - start) * 1_000)
+        print(f"DONE. Query { uuid } took { total } ms.\n{ sql }")
+
+        return response_message

@@ -41,3 +41,30 @@ class ColumnSummary(BaseModel):
     q75: str = None
     count: int
     null_percentage: str
+
+
+class DuckQueryData(BaseModel):
+    uuid: str
+    sql: str
+    type: Literal["arrow", "exec", "json"]
+    buffers: list = []
+
+
+class ErrorResponse(BaseModel):
+    uuid: str
+    type: Literal["error"] = "error"
+    error: str
+
+
+class ExecResponse(BaseModel):
+    uuid: str
+    type: Literal["exec"] = "exec"
+
+
+class JsonResponse(BaseModel):
+    uuid: str
+    type: Literal["json"] = "json"
+    result: Union[List, Dict]  # any valid JSON
+
+
+DuckQueryResult = Union[ExecResponse, JsonResponse, ErrorResponse]

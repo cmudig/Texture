@@ -1,4 +1,4 @@
-from textprofilerbackend.return_types import DatasetInfo
+from textprofilerbackend.models import DatasetInfo
 
 
 dataset_vast2021 = DatasetInfo(
