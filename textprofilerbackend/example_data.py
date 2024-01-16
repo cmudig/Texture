@@ -412,4 +412,27 @@ dataset_squad = DatasetInfo(
     },
 )
 
-EXAMPLE_DATASETS = [dataset_vast2021, dataset_dolly, dataset_opus, dataset_squad]
+dataset_bbc = DatasetInfo(
+    name="bbc",
+    filename="bbc_with_lava.parquet",
+    metadata={
+        "text_columns": [{"name": "text", "type": "text"}],
+        "other_columns": [
+            {"name": "category", "type": "categorical"},
+        ],
+        "text_meta_columns": {
+            "text": [
+                {"name": "lava_value", "type": "number"},
+            ],
+        },
+    },
+)
+
+
+EXAMPLE_DATASETS = [
+    dataset_vast2021,
+    dataset_dolly,
+    dataset_opus,
+    dataset_squad,
+    dataset_bbc,
+]

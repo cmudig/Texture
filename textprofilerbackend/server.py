@@ -27,6 +27,7 @@ def init_db():
         {"name": "opus", "path": "raw_data/opus100_en_es.parquet"},
         {"name": "squad", "path": "raw_data/squad_validation.parquet"},
         {"name": "vast2021", "path": "raw_data/vast2021.parquet"},
+        {"name": "bbc", "path": "raw_data/bbc_with_lava.parquet"},
     ]
 
     # TODO load some example datasets into memory?
