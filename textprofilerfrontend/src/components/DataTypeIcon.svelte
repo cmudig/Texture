@@ -21,7 +21,7 @@
   let id = getUUID();
 </script>
 
-<p id="data-icon-{id}" class="font-serif font-medium text-gray-400">
+<p id="data-icon-{id}" class="font-serif font-medium text-gray-500">
   {getIcon(type)}
 </p>
 
