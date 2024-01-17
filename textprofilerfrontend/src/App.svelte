@@ -14,6 +14,7 @@
   import InstanceView from "./components/InstanceView.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import QualityView from "./components/QualityView.svelte";
+  import UploadDataPanel from "./components/UploadDataPanel.svelte";
   import {
     Button,
     Select,
@@ -33,6 +34,7 @@
     ChartMixedSolid,
     TableSolid,
     ShieldCheckSolid,
+    PlusSolid,
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
   import { formatNumber } from "./shared/utils";
@@ -56,6 +58,7 @@
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
   let filterPanelHidden = true;
+  let showAddDataModel = false;
   let datasetColSummaries: ColumnSummary[];
   let dataPromise: Promise<any> = init();
 
@@ -137,6 +140,13 @@
         bind:value={selectedValue}
         on:change={updateData}
       />
+
+      <Button class="w-full" on:click={() => (showAddDataModel = true)}>
+        <PlusSolid size="sm" class="mr-2" />
+
+        Add new dataset
+      </Button>
+
       <div class="mt-2">
         <Label>Background distributions</Label>
 
@@ -159,6 +169,8 @@
       </div>
     </div>
   </Popover>
+
+  <UploadDataPanel bind:panelOpen={showAddDataModel} />
 
   <FilterSolid
     id="filterToggle"
@@ -186,7 +198,7 @@
         easing: sineIn,
       }}
       bind:hidden={filterPanelHidden}
-      id="sidebar"
+      id="sidebar-filter-display"
     >
       <div class="flex items-center">
         <h3

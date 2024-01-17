@@ -15,6 +15,28 @@ from fastapi.responses import Response
 CACHE_PATH = ".textprofiler_cache/"
 
 
+def init_db():
+    duckdbconn = DatabaseConnection()
+
+    print("Loading example data...")
+
+    datasets = [
+        {"name": "dolly", "path": "raw_data/dolly15k.parquet"},
+        {"name": "opus", "path": "raw_data/opus100_en_es.parquet"},
+        {"name": "squad", "path": "raw_data/squad_validation.parquet"},
+        {"name": "vast2021", "path": "raw_data/vast2021.parquet"},
+        {"name": "bbc", "path": "raw_data/bbc_with_lava.parquet"},
+    ]
+
+    # load some example datasets into memory
+    for dataset in datasets:
+        duckdbconn.load_dataset(dataset["name"], dataset["path"])
+
+    print("Example data loaded.")
+
+    return duckdbconn
+
+
 class DatabaseConnection:
     def __init__(self, database_name="defaultDatabase.db"):
         Path(CACHE_PATH).mkdir(parents=True, exist_ok=True)

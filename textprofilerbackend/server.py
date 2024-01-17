@@ -1,11 +1,20 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 
-from textprofilerbackend.database import DatabaseConnection
-from textprofilerbackend.models import DatasetInfo, DuckQueryData, DuckQueryResult
+from textprofilerbackend.database import init_db
+from textprofilerbackend.models import (
+    DatasetInfo,
+    DuckQueryData,
+    DuckQueryResult,
+    GenericResponse,
+)
 from textprofilerbackend.example_data import EXAMPLE_DATASETS
+from textprofilerbackend.process_data import process_new_file
+
+from io import BytesIO
+import pandas as pd
 
 
 def custom_generate_unique_id(route: APIRoute):
@@ -15,28 +24,6 @@ def custom_generate_unique_id(route: APIRoute):
     NOTE: must ensure that route names are unique or will cause issues!
     """
     return route.name
-
-
-def init_db():
-    duckdbconn = DatabaseConnection()
-
-    print("Loading example data...")
-
-    datasets = [
-        {"name": "dolly", "path": "raw_data/dolly15k.parquet"},
-        {"name": "opus", "path": "raw_data/opus100_en_es.parquet"},
-        {"name": "squad", "path": "raw_data/squad_validation.parquet"},
-        {"name": "vast2021", "path": "raw_data/vast2021.parquet"},
-        {"name": "bbc", "path": "raw_data/bbc_with_lava.parquet"},
-    ]
-
-    # TODO load some example datasets into memory?
-    for dataset in datasets:
-        duckdbconn.load_dataset(dataset["name"], dataset["path"])
-
-    print("Example data loaded.")
-
-    return duckdbconn
 
 
 def get_server() -> FastAPI:
@@ -85,6 +72,26 @@ def get_server() -> FastAPI:
         Execute a query on the database
         """
         return duckdb_conn._handle_arrow_message(data)
+
+    @api_app.post("/upload_dataset", response_model=GenericResponse)
+    async def upload_dataset(file: UploadFile = File(...)):
+        # Check if the file is CSV or Parquet
+        if file.filename.endswith(".csv"):
+            # For CSV files
+            df = pd.read_csv(BytesIO(await file.read()))
+        elif file.filename.endswith(".parquet"):
+            # For Parquet files
+            df = pd.read_parquet(BytesIO(await file.read()))
+        else:
+            return GenericResponse(
+                success=False,
+                message=f"Unsupported file type for '{file.filename}'. Only CSV and Parquet files are supported.",
+            )
+
+        # Process the DataFrame
+        process_new_file(df)
+
+        return GenericResponse(success=True, message="File processed successfully")
 
     # @api_app.get("/example_arrow")
     # async def example_arrow():

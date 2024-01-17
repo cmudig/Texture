@@ -2,10 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Body_upload_dataset } from "../models/Body_upload_dataset";
 import type { DatasetInfo } from "../models/DatasetInfo";
 import type { DuckQueryData } from "../models/DuckQueryData";
 import type { ErrorResponse } from "../models/ErrorResponse";
 import type { ExecResponse } from "../models/ExecResponse";
+import type { GenericResponse } from "../models/GenericResponse";
 import type { JsonResponse } from "../models/JsonResponse";
 
 import type { CancelablePromise } from "../core/CancelablePromise";
@@ -73,6 +75,26 @@ export class DefaultService {
       url: "/duckdb_query_arrow",
       body: requestBody,
       mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Upload Dataset
+   * @param formData
+   * @returns GenericResponse Successful Response
+   * @throws ApiError
+   */
+  public uploadDataset(
+    formData: Body_upload_dataset,
+  ): CancelablePromise<GenericResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/upload_dataset",
+      formData: formData,
+      mediaType: "multipart/form-data",
       errors: {
         422: `Validation Error`,
       },

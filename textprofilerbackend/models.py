@@ -68,3 +68,9 @@ class JsonResponse(BaseModel):
 
 
 DuckQueryResult = Union[ExecResponse, JsonResponse, ErrorResponse]
+
+
+class GenericResponse(BaseModel):
+    success: bool
+    message: str
+    details: dict = None
