@@ -62,6 +62,12 @@ npm run gen-api
 - `textprofilerfrontend/src/backendapi/models/ExecResponse.ts`: changed type to not be any
 - `textprofilerfrontend/src/backendapi/models/JsonResponse.ts`: changed type to not be any
 
+You can run the following commands to unset these files from git automatically after you regenerate the API (N.B this will remove other changes to these files):
+
+```bash
+npm run gen-api && npm run rectify-gen-api
+```
+
 ## Release
 
 To publish (only do this if you know you want to):

@@ -10,6 +10,8 @@ from textprofilerbackend.models import (
     ErrorResponse,
 )
 from fastapi.responses import Response
+from textprofilerbackend.example_data import EXAMPLE_DATASETS
+import pandas as pd
 
 # NOTE: this path is affected by where the server is run from, assuming it is run in textprofilerbackend for now
 CACHE_PATH = ".textprofiler_cache/"
@@ -20,21 +22,25 @@ def init_db():
 
     print("Loading example data...")
 
-    datasets = [
-        {"name": "dolly", "path": "raw_data/dolly15k.parquet"},
-        {"name": "opus", "path": "raw_data/opus100_en_es.parquet"},
-        {"name": "squad", "path": "raw_data/squad_validation.parquet"},
-        {"name": "vast2021", "path": "raw_data/vast2021.parquet"},
-        {"name": "bbc", "path": "raw_data/bbc_with_lava.parquet"},
-    ]
+    datasetPaths = {
+        "vast2021": "raw_data/vast2021.parquet",
+        "dolly": "raw_data/dolly15k.parquet",
+        "opus": "raw_data/opus100_en_es.parquet",
+        "squad": "raw_data/squad_validation.parquet",
+        "bbc": "raw_data/bbc_with_lava.parquet",
+    }
 
-    # load some example datasets into memory
-    for dataset in datasets:
-        duckdbconn.load_dataset(dataset["name"], dataset["path"])
+    metadataCache = {}
+
+    # load example datasets into duckdb
+    for datasetInfo in EXAMPLE_DATASETS:
+        dsName = datasetInfo.name
+        duckdbconn.load_dataset(dsName, datasetPaths[dsName])
+        metadataCache[dsName] = datasetInfo
 
     print("Example data loaded.")
 
-    return duckdbconn
+    return duckdbconn, metadataCache
 
 
 class DatabaseConnection:
@@ -80,6 +86,17 @@ class DatabaseConnection:
         self.execute(
             f"CREATE TABLE IF NOT EXISTS '{dataset_name}' AS (SELECT * FROM read_parquet('{str(p)}'));"
         )
+
+    def load_dataframe(self, dataset_name, df: pd.DataFrame):
+        """
+        Loads a DataFrame into the database
+
+        Args:
+            dataset_name: name of the dataset
+            df: DataFrame to load
+        """
+        self.connection.register(dataset_name, df)
+        print("registed new dataset in duckdb:  ", dataset_name)
 
     def _handle_json_message(self, data: DuckQueryData) -> DuckQueryResult:
         """

@@ -3,8 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type GenericResponse = {
+import type { DatasetInfo } from "./DatasetInfo";
+
+export type DatasetUploadResponse = {
   success: boolean;
   message: string;
-  details?: Record<string, any>;
+  datasetSchema?: DatasetInfo;
 };

@@ -2,15 +2,16 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
+from typing import Dict
 
 from textprofilerbackend.database import init_db
 from textprofilerbackend.models import (
     DatasetInfo,
     DuckQueryData,
     DuckQueryResult,
-    GenericResponse,
+    DatasetUploadResponse,
+    DatasetVerifyResponse,
 )
-from textprofilerbackend.example_data import EXAMPLE_DATASETS
 from textprofilerbackend.process_data import process_new_file
 
 from io import BytesIO
@@ -38,26 +39,28 @@ def get_server() -> FastAPI:
         default_response_class=ORJSONResponse,
     )
 
-    duckdb_conn = init_db()
+    duckdb_conn, datasetMetadataCache = init_db()
+
+    # TODO this is prob need to use actual cache here rather than just in memory
+    datasetUploadCache = {}
 
     @api_app.get(
-        "/dataset_names",
-        response_model=list[str],
+        "/",
+        response_model=str,
     )
-    def read_all_dataset_names():
-        r = duckdb_conn.query("show tables;")
-        return ["dolly", "opus", "squad", "vast2021"]
+    def root_status():
+        return "hello"
 
     @api_app.get(
         "/all_dataset_info",
-        response_model=list[DatasetInfo],
+        response_model=Dict[str, DatasetInfo],
     )
     def read_dataset_info():
         """
         Get the datasets available along with a summary of their columns
         """
 
-        return EXAMPLE_DATASETS
+        return datasetMetadataCache
 
     @api_app.post("/duckdb_query_json", response_model=DuckQueryResult)
     def duckdb_query_json(data: DuckQueryData):
@@ -73,25 +76,56 @@ def get_server() -> FastAPI:
         """
         return duckdb_conn._handle_arrow_message(data)
 
-    @api_app.post("/upload_dataset", response_model=GenericResponse)
+    @api_app.post("/upload_dataset", response_model=DatasetUploadResponse)
     async def upload_dataset(file: UploadFile = File(...)):
-        # Check if the file is CSV or Parquet
+        # TODO: support huggingface datasets
         if file.filename.endswith(".csv"):
-            # For CSV files
             df = pd.read_csv(BytesIO(await file.read()))
+            datasetName = file.filename[:-4]
         elif file.filename.endswith(".parquet"):
-            # For Parquet files
             df = pd.read_parquet(BytesIO(await file.read()))
+            datasetName = file.filename[:-8]
         else:
-            return GenericResponse(
+            return DatasetUploadResponse(
                 success=False,
                 message=f"Unsupported file type for '{file.filename}'. Only CSV and Parquet files are supported.",
             )
 
         # Process the DataFrame
-        process_new_file(df)
+        initial_dataset_info = process_new_file(df, datasetName)
 
-        return GenericResponse(success=True, message="File processed successfully")
+        datasetUploadCache[datasetName] = df
+        datasetMetadataCache[datasetName] = initial_dataset_info
+
+        return DatasetUploadResponse(
+            success=True,
+            message="File processed successfully",
+            datasetSchema=initial_dataset_info,
+        )
+
+    @api_app.post("/verify_schema", response_model=DatasetVerifyResponse)
+    async def verify_schema(schema: DatasetInfo):
+        print("HIT: verify_schema")
+        name = schema.name
+        print("veriyfing schmea: ", name)
+
+        if name in datasetMetadataCache and name in datasetUploadCache:
+            print("found in cache schmea: ")
+
+            datasetMetadataCache[name] = schema
+            duckdb_conn.load_dataframe(name, datasetUploadCache[name])
+
+            # clear out so not in memory again (hopefully doesnt mess up duckdb...)
+            # del datasetUploadCache[name]
+
+            return DatasetVerifyResponse(
+                success=True, message="Schema verified and uploaded."
+            )
+
+        return DatasetVerifyResponse(
+            success=False,
+            message=f"Failed to update schema for unknown dataset: {name}",
+        )
 
     # @api_app.get("/example_arrow")
     # async def example_arrow():

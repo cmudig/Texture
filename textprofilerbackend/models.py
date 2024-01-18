@@ -1,4 +1,4 @@
-from typing import List, Dict, Union, Literal
+from typing import List, Dict, Union, Literal, Any, Optional
 from pydantic import BaseModel
 
 DataType = Literal["text", "number", "date", "categorical"]
@@ -7,25 +7,13 @@ DataType = Literal["text", "number", "date", "categorical"]
 class Column(BaseModel):
     name: str
     type: DataType
-
-
-class QualityInfo(BaseModel):
-    type: str
-    text_column: Column
-    plot_columns: List[Column] = []
-
-
-class DatasetMetadata(BaseModel):
-    text_columns: List[Column]
-    other_columns: List[Column]
-    text_meta_columns: Dict[str, List[Column]]
-    text_quality_info: List[QualityInfo] = []
+    associated_text_col_name: Optional[str] = None
 
 
 class DatasetInfo(BaseModel):
     name: str
-    filename: str
-    metadata: DatasetMetadata
+    column_info: List[Column]
+    origin: Literal["example", "uploaded"]
 
 
 class ColumnSummary(BaseModel):
@@ -70,7 +58,12 @@ class JsonResponse(BaseModel):
 DuckQueryResult = Union[ExecResponse, JsonResponse, ErrorResponse]
 
 
-class GenericResponse(BaseModel):
+class DatasetUploadResponse(BaseModel):
     success: bool
     message: str
-    details: dict = None
+    datasetSchema: DatasetInfo = None
+
+
+class DatasetVerifyResponse(BaseModel):
+    success: bool
+    message: str
