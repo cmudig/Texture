@@ -63,9 +63,7 @@
   let dataPromise: Promise<any> = init();
 
   async function init() {
-    console.log("init");
     let d = await backendService.readDatasetInfo();
-    console.log(d);
     datasets = d;
     selectedValue = Object.keys(datasets)[0];
 
@@ -75,8 +73,6 @@
   async function setDataset() {
     const info = datasets[selectedValue];
     datasetInfo = info;
-
-    console.log("datasetInfo is ", datasetInfo);
 
     currentColToggleStates = datasetInfo.column_info.reduce(
       (acc: Record<string, boolean>, col) => {
@@ -98,8 +94,6 @@
 
     datasetSize = await getCount(info.name);
     datasetColSummaries = await getColSummaries(info.name);
-
-    console.log("setDataset completed");
   }
 
   function updateData() {
@@ -132,7 +126,7 @@
   />
   <Popover
     triggeredBy="#settingsToggle"
-    class="z-10 w-64 bg-white text-sm font-light text-gray-500"
+    class="z-10 w-80 bg-white text-sm font-light text-gray-500"
     title="Settings"
   >
     <div class="flex flex-col gap-2 p-3">

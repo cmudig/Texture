@@ -7,8 +7,6 @@
   export let datasetColSummaries: ColumnSummary[];
 
   // probably better to turn datasetColSummaries into a Map then index rather than find cuz that slow
-
-  console.log("plotting datasetInfo.column_info: ", datasetInfo.column_info);
 </script>
 
 <div>

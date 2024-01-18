@@ -41,13 +41,11 @@
       firstResponse.then((response) => {
         if (response.success) {
           console.log("File uploaded successfully");
-          console.log(response.message);
-          console.log(response.datasetSchema);
 
           parsedSchema = response.datasetSchema;
           currentStatus = Status.VERIFY_TYPES;
         } else {
-          console.log("Error uploading file:", response.message);
+          console.error("Error uploading file:", response.message);
         }
       });
     } else {
@@ -57,24 +55,21 @@
 
   function handleSchemaVerification() {
     if (parsedSchema) {
-      console.log("Sending schema: ", parsedSchema);
-
       secondResponse = backendService.verifySchema(parsedSchema);
 
       secondResponse.then((response) => {
         if (response.success) {
-          console.log("Schema verified successfully!!!!!!!!");
-          console.log(response.message);
+          console.log("Schema verified successfully");
           currentStatus = Status.COMPLETED;
 
           // TODO also need to signal outside this component that a new dataset successfully uploaded...
           finishedCount += 1;
         } else {
-          console.log("Error verifying schema:", response.message);
+          console.error("Error verifying schema:", response.message);
         }
       });
     } else {
-      console.log("No schema to verify");
+      console.error("No schema to verify");
     }
   }
 
@@ -87,7 +82,12 @@
   }
 </script>
 
-<Modal bind:open={panelOpen} on:close={handleModalClose} title="Add dataset">
+<Modal
+  bind:open={panelOpen}
+  on:close={handleModalClose}
+  title="Add dataset"
+  outsideclose
+>
   {#if currentStatus === Status.INITIAL_UPLOAD}
     <div class="flex flex-col gap-2">
       <p class="mb-4">Upload csv or parquet file with your data</p>
