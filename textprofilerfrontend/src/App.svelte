@@ -13,8 +13,7 @@
   import Sidebar from "./components/Sidebar.svelte";
   import InstanceView from "./components/InstanceView.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
-  import QualityView from "./components/QualityView.svelte";
-  import UploadDataPanel from "./components/uploadData/UploadDataPanel.svelte";
+  import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import {
     Button,
     Select,
@@ -33,8 +32,7 @@
     FilterSolid,
     ChartMixedSolid,
     TableSolid,
-    ShieldCheckSolid,
-    PlusSolid,
+    FilePlusSolid,
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
   import { formatNumber } from "./shared/utils";
@@ -52,7 +50,7 @@
 
   // Locals
   let datasets: Record<string, DatasetInfo>;
-  let selectedValue: string;
+  let currentDatasetName: string;
   let datasetInfo: DatasetInfo;
   // let currentColumns: Column[] = [];
   let currentColToggleStates: Record<string, boolean> = {};
@@ -67,16 +65,16 @@
     datasets = d;
 
     if (datasetName && datasetName in datasets) {
-      selectedValue = datasetName;
+      currentDatasetName = datasetName;
     } else {
-      selectedValue = Object.keys(datasets)[0];
+      currentDatasetName = Object.keys(datasets)[0];
     }
 
     return setDataset();
   }
 
   async function setDataset() {
-    const info = datasets[selectedValue];
+    const info = datasets[currentDatasetName];
     datasetInfo = info;
 
     currentColToggleStates = datasetInfo.column_info.reduce(
@@ -120,9 +118,15 @@
   >
   <div class="grow" />
 
-  <div class="text-l self-center text-white">
-    {formatNumber($filteredCount)} / {formatNumber(datasetSize)} rows
-  </div>
+  <FilePlusSolid
+    id="addDatasetIcon"
+    size="md"
+    class="mx-1 self-center text-white hover:text-primary-700"
+    on:click={() => (showAddDataModel = true)}
+  />
+  <Tooltip class="z-10" triggeredBy="#addDatasetIcon" type="light"
+    >Add new dataset</Tooltip
+  >
 
   <AdjustmentsHorizontalOutline
     id="settingsToggle"
@@ -142,15 +146,9 @@
           name: k.origin === "example" ? `${k.name} (example)` : k.name,
         }))}
         placeholder="Select dataset"
-        bind:value={selectedValue}
+        bind:value={currentDatasetName}
         on:change={updateData}
       />
-
-      <Button class="w-full" on:click={() => (showAddDataModel = true)}>
-        <PlusSolid size="sm" class="mr-2" />
-
-        Add new dataset
-      </Button>
 
       <div class="mt-2">
         <Label>Background distributions</Label>
@@ -175,7 +173,7 @@
     </div>
   </Popover>
 
-  <UploadDataPanel
+  <UploadDataModal
     bind:panelOpen={showAddDataModel}
     finishedUploadHandler={(name) => {
       dataPromise = populateDataTables(name);
@@ -239,6 +237,17 @@
     </Drawer>
   </div>
 
+  <!-- Dataset info -->
+  <div class="flex gap-2 justify-end pr-7 py-2 text-gray-500 bg-gray-100">
+    <div class="text-md self-center">
+      {formatNumber($filteredCount)} / {formatNumber(datasetSize)} rows
+    </div>
+
+    <div class="text-md self-center font-semibold">
+      {currentDatasetName}
+    </div>
+  </div>
+
   <div class="flex flex-row">
     <div class="h-screen w-1/3 overflow-scroll">
       <Tabs style="underline" contentClass="">
@@ -250,13 +259,6 @@
 
           <Sidebar {datasetInfo} {datasetColSummaries} />
         </TabItem>
-        <!-- <TabItem>
-          <div slot="title" class="flex items-center gap-2">
-            <ShieldCheckSolid size="sm" />
-            Quality
-          </div>
-          <QualityView {datasetInfo} />
-        </TabItem> -->
       </Tabs>
     </div>
     <div class="h-screen w-2/3 overflow-scroll">
