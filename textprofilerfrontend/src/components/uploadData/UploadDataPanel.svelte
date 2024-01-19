@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from "svelte";
   import { Button, Modal, Spinner, Dropzone } from "flowbite-svelte";
-  import { CheckSolid, UploadOutline, CloseSolid } from "flowbite-svelte-icons";
+  import { CheckSolid, CloseSolid } from "flowbite-svelte-icons";
 
   import type {
     DefaultService,
@@ -101,6 +101,7 @@
     }
 
     currentlyDragging = false;
+    handleFileUpload();
   }
 
   function handleFileClickUpload(event: Event) {
@@ -108,6 +109,7 @@
     if (files && files.length > 0) {
       fileUpload = files[0];
     }
+    handleFileUpload();
   }
 </script>
 
@@ -160,28 +162,25 @@
           </p>
         {:else}
           <p>{fileUpload.name}</p>
+
+          {#if firstResponse}
+            {#await firstResponse}
+              <div class="p-4 flex gap-2 items-center">
+                <Spinner size={"6"} />
+                <p>Uploading...</p>
+              </div>
+            {:then response}
+              <div class="p-4">
+                {#if response.success}
+                  <p class="text-green-700">{response.message}</p>
+                {:else}
+                  <p class="text-red-700"><b>Error:</b> {response.message}</p>
+                {/if}
+              </div>
+            {/await}
+          {/if}
         {/if}
       </Dropzone>
-
-      <Button class="w-64" disabled={!fileUpload} on:click={handleFileUpload}>
-        <UploadOutline size="sm" class="mr-2" />
-        Upload
-      </Button>
-
-      {#if firstResponse}
-        {#await firstResponse}
-          <div class="p-4 flex gap-2 items-center">
-            <Spinner size={"6"} />
-            <p>Uploading...</p>
-          </div>
-        {:then response}
-          {#if response.success}
-            <p class="text-green-700">{response.message}</p>
-          {:else}
-            <p class="text-red-700"><b>Error:</b> {response.message}</p>
-          {/if}
-        {/await}
-      {/if}
     </div>
   {:else if currentStatus === Status.VERIFY_TYPES}
     <div class="flex flex-col gap-4">
