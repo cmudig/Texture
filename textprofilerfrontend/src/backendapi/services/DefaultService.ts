@@ -2,7 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Body_upload_dataset } from "../models/Body_upload_dataset";
 import type { DatasetInfo } from "../models/DatasetInfo";
+import type { DatasetUploadResponse } from "../models/DatasetUploadResponse";
+import type { DatasetVerifyResponse } from "../models/DatasetVerifyResponse";
 import type { DuckQueryData } from "../models/DuckQueryData";
 import type { ErrorResponse } from "../models/ErrorResponse";
 import type { ExecResponse } from "../models/ExecResponse";
@@ -15,14 +18,14 @@ export class DefaultService {
   constructor(public readonly httpRequest: BaseHttpRequest) {}
 
   /**
-   * Read All Dataset Names
+   * Root Status
    * @returns string Successful Response
    * @throws ApiError
    */
-  public readAllDatasetNames(): CancelablePromise<Array<string>> {
+  public rootStatus(): CancelablePromise<string> {
     return this.httpRequest.request({
       method: "GET",
-      url: "/dataset_names",
+      url: "/",
     });
   }
 
@@ -32,7 +35,7 @@ export class DefaultService {
    * @returns DatasetInfo Successful Response
    * @throws ApiError
    */
-  public readDatasetInfo(): CancelablePromise<Array<DatasetInfo>> {
+  public readDatasetInfo(): CancelablePromise<Record<string, DatasetInfo>> {
     return this.httpRequest.request({
       method: "GET",
       url: "/all_dataset_info",
@@ -71,6 +74,51 @@ export class DefaultService {
     return this.httpRequest.request({
       method: "POST",
       url: "/duckdb_query_arrow",
+      body: requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Upload Dataset
+   * @param formData
+   * @returns DatasetUploadResponse Successful Response
+   * @throws ApiError
+   */
+  public uploadDataset(
+    formData: Body_upload_dataset,
+  ): CancelablePromise<DatasetUploadResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/upload_dataset",
+      formData: formData,
+      mediaType: "multipart/form-data",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Verify Schema
+   * @param originalName
+   * @param requestBody
+   * @returns DatasetVerifyResponse Successful Response
+   * @throws ApiError
+   */
+  public verifySchema(
+    originalName: string,
+    requestBody: DatasetInfo,
+  ): CancelablePromise<DatasetVerifyResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/verify_schema",
+      query: {
+        originalName: originalName,
+      },
       body: requestBody,
       mediaType: "application/json",
       errors: {

@@ -48,11 +48,24 @@ uvicorn --factory server:get_server --reload
 
 If you add a new python package, do it with poetry since will also install in current conda env with `poetry add name`.
 
-If you add a new route or model to the backend, you can re-generate the api client in the frontend automatically (server must be running when this happens!). **NOTE:** be careful about what files get changed since some like the request handling and some types are manually edited.
+If you add a new route or model to the backend, you can re-generate the api client in the frontend automatically (server must be running when this happens!).
 
 ```bash
 cd textprofilerfrontend
 npm run gen-api
+```
+
+**NOTE:** be careful about what files get changed since some like the request handling and some types are manually edited. The following files should probably NOT be changed:
+
+- `textprofilerfrontend/src/backendapi/core/request.ts`: manual changes made to process blobs
+- `textprofilerfrontend/src/backendapi/models/ErrorResponse.ts`: changed type to not be any
+- `textprofilerfrontend/src/backendapi/models/ExecResponse.ts`: changed type to not be any
+- `textprofilerfrontend/src/backendapi/models/JsonResponse.ts`: changed type to not be any
+
+You can run the following commands to unset these files from git automatically after you regenerate the API (N.B this will remove other changes to these files):
+
+```bash
+npm run gen-api && npm run rectify-gen-api
 ```
 
 ## Release

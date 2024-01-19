@@ -10,18 +10,22 @@
 </script>
 
 <div>
-  {#each datasetInfo.metadata.text_columns as col}
-    <ColumnProfile
-      displayCol={col}
-      plotCols={datasetInfo.metadata.text_meta_columns[col.name]}
-      colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
-    />
-  {/each}
-  {#each datasetInfo.metadata.other_columns as col}
-    <ColumnProfile
-      displayCol={col}
-      plotCols={[col]}
-      colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
-    />
+  {#each datasetInfo.column_info as col}
+    {#if col.type == "text"}
+      <ColumnProfile
+        displayCol={col}
+        plotCols={datasetInfo.column_info.filter(
+          (c) => c.associated_text_col_name === col.name
+        )}
+        colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
+      />
+    {:else if col.associated_text_col_name == null}
+      <!-- only plot metadata without associated text column so those already plotted -->
+      <ColumnProfile
+        displayCol={col}
+        plotCols={datasetInfo.column_info.filter((c) => c.name === col.name)}
+        colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
+      />
+    {/if}
   {/each}
 </div>

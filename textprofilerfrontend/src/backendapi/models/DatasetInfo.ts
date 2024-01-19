@@ -3,10 +3,17 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DatasetMetadata } from "./DatasetMetadata";
+import type { Column } from "./Column";
 
 export type DatasetInfo = {
   name: string;
-  filename: string;
-  metadata: DatasetMetadata;
+  column_info: Array<Column>;
+  origin: DatasetInfo.origin;
 };
+
+export namespace DatasetInfo {
+  export enum origin {
+    EXAMPLE = "example",
+    UPLOADED = "uploaded",
+  }
+}

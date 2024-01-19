@@ -1,11 +1,21 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
+from typing import Dict
 
-from textprofilerbackend.database import DatabaseConnection
-from textprofilerbackend.models import DatasetInfo, DuckQueryData, DuckQueryResult
-from textprofilerbackend.example_data import EXAMPLE_DATASETS
+from textprofilerbackend.database import init_db
+from textprofilerbackend.models import (
+    DatasetInfo,
+    DuckQueryData,
+    DuckQueryResult,
+    DatasetUploadResponse,
+    DatasetVerifyResponse,
+)
+from textprofilerbackend.process_data import process_new_file
+
+from io import BytesIO
+import pandas as pd
 
 
 def custom_generate_unique_id(route: APIRoute):
@@ -15,28 +25,6 @@ def custom_generate_unique_id(route: APIRoute):
     NOTE: must ensure that route names are unique or will cause issues!
     """
     return route.name
-
-
-def init_db():
-    duckdbconn = DatabaseConnection()
-
-    print("Loading example data...")
-
-    datasets = [
-        {"name": "dolly", "path": "raw_data/dolly15k.parquet"},
-        {"name": "opus", "path": "raw_data/opus100_en_es.parquet"},
-        {"name": "squad", "path": "raw_data/squad_validation.parquet"},
-        {"name": "vast2021", "path": "raw_data/vast2021.parquet"},
-        {"name": "bbc", "path": "raw_data/bbc_with_lava.parquet"},
-    ]
-
-    # TODO load some example datasets into memory?
-    for dataset in datasets:
-        duckdbconn.load_dataset(dataset["name"], dataset["path"])
-
-    print("Example data loaded.")
-
-    return duckdbconn
 
 
 def get_server() -> FastAPI:
@@ -51,26 +39,28 @@ def get_server() -> FastAPI:
         default_response_class=ORJSONResponse,
     )
 
-    duckdb_conn = init_db()
+    duckdb_conn, datasetMetadataCache = init_db()
+
+    # TODO this is prob need to use actual cache here rather than just in memory
+    datasetUploadCache = {}
 
     @api_app.get(
-        "/dataset_names",
-        response_model=list[str],
+        "/",
+        response_model=str,
     )
-    def read_all_dataset_names():
-        r = duckdb_conn.query("show tables;")
-        return ["dolly", "opus", "squad", "vast2021"]
+    def root_status():
+        return "hello"
 
     @api_app.get(
         "/all_dataset_info",
-        response_model=list[DatasetInfo],
+        response_model=Dict[str, DatasetInfo],
     )
     def read_dataset_info():
         """
         Get the datasets available along with a summary of their columns
         """
 
-        return EXAMPLE_DATASETS
+        return datasetMetadataCache
 
     @api_app.post("/duckdb_query_json", response_model=DuckQueryResult)
     def duckdb_query_json(data: DuckQueryData):
@@ -85,6 +75,50 @@ def get_server() -> FastAPI:
         Execute a query on the database
         """
         return duckdb_conn._handle_arrow_message(data)
+
+    @api_app.post("/upload_dataset", response_model=DatasetUploadResponse)
+    async def upload_dataset(file: UploadFile = File(...)):
+        # TODO: support huggingface datasets
+        if file.filename.endswith(".csv"):
+            df = pd.read_csv(BytesIO(await file.read()))
+            datasetName = file.filename[:-4]
+        elif file.filename.endswith(".parquet"):
+            df = pd.read_parquet(BytesIO(await file.read()))
+            datasetName = file.filename[:-8]
+        else:
+            return DatasetUploadResponse(
+                success=False,
+                message=f"Unsupported file type for '{file.filename}'. Only CSV and Parquet files are supported.",
+            )
+
+        # Process the DataFrame
+        initial_dataset_info = process_new_file(df, datasetName)
+        datasetUploadCache[datasetName] = df
+
+        return DatasetUploadResponse(
+            success=True,
+            message="File processed successfully",
+            datasetSchema=initial_dataset_info,
+        )
+
+    @api_app.post("/verify_schema", response_model=DatasetVerifyResponse)
+    async def verify_schema(new_schema: DatasetInfo, originalName: str):
+        if originalName in datasetUploadCache:
+            new_name = new_schema.name
+            datasetMetadataCache[new_name] = new_schema
+            duckdb_conn.load_dataframe(new_name, datasetUploadCache[originalName])
+
+            # clear out cache once put in duckdb
+            del datasetUploadCache[originalName]
+
+            return DatasetVerifyResponse(
+                success=True, message="Schema verified and uploaded."
+            )
+
+        return DatasetVerifyResponse(
+            success=False,
+            message=f"Failed to update schema for unknown dataset: {originalName}",
+        )
 
     # @api_app.get("/example_arrow")
     # async def example_arrow():

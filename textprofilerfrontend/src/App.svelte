@@ -14,6 +14,7 @@
   import InstanceView from "./components/InstanceView.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import QualityView from "./components/QualityView.svelte";
+  import UploadDataPanel from "./components/uploadData/UploadDataPanel.svelte";
   import {
     Button,
     Select,
@@ -33,6 +34,7 @@
     ChartMixedSolid,
     TableSolid,
     ShieldCheckSolid,
+    PlusSolid,
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
   import { formatNumber } from "./shared/utils";
@@ -49,35 +51,41 @@
   let databaseConnection = new DatabaseConnection(backendService);
 
   // Locals
-  let datasets: DatasetInfo[];
+  let datasets: Record<string, DatasetInfo>;
   let selectedValue: string;
   let datasetInfo: DatasetInfo;
-  let currentColumns: string[] = [];
+  // let currentColumns: Column[] = [];
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
   let filterPanelHidden = true;
+  let showAddDataModel = false;
   let datasetColSummaries: ColumnSummary[];
-  let dataPromise: Promise<any> = init();
+  let dataPromise: Promise<any> = populateDataTables();
 
-  async function init() {
+  async function populateDataTables(datasetName?: string): Promise<void> {
     let d = await backendService.readDatasetInfo();
     datasets = d;
-    selectedValue = datasets[0].name;
+
+    if (datasetName && datasetName in datasets) {
+      selectedValue = datasetName;
+    } else {
+      selectedValue = Object.keys(datasets)[0];
+    }
 
     return setDataset();
   }
 
   async function setDataset() {
-    const info = datasets.find((c) => c.name === selectedValue) ?? datasets[0];
+    const info = datasets[selectedValue];
     datasetInfo = info;
-    currentColumns = [
-      ...info.metadata.text_columns.map((c) => c.name),
-      ...info.metadata.other_columns.map((c) => c.name),
-    ];
 
-    currentColToggleStates = currentColumns.reduce(
+    currentColToggleStates = datasetInfo.column_info.reduce(
       (acc: Record<string, boolean>, col) => {
-        acc[col] = true;
+        if (col.associated_text_col_name) {
+          acc[col.name] = false;
+        } else {
+          acc[col.name] = true;
+        }
         return acc;
       },
       {}
@@ -123,20 +131,27 @@
   />
   <Popover
     triggeredBy="#settingsToggle"
-    class="z-10 w-64 bg-white text-sm font-light text-gray-500"
+    class="z-10 w-80 bg-white text-sm font-light text-gray-500"
     title="Settings"
   >
     <div class="flex flex-col gap-2 p-3">
       <Select
         size="sm"
-        items={datasets.map((k) => ({
+        items={Object.values(datasets).map((k) => ({
           value: k.name,
-          name: k.name,
+          name: k.origin === "example" ? `${k.name} (example)` : k.name,
         }))}
         placeholder="Select dataset"
         bind:value={selectedValue}
         on:change={updateData}
       />
+
+      <Button class="w-full" on:click={() => (showAddDataModel = true)}>
+        <PlusSolid size="sm" class="mr-2" />
+
+        Add new dataset
+      </Button>
+
       <div class="mt-2">
         <Label>Background distributions</Label>
 
@@ -148,10 +163,10 @@
       <div class="mt-2">
         <Label>Display in table</Label>
         <div class="mt-2 flex flex-col gap-1">
-          {#each currentColumns as col}
-            <Toggle bind:checked={currentColToggleStates[col]}>
+          {#each datasetInfo.column_info as col}
+            <Toggle bind:checked={currentColToggleStates[col.name]}>
               <span class="overflow-hidden text-ellipsis">
-                {col}
+                {col.name}
               </span>
             </Toggle>
           {/each}
@@ -159,6 +174,13 @@
       </div>
     </div>
   </Popover>
+
+  <UploadDataPanel
+    bind:panelOpen={showAddDataModel}
+    finishedUploadHandler={(name) => {
+      dataPromise = populateDataTables(name);
+    }}
+  />
 
   <FilterSolid
     id="filterToggle"
@@ -186,7 +208,7 @@
         easing: sineIn,
       }}
       bind:hidden={filterPanelHidden}
-      id="sidebar"
+      id="sidebar-filter-display"
     >
       <div class="flex items-center">
         <h3
@@ -228,13 +250,13 @@
 
           <Sidebar {datasetInfo} {datasetColSummaries} />
         </TabItem>
-        <TabItem>
+        <!-- <TabItem>
           <div slot="title" class="flex items-center gap-2">
             <ShieldCheckSolid size="sm" />
             Quality
           </div>
           <QualityView {datasetInfo} />
-        </TabItem>
+        </TabItem> -->
       </Tabs>
     </div>
     <div class="h-screen w-2/3 overflow-scroll">
