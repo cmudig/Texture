@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getContext } from "svelte";
-  import { Button, Modal, Spinner } from "flowbite-svelte";
+  import { Button, Modal, Spinner, Dropzone } from "flowbite-svelte";
   import { CheckSolid, UploadOutline, CloseSolid } from "flowbite-svelte-icons";
 
   import type {
@@ -23,20 +23,19 @@
 
   // stage 1 vars
   let backendService: DefaultService = getContext("backendService");
-  let fileUploadList: FileList | undefined;
+  let fileUpload: File | undefined;
   let firstResponse: Promise<DatasetUploadResponse> | undefined;
+  let currentlyDragging = false;
 
   // stage 2 vars
   let parsedSchema: DatasetInfo | undefined;
   let secondResponse: Promise<DatasetVerifyResponse> | undefined;
 
   function handleFileUpload() {
-    if (fileUploadList && fileUploadList.length > 0) {
-      const selectedFile = fileUploadList[0];
+    if (fileUpload) {
       // Perform file upload logic here
-      console.log("Uploading file:", selectedFile.name);
-
-      firstResponse = backendService.uploadDataset({ file: selectedFile });
+      console.log("Uploading file:", fileUpload.name);
+      firstResponse = backendService.uploadDataset({ file: fileUpload });
 
       firstResponse.then((response) => {
         if (response.success) {
@@ -75,10 +74,40 @@
 
   function handleModalClose() {
     currentStatus = Status.INITIAL_UPLOAD;
-    fileUploadList = undefined;
+    fileUpload = undefined;
     firstResponse = undefined;
     parsedSchema = undefined;
     secondResponse = undefined;
+  }
+
+  function handleDrop(event: DragEvent) {
+    event.preventDefault();
+
+    if (event.dataTransfer) {
+      if (event.dataTransfer.items && event.dataTransfer.items.length > 0) {
+        let firstItem = event.dataTransfer.items[0];
+        if (firstItem.kind === "file") {
+          const file = firstItem.getAsFile();
+          if (file) {
+            fileUpload = file;
+          }
+        }
+      } else if (
+        event.dataTransfer.files &&
+        event.dataTransfer.files.length > 0
+      ) {
+        fileUpload = event.dataTransfer.files[0];
+      }
+    }
+
+    currentlyDragging = false;
+  }
+
+  function handleFileClickUpload(event: Event) {
+    const files = (event.target as HTMLInputElement)?.files;
+    if (files && files.length > 0) {
+      fileUpload = files[0];
+    }
   }
 </script>
 
@@ -90,21 +119,54 @@
 >
   {#if currentStatus === Status.INITIAL_UPLOAD}
     <div class="flex flex-col gap-2">
-      <p class="mb-4">Upload csv or parquet file with your data</p>
-
-      <div class="flex gap-2">
-        <!-- TODO: add drag and drop data upload -->
-        <input type="file" accept=".csv,.parquet" bind:files={fileUploadList} />
-
-        <Button
-          class="w-64"
-          disabled={!(fileUploadList && fileUploadList.length > 0)}
-          on:click={handleFileUpload}
+      <Dropzone
+        id="dropzone"
+        on:drop={handleDrop}
+        on:dragover={(event) => {
+          event.preventDefault();
+          console.log("drag over");
+          currentlyDragging = true;
+        }}
+        on:dragleave={() => {
+          console.log("drag leave");
+          currentlyDragging = false;
+        }}
+        on:change={handleFileClickUpload}
+        class={currentlyDragging ? "border-primary-700" : ""}
+      >
+        <svg
+          aria-hidden="true"
+          class="mb-3 w-10 h-10 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <UploadOutline size="sm" class="mr-2" />
-          Upload
-        </Button>
-      </div>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          />
+        </svg>
+        {#if !fileUpload}
+          <p
+            class="mb-2 text-sm text-gray-500 dark:text-gray-400 font-semibold"
+          >
+            Click to upload or drag and drop
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            CSV or PARQUET files only
+          </p>
+        {:else}
+          <p>{fileUpload.name}</p>
+        {/if}
+      </Dropzone>
+
+      <Button class="w-64" disabled={!fileUpload} on:click={handleFileUpload}>
+        <UploadOutline size="sm" class="mr-2" />
+        Upload
+      </Button>
 
       {#if firstResponse}
         {#await firstResponse}
