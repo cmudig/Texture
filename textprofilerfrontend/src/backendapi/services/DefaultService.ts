@@ -104,16 +104,21 @@ export class DefaultService {
 
   /**
    * Verify Schema
+   * @param originalName
    * @param requestBody
    * @returns DatasetVerifyResponse Successful Response
    * @throws ApiError
    */
   public verifySchema(
+    originalName: string,
     requestBody: DatasetInfo,
   ): CancelablePromise<DatasetVerifyResponse> {
     return this.httpRequest.request({
       method: "POST",
       url: "/verify_schema",
+      query: {
+        originalName: originalName,
+      },
       body: requestBody,
       mediaType: "application/json",
       errors: {

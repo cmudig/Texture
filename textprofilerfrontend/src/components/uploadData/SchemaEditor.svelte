@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Listgroup, ListgroupItem, Select } from "flowbite-svelte";
+  import { Listgroup, ListgroupItem, Select, Input } from "flowbite-svelte";
   import DataTypeIcon from "../DataTypeIcon.svelte";
 
   import type { DatasetInfo } from "../../backendapi";
@@ -17,10 +17,15 @@
 <!-- Schema editor -->
 <div class="flex flex-col gap-1">
   <Listgroup active class="">
-    <p class="m-4">
-      <span>Dataset name:</span>
-      <span class="text-black bold">{schema.name}</span>
-    </p>
+    <ListgroupItem class="flex gap-4 items-center">
+      <p>Dataset name:</p>
+      <Input
+        class="w-72"
+        size="md"
+        bind:value={schema.name}
+        placeholder="Dataset name"
+      />
+    </ListgroupItem>
     {#each schema.column_info as col}
       <ListgroupItem class="text-base font-semibold gap-2">
         <DataTypeIcon type={col.type} />

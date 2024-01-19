@@ -29,6 +29,7 @@
 
   // stage 2 vars
   let parsedSchema: DatasetInfo | undefined;
+  let parsedOriginalName: string | undefined;
   let secondResponse: Promise<DatasetVerifyResponse> | undefined;
 
   function handleFileUpload() {
@@ -39,9 +40,10 @@
 
       firstResponse.then((response) => {
         if (response.success) {
-          console.log("File uploaded successfully");
+          console.log("File cached successfully (not yet in db)");
 
           parsedSchema = response.datasetSchema;
+          parsedOriginalName = response.datasetSchema?.name;
           currentStatus = Status.VERIFY_TYPES;
         } else {
           console.error("Error uploading file:", response.message);
@@ -53,15 +55,18 @@
   }
 
   function handleSchemaVerification() {
-    if (parsedSchema) {
-      secondResponse = backendService.verifySchema(parsedSchema);
+    if (parsedSchema && parsedOriginalName) {
+      secondResponse = backendService.verifySchema(
+        parsedOriginalName,
+        parsedSchema
+      );
 
       secondResponse.then((response) => {
         if (response.success) {
-          console.log("Schema verified successfully");
+          console.log("File loaded and verified successfully");
           currentStatus = Status.COMPLETED;
 
-          // TODO also need to signal outside this component that a new dataset successfully uploaded...
+          // TODO here need to signal to outside this component that a new dataset successfully uploaded...
           finishedCount += 1;
         } else {
           console.error("Error verifying schema:", response.message);
@@ -126,11 +131,9 @@
         on:drop={handleDrop}
         on:dragover={(event) => {
           event.preventDefault();
-          console.log("drag over");
           currentlyDragging = true;
         }}
         on:dragleave={() => {
-          console.log("drag leave");
           currentlyDragging = false;
         }}
         on:change={handleFileClickUpload}
@@ -186,13 +189,14 @@
     <div class="flex flex-col gap-4">
       <p class="italic">Edit dataset schema</p>
 
-      {#if parsedSchema}
-        <div class="m-2">
+      <div class="m-2">
+        {#if parsedSchema}
           <SchemaEditor bind:schema={parsedSchema} />
-        </div>
-      {/if}
-
-      <Button class="w-64" on:click={handleSchemaVerification}>
+        {:else}
+          <div>Hmmm something went wrong, please restart dataset upload.</div>
+        {/if}
+      </div>
+      <Button class="w-64 ml-auto mr-2" on:click={handleSchemaVerification}>
         <CheckSolid size="sm" class="mr-2" />
         Looks good
       </Button>
@@ -213,16 +217,6 @@
       {/if}
     </div>
   {:else if currentStatus === Status.COMPLETED}
-    <p class="bold">Data successfully uploaded!</p>
-
-    <Button
-      class="w-64"
-      on:click={() => {
-        panelOpen = false;
-      }}
-    >
-      <CloseSolid size="sm" class="mr-2" />
-      Close
-    </Button>
+    <p class="text-green-700">Data successfully uploaded!</p>
   {/if}
 </Modal>

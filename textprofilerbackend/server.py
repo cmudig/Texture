@@ -93,9 +93,7 @@ def get_server() -> FastAPI:
 
         # Process the DataFrame
         initial_dataset_info = process_new_file(df, datasetName)
-
         datasetUploadCache[datasetName] = df
-        datasetMetadataCache[datasetName] = initial_dataset_info
 
         return DatasetUploadResponse(
             success=True,
@@ -104,19 +102,14 @@ def get_server() -> FastAPI:
         )
 
     @api_app.post("/verify_schema", response_model=DatasetVerifyResponse)
-    async def verify_schema(schema: DatasetInfo):
-        print("HIT: verify_schema")
-        name = schema.name
-        print("veriyfing schmea: ", name)
+    async def verify_schema(new_schema: DatasetInfo, originalName: str):
+        if originalName in datasetUploadCache:
+            new_name = new_schema.name
+            datasetMetadataCache[new_name] = new_schema
+            duckdb_conn.load_dataframe(new_name, datasetUploadCache[originalName])
 
-        if name in datasetMetadataCache and name in datasetUploadCache:
-            print("found in cache schmea: ")
-
-            datasetMetadataCache[name] = schema
-            duckdb_conn.load_dataframe(name, datasetUploadCache[name])
-
-            # clear out so not in memory again (hopefully doesnt mess up duckdb...)
-            # del datasetUploadCache[name]
+            # clear out cache once put in duckdb
+            del datasetUploadCache[originalName]
 
             return DatasetVerifyResponse(
                 success=True, message="Schema verified and uploaded."
@@ -124,7 +117,7 @@ def get_server() -> FastAPI:
 
         return DatasetVerifyResponse(
             success=False,
-            message=f"Failed to update schema for unknown dataset: {name}",
+            message=f"Failed to update schema for unknown dataset: {originalName}",
         )
 
     # @api_app.get("/example_arrow")
