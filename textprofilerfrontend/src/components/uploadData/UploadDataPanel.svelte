@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from "svelte";
   import { Button, Modal, Spinner, Dropzone } from "flowbite-svelte";
-  import { CheckSolid, CloseSolid } from "flowbite-svelte-icons";
+  import { CheckSolid } from "flowbite-svelte-icons";
 
   import type {
     DefaultService,
@@ -18,7 +18,7 @@
   }
 
   export let panelOpen: boolean;
-  export let finishedCount = 0;
+  export let finishedUploadHandler: (dsName: string) => void;
   let currentStatus: Status = Status.INITIAL_UPLOAD;
 
   // stage 1 vars
@@ -66,8 +66,10 @@
           console.log("File loaded and verified successfully");
           currentStatus = Status.COMPLETED;
 
-          // TODO here need to signal to outside this component that a new dataset successfully uploaded...
-          finishedCount += 1;
+          if (parsedSchema?.name) {
+            finishedUploadHandler(parsedSchema.name);
+            panelOpen = false;
+          }
         } else {
           console.error("Error verifying schema:", response.message);
         }

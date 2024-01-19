@@ -60,12 +60,17 @@
   let filterPanelHidden = true;
   let showAddDataModel = false;
   let datasetColSummaries: ColumnSummary[];
-  let dataPromise: Promise<any> = init();
+  let dataPromise: Promise<any> = populateDataTables();
 
-  async function init() {
+  async function populateDataTables(datasetName?: string): Promise<void> {
     let d = await backendService.readDatasetInfo();
     datasets = d;
-    selectedValue = Object.keys(datasets)[0];
+
+    if (datasetName && datasetName in datasets) {
+      selectedValue = datasetName;
+    } else {
+      selectedValue = Object.keys(datasets)[0];
+    }
 
     return setDataset();
   }
@@ -170,7 +175,12 @@
     </div>
   </Popover>
 
-  <UploadDataPanel bind:panelOpen={showAddDataModel} />
+  <UploadDataPanel
+    bind:panelOpen={showAddDataModel}
+    finishedUploadHandler={(name) => {
+      dataPromise = populateDataTables(name);
+    }}
+  />
 
   <FilterSolid
     id="filterToggle"
