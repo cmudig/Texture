@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "format": "npx prettier -w .",
     "gen-api": "npx openapi-typescript-codegen --input http://127.0.0.1:8000/api/openapi.json --output ./src/backendapi --name TextProfileClient; npx prettier -w ./src/backendapi",
     "rectify-gen-api": "git restore src/backendapi/models/ErrorResponse.ts; git restore src/backendapi/models/JsonResponse.ts; git restore src/backendapi/models/ExecResponse.ts; git restore src/backendapi/core/request.ts"
   },

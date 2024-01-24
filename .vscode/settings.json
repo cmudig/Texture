@@ -1,6 +1,9 @@
 {
-    "editor.formatOnSave": true,
-    "[svelte]": {
-        "editor.defaultFormatter": "svelte.svelte-vscode"
-      },
+  "editor.formatOnSave": true,
+  "[javascript][html][typescript][json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode"
+  }
 }

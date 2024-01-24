@@ -16,7 +16,7 @@ export function getUUID() {
 export async function getDatasetName(
   mainDSName: string,
   cName: string,
-  pltNullsFlag: boolean
+  pltNullsFlag: boolean,
 ) {
   let viewName = vg.column(`${mainDSName}NoNulls${cName}`);
 
@@ -25,8 +25,8 @@ export async function getDatasetName(
       .coordinator()
       .exec(
         vg.sql`create view if not exists ${viewName} as select * from ${vg.column(
-          mainDSName
-        )} where ${vg.column(cName)} is not null;`
+          mainDSName,
+        )} where ${vg.column(cName)} is not null;`,
       );
 
     return viewName;

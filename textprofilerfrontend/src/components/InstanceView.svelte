@@ -44,7 +44,7 @@
 
   $: {
     plot_cols = Object.keys(currentColToggleStates).filter(
-      (col) => currentColToggleStates[col]
+      (col) => currentColToggleStates[col],
     );
   }
 

@@ -16,7 +16,7 @@
         displayCol={col}
         colType="text"
         plotCols={datasetInfo.column_info.filter(
-          (c) => c.associated_text_col_name === col.name
+          (c) => c.associated_text_col_name === col.name,
         )}
         colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
       />

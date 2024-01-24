@@ -65,7 +65,7 @@ export class DatabaseConnection {
         connector = {
           query: (query: any) => {
             return new Promise((resolve, reject) =>
-              this.send(query, resolve, reject)
+              this.send(query, resolve, reject),
             );
           },
         };
@@ -84,7 +84,7 @@ export class DatabaseConnection {
   async send(
     query: Record<any, unknown>,
     resolve: (value: any) => void,
-    reject: (reason?: any) => void
+    reject: (reason?: any) => void,
   ) {
     await this.whenReady();
 
@@ -109,7 +109,7 @@ export class DatabaseConnection {
     result: DuckQueryResult,
     resolveFunc: (value: any) => void,
     rejectFunc: (reason?: any) => void,
-    requestData: DuckQueryData
+    requestData: DuckQueryData,
   ) {
     // console.log(
     //   query.query.sql,
@@ -122,7 +122,7 @@ export class DatabaseConnection {
         "[recieve_json] ERROR: ",
         result.error,
         "from request",
-        requestData
+        requestData,
       );
     } else if (result.type === "json") {
       resolveFunc(result.result);
@@ -135,7 +135,7 @@ export class DatabaseConnection {
     result: any,
     resolveFunc: (value: any) => void,
     rejectFunc: (reason?: any) => void,
-    requestData: DuckQueryData
+    requestData: DuckQueryData,
   ) {
     try {
       const table = await tableFromIPC(result);

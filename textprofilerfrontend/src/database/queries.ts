@@ -5,7 +5,7 @@ import type { JoinInfo } from "../backendapi";
 export async function getCount(
   datasetName: string,
   joinDsInfo?: JoinInfo,
-  selection?: any
+  selection?: any,
 ): Promise<number> {
   let fromClause = datasetName;
 
@@ -28,7 +28,7 @@ export async function getCount(
 }
 
 export async function getColSummaries(
-  datasetName: string
+  datasetName: string,
 ): Promise<ColumnSummary[]> {
   let q = vg.sql`summarize ${vg.column(datasetName)}`;
   let r = await vg.coordinator().query(q, { type: "json" });

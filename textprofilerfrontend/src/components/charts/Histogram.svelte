@@ -17,7 +17,7 @@
     mainDsName: string,
     cName: string,
     pltNullsFlag: boolean,
-    joinDsInfo?: JoinInfo
+    joinDsInfo?: JoinInfo,
   ) {
     let c;
 
@@ -52,7 +52,7 @@
         vg.xDomain(vg.Fixed),
         vg.marginLeft(55),
         vg.width(400),
-        vg.height(150)
+        vg.height(150),
       );
     } else {
       c = vg.plot(
@@ -66,7 +66,7 @@
         vg.xDomain(vg.Fixed),
         vg.marginLeft(55),
         vg.width(400),
-        vg.height(150)
+        vg.height(150),
       );
     }
 
@@ -75,7 +75,7 @@
 
   // This re-renders unnecessarily but is required or else will not re-render on $brush updates
   afterUpdate(() =>
-    renderChart(mainDatasetName, columnName, plotNulls, joinDatasetInfo)
+    renderChart(mainDatasetName, columnName, plotNulls, joinDatasetInfo),
   );
 </script>
 

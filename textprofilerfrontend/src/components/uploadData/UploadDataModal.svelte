@@ -58,7 +58,7 @@
     if (parsedSchema && parsedOriginalName) {
       secondResponse = backendService.verifySchema(
         parsedOriginalName,
-        parsedSchema
+        parsedSchema,
       );
 
       secondResponse.then((response) => {

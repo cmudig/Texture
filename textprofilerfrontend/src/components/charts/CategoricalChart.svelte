@@ -24,7 +24,7 @@
     mainDsName: string,
     cName: string,
     pltNullsFlag: boolean,
-    joinDsInfo?: JoinInfo
+    joinDsInfo?: JoinInfo,
   ) {
     let c;
 
@@ -77,7 +77,7 @@
         }),
         vg.yLabel(null),
         vg.marginLeft(80),
-        vg.width(400)
+        vg.width(400),
       );
     } else {
       c = vg.plot(
@@ -102,7 +102,7 @@
         }),
         vg.yLabel(null),
         vg.marginLeft(80),
-        vg.width(400)
+        vg.width(400),
       );
     }
 

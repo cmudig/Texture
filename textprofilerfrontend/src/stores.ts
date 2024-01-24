@@ -28,7 +28,7 @@ export const selectionDisplay = derived(
       set({});
     }
   },
-  initialSM
+  initialSM,
 );
 
 export const filteredCount: Readable<number | undefined> = derived(
@@ -39,7 +39,7 @@ export const filteredCount: Readable<number | undefined> = derived(
         let v = await getCount(
           $filters.datasetName,
           $filters.joinDatasetInfo,
-          $filters.brush
+          $filters.brush,
         );
         set(v);
       });
@@ -47,12 +47,12 @@ export const filteredCount: Readable<number | undefined> = derived(
       let v = getCount(
         $filters.datasetName,
         $filters.joinDatasetInfo,
-        $filters.brush
+        $filters.brush,
       ).then((v) => set(v));
     } else {
       set(undefined);
     }
-  }
+  },
 );
 
 function updateValue(mosaicSelection: any): SelectionMap {
