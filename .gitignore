@@ -7,3 +7,4 @@ datasets/processed/embedding_cache/*
 analysis/_scratch.ipynb
 
 .textprofiler_cache/
+.vite/
