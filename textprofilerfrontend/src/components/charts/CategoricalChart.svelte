@@ -1,36 +1,18 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate } from "svelte";
-  import { filters, showBackgroundDist } from "../../stores";
+  import { filters } from "../../stores";
+  import type { JoinInfo } from "../../backendapi";
+  import { getDatasetName } from "../../shared/utils";
 
   export let columnName: string;
+  export let mainDatasetName: string;
+  export let joinDatasetInfo: JoinInfo | undefined = undefined;
+  export let showBackground = true;
   export let plotNulls = true;
+  export let limit = 10;
 
   let el: HTMLElement;
-
-  async function getDatasetName(
-    mainDatasetName: string,
-    cName: string,
-    pltNullsFlag: boolean,
-  ) {
-    let viewName = `${mainDatasetName}NoNulls${cName}`;
-
-    if (!pltNullsFlag) {
-      await vg
-        .coordinator()
-        .exec(
-          vg.sql`create view if not exists ${vg.column(
-            viewName,
-          )} as select * from ${vg.column(mainDatasetName)} where ${vg.column(
-            cName,
-          )} is not null;`,
-        );
-
-      return viewName;
-    }
-
-    return mainDatasetName;
-  }
 
   /* BUG: on component destory, the brush is not  preserved rn. 
   Right now still filters chart but cannot change when new component created
@@ -42,76 +24,85 @@
     mainDsName: string,
     cName: string,
     pltNullsFlag: boolean,
+    joinDsInfo?: JoinInfo
   ) {
     let c;
 
     const selectCat = vg.Selection.single();
 
-    // let datasetName = await getDatasetName($filters.datasetName);
     let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
+    let fromClause: any = datasetName;
 
-    if ($showBackgroundDist) {
+    if (joinDsInfo) {
+      fromClause = vg.fromJoinDistinct({
+        table: datasetName,
+        rightTable: joinDsInfo.joinDatasetName,
+        joinKey: joinDsInfo.joinKey,
+      });
+    }
+
+    if (showBackground) {
       c = vg.plot(
         // including this breaks the click interation and doesnt cut off text?
         // vg.axisY({
         //   textOverflow: "ellipsis",
         //   lineWidth: 50,
         // }),
-        vg.barX(vg.from(datasetName), {
+        vg.barX(vg.from(fromClause), {
           x: vg.count(),
           y: cName,
           order: cName,
           fill: "#ccc",
           fillOpacity: 0.4,
-          sort: { y: "-x", limit: 10 },
+          sort: { y: "-x", limit },
         }),
-        vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.barX(vg.from(fromClause, { filterBy: $filters.brush }), {
           x: vg.count(),
           y: cName,
           order: cName,
           fill: "steelblue",
-          sort: { y: "-x", limit: 10 },
+          sort: { y: "-x", limit },
         }),
         vg.highlight({ by: selectCat }),
         vg.toggleY({ as: selectCat }),
         vg.toggleY({ as: $filters.brush }),
-        vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.text(vg.from(fromClause, { filterBy: $filters.brush }), {
           x: vg.count(),
           y: cName,
           order: cName,
-          sort: { y: "-x", limit: 10 },
+          sort: { y: "-x", limit },
           text: vg.count(),
           dx: 5,
           textAnchor: "start",
         }),
         vg.yLabel(null),
         vg.marginLeft(80),
-        vg.width(400),
+        vg.width(400)
       );
     } else {
       c = vg.plot(
-        vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.barX(vg.from(fromClause, { filterBy: $filters.brush }), {
           x: vg.count(),
           y: cName,
           order: cName,
           fill: "steelblue",
-          sort: { y: "-x", limit: 10 },
+          sort: { y: "-x", limit },
         }),
         vg.highlight({ by: selectCat }),
         vg.toggleY({ as: selectCat }),
         vg.toggleY({ as: $filters.brush }),
-        vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
+        vg.text(vg.from(fromClause, { filterBy: $filters.brush }), {
           x: vg.count(),
           y: cName,
           order: cName,
-          sort: { y: "-x", limit: 10 },
+          sort: { y: "-x", limit },
           text: vg.count(),
           dx: 5,
           textAnchor: "start",
         }),
         vg.yLabel(null),
         vg.marginLeft(80),
-        vg.width(400),
+        vg.width(400)
       );
     }
 
@@ -119,7 +110,7 @@
   }
 
   afterUpdate(() => {
-    renderChart($filters.datasetName, columnName, plotNulls);
+    renderChart(mainDatasetName, columnName, plotNulls, joinDatasetInfo);
   });
 </script>
 

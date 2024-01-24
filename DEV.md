@@ -108,3 +108,7 @@ Will start local server and hot re-load changes
 cd textctextprofilerfrontendleanui
 npm run dev
 ```
+
+# Notes
+
+- Right now manually linking mosaic (all packages) in `package.json` but can only do one install later

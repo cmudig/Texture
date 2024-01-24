@@ -93,6 +93,7 @@
     $filters = {
       brush: vg.Selection.crossfilter(),
       datasetName: info.name,
+      joinDatasetInfo: info.joinDatasetInfo,
     };
 
     datasetSize = await getCount(info.name);
@@ -107,6 +108,7 @@
     $filters = {
       brush: vg.Selection.crossfilter(),
       datasetName: datasetInfo.name,
+      joinDatasetInfo: datasetInfo.joinDatasetInfo,
     };
   }
 </script>
@@ -269,7 +271,11 @@
             Table
           </div>
 
-          <InstanceView {datasetInfo} {currentColToggleStates} />
+          <InstanceView
+            mainDatasetName={datasetInfo.name}
+            joinDatasetInfo={datasetInfo.joinDatasetInfo}
+            {currentColToggleStates}
+          />
         </TabItem>
       </Tabs>
     </div>

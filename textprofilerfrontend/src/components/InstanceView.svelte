@@ -1,10 +1,11 @@
 <script lang="ts">
   import { afterUpdate } from "svelte";
-  import type { DatasetInfo } from "../backendapi/models/DatasetInfo";
+  import type { JoinInfo } from "../backendapi";
   import * as vg from "@uwdata/vgplot";
   import { filters } from "../stores";
 
-  export let datasetInfo: DatasetInfo;
+  export let mainDatasetName: string;
+  export let joinDatasetInfo: JoinInfo | undefined = undefined;
   export let currentColToggleStates: Record<string, boolean> = {};
 
   let el: HTMLElement;
@@ -12,11 +13,20 @@
 
   function renderChart(cols: string[]) {
     let c;
+    let fromClause = mainDatasetName;
+
+    if (joinDatasetInfo) {
+      fromClause = vg.fromJoinDistinct({
+        table: mainDatasetName,
+        rightTable: joinDatasetInfo.joinDatasetName,
+        joinKey: joinDatasetInfo.joinKey,
+      });
+    }
 
     if (cols.length > 0) {
       c = vg.table({
         // element: el, // doesnt work on updates?
-        from: datasetInfo.name,
+        from: fromClause,
         height: 1200,
         width: "100%",
         filterBy: $filters.brush,

@@ -3,12 +3,16 @@ from textprofilerbackend.models import DatasetInfo
 
 dataset_vast2021 = DatasetInfo(
     name="vast2021",
+    joinDatasetInfo={
+        "joinDatasetName": "vast2021_word",
+        "joinKey": "id",
+    },
     origin="example",
     column_info=[
         {"name": "message", "type": "text"},
         # dataset metadata
         {"name": "type", "type": "categorical"},
-        {"name": "date(yyyyMMddHHmmss)", "type": "number"},
+        # {"name": "date(yyyyMMddHHmmss)", "type": "number"},
         {"name": "author", "type": "categorical"},
         {"name": "latitude", "type": "number"},
         {"name": "longitude", "type": "number"},
@@ -676,7 +680,6 @@ dataset_squad = DatasetInfo(
 
 dataset_bbc = DatasetInfo(
     name="bbc",
-    filename="bbc_with_lava.parquet",
     origin="example",
     column_info=[
         # text columns

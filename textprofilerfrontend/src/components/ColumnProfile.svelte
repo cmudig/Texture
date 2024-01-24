@@ -8,10 +8,12 @@
   import SearchBar from "./charts/SearchBar.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
+  import { filters, showBackgroundDist } from "../stores";
 
   export let displayCol: Column;
   export let plotCols: Column[];
   export let colSummary: ColumnSummary | undefined = undefined;
+  export let colType: string | undefined = undefined;
 
   let active = true;
 </script>
@@ -46,15 +48,48 @@
           <SearchBar columnName={displayCol.name} />
         {/if}
 
+        {#if colType === "text" && $filters.joinDatasetInfo}
+          <h3 class="italic">Words</h3>
+
+          <CategoricalChart
+            mainDatasetName={$filters.joinDatasetInfo.joinDatasetName}
+            joinDatasetInfo={{
+              joinDatasetName: $filters.datasetName,
+              joinKey: $filters.joinDatasetInfo.joinKey,
+            }}
+            columnName={"word"}
+            showBackground={false}
+            limit={20}
+          />
+        {/if}
+
         <div class="flex flex-col">
+          {#if colType === "text" && plotCols.length}
+            <h3 class="italic">Extracted metadata</h3>
+          {/if}
+
           {#each plotCols as col}
             {#if col.type === "number"}
-              <Histogram columnName={col.name} />
+              <Histogram
+                mainDatasetName={$filters.datasetName}
+                joinDatasetInfo={$filters.joinDatasetInfo}
+                showBackground={$showBackgroundDist}
+                columnName={col.name}
+              />
             {:else if col.type === "categorical"}
               <SearchBar columnName={col.name} />
-              <CategoricalChart columnName={col.name} />
+              <CategoricalChart
+                mainDatasetName={$filters.datasetName}
+                joinDatasetInfo={$filters.joinDatasetInfo}
+                showBackground={$showBackgroundDist}
+                columnName={col.name}
+              />
             {:else if col.type === "date"}
-              <DateChart columnName={col.name} />
+              <DateChart
+                mainDatasetName={$filters.datasetName}
+                joinDatasetInfo={$filters.joinDatasetInfo}
+                columnName={col.name}
+              />
             {:else}
               <div>{col.name}: Unsupported column type ({col.type})</div>
             {/if}

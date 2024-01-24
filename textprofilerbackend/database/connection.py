@@ -23,20 +23,26 @@ def init_db():
     print("Loading example data...")
 
     datasetPaths = {
-        "vast2021": "raw_data/vast2021.parquet",
-        "dolly": "raw_data/dolly15k.parquet",
-        "opus": "raw_data/opus100_en_es.parquet",
-        "squad": "raw_data/squad_validation.parquet",
-        "bbc": "raw_data/bbc_with_lava.parquet",
+        "vast2021": "raw_data/vast_w_id.parquet",
+        "vast2021_word": "raw_data/vast_word_w_id.parquet"
+        # "dolly": "raw_data/dolly15k.parquet",
+        # "opus": "raw_data/opus100_en_es.parquet",
+        # "squad": "raw_data/squad_validation.parquet",
+        # "bbc": "raw_data/bbc_with_lava.parquet",
     }
 
     metadataCache = {}
 
     # load example datasets into duckdb
-    for datasetInfo in EXAMPLE_DATASETS:
-        dsName = datasetInfo.name
-        duckdbconn.load_dataset(dsName, datasetPaths[dsName])
-        metadataCache[dsName] = datasetInfo
+    # for datasetInfo in EXAMPLE_DATASETS:
+    #     dsName = datasetInfo.name
+    #     duckdbconn.load_dataset(dsName, datasetPaths[dsName])
+    #     metadataCache[dsName] = datasetInfo
+
+    # TEMP: load example data
+    duckdbconn.load_dataset("vast2021", "raw_data/vast_w_id.parquet")
+    duckdbconn.load_dataset("vast2021_word", "raw_data/vast_word_w_id.parquet")
+    metadataCache["vast2021"] = EXAMPLE_DATASETS[0]
 
     print("Example data loaded.")
 
@@ -45,11 +51,14 @@ def init_db():
 
 class DatabaseConnection:
     def __init__(self, database_name="defaultDatabase.db"):
-        Path(CACHE_PATH).mkdir(parents=True, exist_ok=True)
-        p = Path(CACHE_PATH) / database_name
+        # Path(CACHE_PATH).mkdir(parents=True, exist_ok=True)
+        # p = Path(CACHE_PATH) / database_name
 
-        print("Making new DatabaseConnection, saving to:  ", str(p))
-        self.connection = duckdb.connect(str(p))
+        print("Making new DuckDB DatabaseConnection in memory")
+
+        # NOTE: can save this to file, but potentially causes issues with old tables
+        # so right now making new database on start up each time
+        self.connection = duckdb.connect()
 
     def query(self, query_string: str) -> list:
         """
@@ -123,7 +132,7 @@ class DatabaseConnection:
                 )
 
         except Exception as e:
-            print("ERROR: ", e)
+            print("[Handle JSON message ERROR]: ", e, "\nExecuting SQL: ", sql)
             response_message = ErrorResponse(error=str(e), uuid=uuid)
 
         # total = round((time.time() - start) * 1_000)
@@ -160,7 +169,7 @@ class DatabaseConnection:
                     error=f"Unsupported response type: {data.type}", uuid=uuid
                 )
         except Exception as e:
-            print("ERROR: ", e)
+            print("[Handle Arrow message ERROR]: ", e, "\nExecuting SQL: ", sql)
             response_message = ErrorResponse(error=str(e), uuid=uuid)
 
         # total = round((time.time() - start) * 1_000)
