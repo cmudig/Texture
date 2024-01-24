@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { Body_upload_dataset } from "../models/Body_upload_dataset";
 import type { DatasetInfo } from "../models/DatasetInfo";
+import type { DatasetTokenizeResponse } from "../models/DatasetTokenizeResponse";
 import type { DatasetUploadResponse } from "../models/DatasetUploadResponse";
 import type { DatasetVerifyResponse } from "../models/DatasetVerifyResponse";
 import type { DuckQueryData } from "../models/DuckQueryData";
@@ -121,6 +122,33 @@ export class DefaultService {
       },
       body: requestBody,
       mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Tokenize Dataset
+   * @param datasetName
+   * @param columnName
+   * @param tokenType
+   * @returns DatasetTokenizeResponse Successful Response
+   * @throws ApiError
+   */
+  public tokenizeDataset(
+    datasetName: string,
+    columnName: string,
+    tokenType: "word" | "token",
+  ): CancelablePromise<DatasetTokenizeResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/tokenize_dataset",
+      query: {
+        datasetName: datasetName,
+        columnName: columnName,
+        tokenType: tokenType,
+      },
       errors: {
         422: `Validation Error`,
       },
