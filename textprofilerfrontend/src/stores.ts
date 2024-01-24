@@ -6,6 +6,7 @@ import { getCount } from "./database/queries";
 export const filters: Writable<FilterWrapper> = writable({
   brush: undefined,
   datasetName: "",
+  joinDatasetName: undefined,
 });
 
 export const showBackgroundDist: Writable<boolean> = writable(true);
@@ -35,13 +36,19 @@ export const filteredCount: Readable<number | undefined> = derived(
   ($filters, set) => {
     if ($filters.brush && $filters.datasetName) {
       $filters.brush.addEventListener("value", async () => {
-        let v = await getCount($filters.datasetName, $filters.brush);
+        let v = await getCount(
+          $filters.datasetName,
+          $filters.joinDatasetInfo,
+          $filters.brush
+        );
         set(v);
       });
       // event listener not triggered on initial set so call manually
-      let v = getCount($filters.datasetName, $filters.brush).then((v) =>
-        set(v)
-      );
+      let v = getCount(
+        $filters.datasetName,
+        $filters.joinDatasetInfo,
+        $filters.brush
+      ).then((v) => set(v));
     } else {
       set(undefined);
     }

@@ -96,11 +96,11 @@ export class DatabaseConnection {
 
     if (requestData.type === "arrow") {
       this.backendService.duckdbQueryArrow(requestData).then((result) => {
-        this.receive_arrow(result, resolve, reject);
+        this.receive_arrow(result, resolve, reject, requestData);
       });
     } else {
       this.backendService.duckdbQueryJson(requestData).then((result) => {
-        this.receive_json(result, resolve, reject);
+        this.receive_json(result, resolve, reject, requestData);
       });
     }
   }
@@ -108,7 +108,8 @@ export class DatabaseConnection {
   receive_json(
     result: DuckQueryResult,
     resolveFunc: (value: any) => void,
-    rejectFunc: (reason?: any) => void
+    rejectFunc: (reason?: any) => void,
+    requestData: DuckQueryData
   ) {
     // console.log(
     //   query.query.sql,
@@ -117,7 +118,12 @@ export class DatabaseConnection {
 
     if (result.type === "error") {
       rejectFunc(result.error);
-      console.error(result.error);
+      console.error(
+        "[recieve_json] ERROR: ",
+        result.error,
+        "from request",
+        requestData
+      );
     } else if (result.type === "json") {
       resolveFunc(result.result);
     } else {
@@ -128,13 +134,14 @@ export class DatabaseConnection {
   async receive_arrow(
     result: any,
     resolveFunc: (value: any) => void,
-    rejectFunc: (reason?: any) => void
+    rejectFunc: (reason?: any) => void,
+    requestData: DuckQueryData
   ) {
     try {
       const table = await tableFromIPC(result);
       resolveFunc(table);
     } catch (e) {
-      console.error("[receive_arrow] ERROR", e);
+      console.error("[receive_arrow] ERROR: ", e, "from request", requestData);
       rejectFunc(e);
     }
   }

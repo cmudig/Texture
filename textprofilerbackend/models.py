@@ -10,10 +10,16 @@ class Column(BaseModel):
     associated_text_col_name: Optional[str] = None
 
 
+class JoinInfo(BaseModel):
+    joinDatasetName: str
+    joinKey: str
+
+
 class DatasetInfo(BaseModel):
     name: str
     column_info: List[Column]
     origin: Literal["example", "uploaded"]
+    joinDatasetInfo: Optional[JoinInfo] = None
 
 
 class ColumnSummary(BaseModel):
@@ -65,5 +71,10 @@ class DatasetUploadResponse(BaseModel):
 
 
 class DatasetVerifyResponse(BaseModel):
+    success: bool
+    message: str
+
+
+class DatasetTokenizeResponse(BaseModel):
     success: bool
     message: str

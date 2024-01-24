@@ -1,8 +1,11 @@
 // Front end only types
 
+import type { JoinInfo } from "../backendapi";
+
 export type FilterWrapper = {
   brush: any;
   datasetName: string;
+  joinDatasetInfo?: JoinInfo;
 };
 
 export type SelectionMap = {

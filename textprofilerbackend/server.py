@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
-from typing import Dict
+from typing import Dict, Literal
 
 from textprofilerbackend.database import init_db
 from textprofilerbackend.models import (
@@ -11,8 +11,10 @@ from textprofilerbackend.models import (
     DuckQueryResult,
     DatasetUploadResponse,
     DatasetVerifyResponse,
+    DatasetTokenizeResponse,
 )
 from textprofilerbackend.process_data import process_new_file
+from textprofilerbackend.transform import word_tokenize
 
 from io import BytesIO
 import pandas as pd
@@ -118,6 +120,31 @@ def get_server() -> FastAPI:
         return DatasetVerifyResponse(
             success=False,
             message=f"Failed to update schema for unknown dataset: {originalName}",
+        )
+
+    @api_app.post("/tokenize_dataset", response_model=DatasetTokenizeResponse)
+    async def tokenize_dataset(
+        datasetName: str, columnName: str, tokenType: Literal["word", "token"]
+    ):
+        if datasetName in datasetMetadataCache:
+            table = duckdb_conn.get_table(datasetName)
+
+            col = table[columnName]
+
+            if tokenType == "word":
+                word_tokens = word_tokenize.get_word_tokens_batch(col)
+            else:
+                word_tokens = word_tokenize.get_byte_encoding_batch(col)
+
+            # TODO load word_tokens into duckdb table
+
+            return DatasetTokenizeResponse(
+                success=True, message="Dataset tokenized successfully."
+            )
+
+        return DatasetTokenizeResponse(
+            success=False,
+            message=f"Failed to tokenize, unkown dataset: {datasetName}.",
         )
 
     # @api_app.get("/example_arrow")

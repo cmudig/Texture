@@ -14,6 +14,7 @@
     {#if col.type == "text"}
       <ColumnProfile
         displayCol={col}
+        colType="text"
         plotCols={datasetInfo.column_info.filter(
           (c) => c.associated_text_col_name === col.name
         )}
