@@ -65,11 +65,15 @@
       class="max-h-screen overflow-auto"
       on:scroll={(e) => myTableClient.scroll(e)}
     >
-      <table>
+      <table class="w-full table-fixed">
         <thead>
           <tr>
             {#each $schema as schemaItem}
-              <th on:click={(e) => myTableClient.sort(e, schemaItem.column)}>
+              <th
+                class={`sticky top-0 font-medium bg-gray-50 hover:bg-gray-100 cursor-ns-resize border-b-2
+                border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9`}
+                on:click={(e) => myTableClient.sort(e, schemaItem.column)}
+              >
                 {formatColumnName(schemaItem.column, $sortDesc, $sortColumn)}
               </th>
             {/each}
@@ -78,12 +82,15 @@
         {#if $data}
           <tbody>
             {#each $data as row, i}
-              <tr>
+              <tr class="hover:bg-blue-50">
                 {#each $schema as schemaItem}
                   {@const myValue = row[schemaItem.column]}
                   <td
-                    class:text-gray-300={myValue == undefined}
-                    class:italic={myValue == undefined}
+                    class={`whitespace-normal text-ellipsis overflow-hidden p-2 align-top text-sm border-b border-gray-100 ${
+                      myValue == undefined
+                        ? "text-gray-300 italic"
+                        : "text-gray-800"
+                    }`}
                   >
                     {formatValue(myValue, schemaItem.type)}
                   </td>
@@ -102,63 +109,3 @@
 {:else}
   <p class="mt-4 ml-2">Not ready yet...</p>
 {/if}
-
-<style>
-  table {
-    display: table;
-    position: relative;
-    table-layout: fixed;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-variant-numeric: tabular-nums;
-    box-sizing: border-box;
-    max-width: initial;
-    min-height: 33px;
-    margin: 0;
-    width: 100%;
-    line-height: 15.6px;
-  }
-
-  thead tr th {
-    position: sticky;
-    top: 0;
-    font-weight: 500; /* font-medium */
-    background: rgb(249 250 251); /* bg-gray-50 */
-    cursor: ns-resize;
-    border-bottom: solid 1px #ccc;
-    height: 2.25rem;
-  }
-
-  thead tr th:hover {
-    background-color: rgb(243 244 246); /* hover:bg-gray-100 */
-  }
-
-  tbody tr:hover {
-    background: #eff6ff;
-  }
-
-  th {
-    color: #111;
-    text-align: left;
-    vertical-align: bottom;
-  }
-
-  td,
-  th {
-    white-space: wrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    padding: 0.5rem;
-  }
-
-  td,
-  tr:not(:last-child) th {
-    border-bottom: solid 1px #eee;
-  }
-
-  td {
-    font-size: 14px;
-    /* color: #444; */
-    vertical-align: top;
-  }
-</style>
