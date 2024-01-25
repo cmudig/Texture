@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SelectionRange } from "../shared/types";
-  import { formatNumber } from "../shared/utils";
+  import { formatFloat } from "../shared/format";
 
   export let colName: string;
   export let filterRange: SelectionRange;
@@ -24,7 +24,7 @@
     {#if isString}
       {filterRange.join(", ")}
     {:else}
-      [{formatNumber(Number(filterRange[0]))}, {formatNumber(
+      [{formatFloat(Number(filterRange[0]))}, {formatFloat(
         Number(filterRange[1]),
       )}]
     {/if}

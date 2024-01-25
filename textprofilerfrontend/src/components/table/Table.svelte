@@ -3,7 +3,11 @@
   import * as vg from "@uwdata/vgplot";
   import { TableClient } from "./TableClient";
   import { filters } from "../../stores";
-  import { formatLocaleAuto, formatNumber, formatDate } from "./format";
+  import {
+    formatLocaleAuto,
+    formatNumber,
+    formatDate,
+  } from "../../shared/format";
   import { onMount } from "svelte";
 
   export let mainDatasetName: string;

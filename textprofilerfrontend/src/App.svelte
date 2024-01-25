@@ -35,7 +35,7 @@
     FilePlusSolid,
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
-  import { formatNumber } from "./shared/utils";
+  import { formatNumber } from "./shared/format";
   import { TextProfileClient, DefaultService } from "./backendapi";
   import { setContext } from "svelte";
 
