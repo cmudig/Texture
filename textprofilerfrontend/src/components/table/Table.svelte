@@ -8,43 +8,70 @@
     formatNumber,
     formatDate,
   } from "../../shared/format";
-  import { onMount } from "svelte";
+  import { onDestroy } from "svelte";
 
   export let mainDatasetName: string;
   export let joinDatasetInfo: JoinInfo | undefined = undefined;
   export let currentColToggleStates: Record<string, boolean> = {};
 
-  //   TODO none of this is reactive right now so might not change when props change
-  let fromClause = joinDatasetInfo
-    ? vg.fromJoinDistinct({
-        table: mainDatasetName,
-        rightTable: joinDatasetInfo.joinDatasetName,
-        joinKey: joinDatasetInfo.joinKey,
-      })
-    : mainDatasetName;
-
-  let plotcols = Object.keys(currentColToggleStates).filter(
-    (col) => currentColToggleStates[col],
-  );
-
-  let myTableClient = new TableClient({
-    filterBy: $filters.brush,
-    from: fromClause,
-    columns: plotcols,
-  });
-
-  let { schema, data, sortColumn, sortDesc } = myTableClient;
-
+  let myTableClient: TableClient;
+  let previousClient: TableClient;
   let ready = false;
 
-  onMount(() => {
+  function createClient(
+    _joinDatasetInfo,
+    _mainDatasetName,
+    _currentColToggleStates,
+    filter,
+  ) {
+    let fromClause = _joinDatasetInfo
+      ? vg.fromJoinDistinct({
+          table: _mainDatasetName,
+          rightTable: _joinDatasetInfo.joinDatasetName,
+          joinKey: _joinDatasetInfo.joinKey,
+        })
+      : _mainDatasetName;
+
+    let plotcols = Object.keys(_currentColToggleStates).filter(
+      (col) => _currentColToggleStates[col],
+    );
+
+    let client = new TableClient({
+      filterBy: filter,
+      from: fromClause,
+      columns: plotcols,
+    });
+
+    return client;
+  }
+
+  onDestroy(() => {
+    vg.coordinator().disconnect(myTableClient);
+  });
+
+  $: {
+    myTableClient = createClient(
+      joinDatasetInfo,
+      mainDatasetName,
+      currentColToggleStates,
+      $filters.brush,
+    );
+
+    if (previousClient) {
+      vg.coordinator().disconnect(previousClient);
+    }
+    previousClient = myTableClient;
+
     vg.coordinator()
       .connect(myTableClient)
       .then(() => {
         ready = true;
       });
-  });
+  }
 
+  $: ({ schema, data, sortColumn, sortDesc } = myTableClient);
+
+  // Utils
   function formatColumnName(
     columnName: string,
     sortDesc: boolean,
