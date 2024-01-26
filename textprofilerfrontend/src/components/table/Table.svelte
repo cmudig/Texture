@@ -2,13 +2,15 @@
   import type { JoinInfo } from "../../backendapi";
   import * as vg from "@uwdata/vgplot";
   import { TableClient } from "./TableClient";
-  import { filters } from "../../stores";
+  import { filters, selectionDisplay } from "../../stores";
   import {
     formatLocaleAuto,
     formatNumber,
     formatDate,
   } from "../../shared/format";
   import { onDestroy } from "svelte";
+  import type { SelectionRange } from "../../shared/types";
+  import Highlight from "./Highlight.svelte";
 
   export let mainDatasetName: string;
   export let joinDatasetInfo: JoinInfo | undefined = undefined;
@@ -116,6 +118,8 @@
               <tr class="hover:bg-blue-50">
                 {#each $schema as schemaItem}
                   {@const myValue = row[schemaItem.column]}
+                  {@const joinColName =
+                    $filters.joinDatasetInfo?.joinColumn.name}
                   <td
                     class={`whitespace-normal text-ellipsis overflow-hidden p-2 align-top text-sm border-b border-gray-100 ${
                       myValue == undefined
@@ -123,7 +127,20 @@
                         : "text-gray-800"
                     }`}
                   >
-                    {formatValue(myValue, schemaItem.type)}
+                    <!-- TODO merge highlights if both options... -->
+                    {#if $filters.joinDatasetInfo?.joinColumn.associated_text_col_name == schemaItem.column && joinColName in $selectionDisplay}
+                      <Highlight
+                        value={myValue}
+                        highlights={$selectionDisplay[joinColName]}
+                      />
+                    {:else if schemaItem.column in $selectionDisplay}
+                      <Highlight
+                        value={myValue}
+                        highlights={$selectionDisplay[schemaItem.column]}
+                      />
+                    {:else}
+                      {formatValue(myValue, schemaItem.type)}
+                    {/if}
                   </td>
                 {/each}
               </tr>

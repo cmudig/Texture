@@ -13,6 +13,7 @@ class Column(BaseModel):
 class JoinInfo(BaseModel):
     joinDatasetName: str
     joinKey: str
+    joinColumn: Column
 
 
 class DatasetInfo(BaseModel):
