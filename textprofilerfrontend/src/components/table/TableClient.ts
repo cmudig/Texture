@@ -2,13 +2,13 @@ import { desc } from "@uwdata/mosaic-sql";
 import * as vg from "@uwdata/vgplot";
 import { type Writable, writable, get } from "svelte/store";
 
-type TableProps = {
+export type TableProps = {
   filterBy?: any;
   from: any;
   columns: any[];
 };
 
-type FieldInfo = {
+export type FieldInfo = {
   table: any;
   column: string;
   sqlType: string;
