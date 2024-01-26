@@ -18,65 +18,6 @@ body {
 @tailwind utilities;
 
 /* Have to style mosaic elements here because dynamically generated */
-
-#instanceTable table {
-  display: table;
-  position: relative;
-  table-layout: fixed;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-variant-numeric: tabular-nums;
-  box-sizing: border-box;
-  max-width: initial;
-  min-height: 33px;
-  margin: 0;
-  width: 100%;
-  line-height: 15.6px;
-}
-
-#instanceTable thead tr th {
-  position: sticky;
-  top: 0;
-  font-weight: 500; /* font-medium */
-  background: rgb(249 250 251); /* bg-gray-50 */
-  cursor: ns-resize;
-  border-bottom: solid 1px #ccc;
-  height: 2.25rem;
-}
-
-#instanceTable thead tr th:hover {
-  background-color: rgb(243 244 246); /* hover:bg-gray-100 */
-}
-
-#instanceTable tbody tr:hover {
-  background: #eff6ff;
-}
-
-#instanceTable th {
-  color: #111;
-  text-align: left;
-  vertical-align: bottom;
-}
-
-#instanceTable td,
-#instanceTable th {
-  white-space: wrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  padding: 0.5rem;
-}
-
-#instanceTable td,
-#instanceTable tr:not(:last-child) th {
-  border-bottom: solid 1px #eee;
-}
-
-#instanceTable td {
-  font-size: 14px;
-  color: #444;
-  vertical-align: top;
-}
-
 .summaryChart input {
   border-radius: 0.25rem;
   height: 25px;

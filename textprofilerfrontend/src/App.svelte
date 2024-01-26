@@ -11,7 +11,7 @@
     filteredCount,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
-  import InstanceView from "./components/InstanceView.svelte";
+  import Table from "./components/table/Table.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import {
@@ -35,7 +35,7 @@
     FilePlusSolid,
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
-  import { formatNumber } from "./shared/utils";
+  import { formatNumber } from "./shared/format";
   import { TextProfileClient, DefaultService } from "./backendapi";
   import { setContext } from "svelte";
 
@@ -271,7 +271,7 @@
             Table
           </div>
 
-          <InstanceView
+          <Table
             mainDatasetName={datasetInfo.name}
             joinDatasetInfo={datasetInfo.joinDatasetInfo}
             {currentColToggleStates}
