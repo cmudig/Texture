@@ -6,6 +6,11 @@ dataset_vast2021 = DatasetInfo(
     joinDatasetInfo={
         "joinDatasetName": "vast2021_word",
         "joinKey": "id",
+        "joinColumn": {
+            "name": "word",
+            "type": "text",
+            "associated_text_col_name": "message",
+        },
     },
     origin="example",
     column_info=[

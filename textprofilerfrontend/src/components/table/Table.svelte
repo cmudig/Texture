@@ -1,14 +1,17 @@
 <script lang="ts">
   import type { JoinInfo } from "../../backendapi";
   import * as vg from "@uwdata/vgplot";
-  import { TableClient } from "./TableClient";
-  import { filters } from "../../stores";
+  import { TableClient, type FieldInfo } from "./TableClient";
+  import { filters, selectionDisplay } from "../../stores";
   import {
     formatLocaleAuto,
     formatNumber,
     formatDate,
   } from "../../shared/format";
   import { onDestroy } from "svelte";
+  import type { SelectionMap } from "../../shared/types";
+  import Highlight from "./Highlight.svelte";
+  import Regular from "./Regular.svelte";
 
   export let mainDatasetName: string;
   export let joinDatasetInfo: JoinInfo | undefined = undefined;
@@ -88,6 +91,40 @@
     if (type === "date") return formatDate(value);
     return formatLocaleAuto(value);
   }
+
+  function renderValue(
+    myValue: any,
+    schemaItem: FieldInfo,
+    selections: SelectionMap,
+    joinInfo?: JoinInfo,
+  ) {
+    let highlights = [];
+
+    if (
+      joinInfo?.joinColumn.associated_text_col_name == schemaItem.column &&
+      joinInfo?.joinColumn.name in selections
+    ) {
+      highlights = [...highlights, ...selections[joinInfo.joinColumn.name]];
+    }
+    if (schemaItem.column in selections) {
+      highlights = [...highlights, ...selections[schemaItem.column]];
+    }
+
+    if (highlights.length) {
+      return {
+        component: Highlight,
+        props: {
+          value: myValue,
+          highlights,
+        },
+      };
+    }
+
+    return {
+      component: Regular,
+      props: { value: formatValue(myValue, schemaItem.type) },
+    };
+  }
 </script>
 
 {#if ready}
@@ -116,6 +153,12 @@
               <tr class="hover:bg-blue-50">
                 {#each $schema as schemaItem}
                   {@const myValue = row[schemaItem.column]}
+                  {@const item = renderValue(
+                    myValue,
+                    schemaItem,
+                    $selectionDisplay,
+                    $filters.joinDatasetInfo,
+                  )}
                   <td
                     class={`whitespace-normal text-ellipsis overflow-hidden p-2 align-top text-sm border-b border-gray-100 ${
                       myValue == undefined
@@ -123,7 +166,7 @@
                         : "text-gray-800"
                     }`}
                   >
-                    {formatValue(myValue, schemaItem.type)}
+                    <svelte:component this={item.component} {...item.props} />
                   </td>
                 {/each}
               </tr>
