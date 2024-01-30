@@ -702,6 +702,15 @@ dataset_bbc = DatasetInfo(
 
 dataset_vis_papers = DatasetInfo(
     name="vis_papers",
+    joinDatasetInfo={
+        "joinDatasetName": "vis_papers_words",
+        "joinKey": "id",
+        "joinColumn": {
+            "name": "word",
+            "type": "text",
+            "associated_text_col_name": "Abstract",
+        },
+    },
     origin="example",
     column_info=[
         {
@@ -712,38 +721,38 @@ dataset_vis_papers = DatasetInfo(
             "name": "Title",
             "type": "categorical",
         },
-        {
-            "name": "DOI",
-            "type": "categorical",
-        },
-        {
-            "name": "Link",
-            "type": "categorical",
-        },
-        {
-            "name": "FirstPage",
-            "type": "number",
-        },
-        {
-            "name": "LastPage",
-            "type": "number",
-        },
+        # {
+        #     "name": "DOI",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "Link",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "FirstPage",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "LastPage",
+        #     "type": "number",
+        # },
         {
             "name": "AuthorNames-Deduped",
             "type": "categorical",
         },
-        {
-            "name": "AuthorNames",
-            "type": "categorical",
-        },
-        {
-            "name": "AuthorAffiliation",
-            "type": "categorical",
-        },
-        {
-            "name": "InternalReferences",
-            "type": "categorical",
-        },
+        # {
+        #     "name": "AuthorNames",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "AuthorAffiliation",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "InternalReferences",
+        #     "type": "categorical",
+        # },
         {
             "name": "AuthorKeywords",
             "type": "categorical",
@@ -810,8 +819,8 @@ dataset_vis_papers = DatasetInfo(
 
 
 EXAMPLE_DATASETS = [
-    dataset_vast2021,
     dataset_vis_papers,
+    dataset_vast2021,
     dataset_dolly,
     dataset_opus,
     dataset_squad,

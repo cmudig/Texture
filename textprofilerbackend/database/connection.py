@@ -42,9 +42,17 @@ def init_db():
     # TEMP: load example data
     duckdbconn.load_dataset("vast2021", "raw_data/vast_w_id.parquet")
     duckdbconn.load_dataset("vast2021_word", "raw_data/vast_word_w_id.parquet")
+
     duckdbconn.load_dataset("vis_papers", "raw_data/vis_papers/vis_papers.parquet")
-    metadataCache["vast2021"] = EXAMPLE_DATASETS[0]
-    metadataCache["vis_papers"] = EXAMPLE_DATASETS[1]
+    # duckdbconn.load_dataset(
+    #     "vis_papers_words", "raw_data/vis_papers/vis_papers_words.parquet"
+    # )
+    duckdbconn.load_dataset(
+        "vis_papers_words", "raw_data/vis_papers/vis_papers_words.parquet"
+    )
+
+    metadataCache["vis_papers"] = EXAMPLE_DATASETS[0]
+    metadataCache["vast2021"] = EXAMPLE_DATASETS[1]
 
     print("Example data loaded.")
 
