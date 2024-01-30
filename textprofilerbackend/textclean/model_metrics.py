@@ -4,7 +4,7 @@ import sentence_transformers
 from pyod.models.ecod import ECOD
 from pyod.models.iforest import IForest
 
-from textclean.embeddings import calculate_embeddings
+from .embeddings import calculate_embeddings
 
 
 def get_mean_embeddings_dist(embeddings: np.ndarray):

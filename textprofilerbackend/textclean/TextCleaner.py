@@ -2,7 +2,8 @@ import pandas as pd
 import string
 import random
 
-from textclean.model_metrics import extract_col_model_metadata
+from .model_metrics import extract_col_model_metadata
+from .embeddings import calculate_embeddings
 
 
 class TextCleaner:

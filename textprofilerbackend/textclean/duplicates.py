@@ -1,4 +1,4 @@
-from textclean.utils import timer_print
+from .utils import timer_print
 import sentence_transformers
 from sklearn.cluster import HDBSCAN
 import numpy as np
