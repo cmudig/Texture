@@ -27,6 +27,22 @@ class TextCleaner:
         )
 
 
+def get_textcol_metadata_embeddings(
+    col: pd.Series,
+    model_names: list[str],
+):
+    heuristic_metadata = extract_col_heuristic_metadata(col)
+    model_meta = None
+
+    if model_names and len(model_names) > 0:
+        model_meta = {}
+        for model_name in model_names:
+            embeddings = calculate_embeddings(col, model_name)
+            model_meta[model_name] = embeddings
+
+    return {"heuristic_metadata": heuristic_metadata, "model_embeddings": model_meta}
+
+
 def extract_all_metadata(
     df: pd.DataFrame,
     text_column_names: list[str],
