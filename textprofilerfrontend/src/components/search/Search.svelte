@@ -1,62 +1,63 @@
 <script lang="ts">
   import { Input } from "flowbite-svelte";
   import { SearchOutline } from "flowbite-svelte-icons";
-  import * as vg from "@uwdata/vgplot";
   import { filters } from "../../stores";
-  import { SearchClient } from "./SearchClient";
-  import { onDestroy } from "svelte";
-  import { type Writable } from "svelte/store";
+  import { writable, type Writable } from "svelte/store";
+  import { isSelection } from "@uwdata/mosaic-core";
+  import {
+    regexp_matches,
+    contains,
+    prefix,
+    suffix,
+    literal,
+    or,
+  } from "@uwdata/mosaic-sql";
 
-  export let columnNames: string[] | undefined; // columns to search over
-  export let mainDatasetName: string | undefined;
+  const FUNCTIONS = { contains, prefix, suffix, regexp: regexp_matches };
 
-  let mySearchClient: SearchClient;
-  let previousClient: SearchClient;
-  let ready = false;
-  let currentQuery: Writable<string>;
+  export let columnNames: string[] | undefined;
+  export let type = "contains";
+  let currentQuery: Writable<string> = writable();
 
-  onDestroy(() => {
-    vg.coordinator().disconnect(mySearchClient);
-  });
+  function publishUpdate() {
+    if (isSelection($filters.brush) && columnNames?.length) {
+      // adds predicates to provided selection; if a cross filter then these will be OR'd
 
-  $: if (columnNames && mainDatasetName) {
-    mySearchClient = new SearchClient({
-      selection: $filters.brush,
-      columns: columnNames,
-      from: mainDatasetName,
-      filterBy: $filters.brush,
-    });
+      let pred = null;
 
-    if (previousClient) {
-      vg.coordinator().disconnect(previousClient);
+      if ($currentQuery) {
+        pred =
+          columnNames.length > 1
+            ? or(
+                columnNames.map((col) =>
+                  FUNCTIONS[type](col, literal($currentQuery)),
+                ),
+              )
+            : FUNCTIONS[type](columnNames[0], literal($currentQuery));
+      }
+
+      let updateInfo = {
+        source: undefined,
+        schema: { type },
+        value: $currentQuery,
+        predicate: pred,
+      };
+
+      $filters.brush.update(updateInfo);
     }
-    previousClient = mySearchClient;
-
-    vg.coordinator()
-      .connect(mySearchClient)
-      .then(() => {
-        ready = true;
-      });
-  }
-
-  $: if (mySearchClient) {
-    currentQuery = mySearchClient.currentQuery;
   }
 </script>
 
-{#if ready}
-  <div class="relative w-full max-w-80">
-    <div
-      class="flex absolute inset-y-0 start-0 items-center ps-3 pointer-events-none"
-    >
-      <SearchOutline class="w-4 h-4" />
-    </div>
-    <Input
-      class="ps-10"
-      placeholder="Search over text columns..."
-      bind:value={$currentQuery}
-    />
+<div class="relative w-full max-w-80">
+  <div
+    class="flex absolute inset-y-0 start-0 items-center ps-3 pointer-events-none"
+  >
+    <SearchOutline class="w-4 h-4" />
   </div>
-{:else}
-  Not ready
-{/if}
+  <Input
+    class="ps-10"
+    placeholder="Search over text columns..."
+    bind:value={$currentQuery}
+    on:change={() => publishUpdate()}
+  />
+</div>
