@@ -5,12 +5,10 @@
   import { filters } from "../../stores";
   import { SearchClient } from "./SearchClient";
   import { onDestroy } from "svelte";
-  import { writable, type Writable } from "svelte/store";
+  import { type Writable } from "svelte/store";
 
   export let columnNames: string[] | undefined; // columns to search over
   export let mainDatasetName: string | undefined;
-
-  $: console.log("searching over cols: ", columnNames);
 
   let mySearchClient: SearchClient;
   let previousClient: SearchClient;
@@ -30,7 +28,6 @@
     });
 
     if (previousClient) {
-      console.log("disconnecting previous client");
       vg.coordinator().disconnect(previousClient);
     }
     previousClient = mySearchClient;
@@ -54,7 +51,11 @@
     >
       <SearchOutline class="w-4 h-4" />
     </div>
-    <Input class="ps-10" placeholder="Search..." bind:value={$currentQuery} />
+    <Input
+      class="ps-10"
+      placeholder="Search over text columns..."
+      bind:value={$currentQuery}
+    />
   </div>
 {:else}
   Not ready
