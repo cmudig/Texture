@@ -700,9 +700,118 @@ dataset_bbc = DatasetInfo(
     ],
 )
 
+dataset_vis_papers = DatasetInfo(
+    name="vis_papers",
+    origin="example",
+    column_info=[
+        {
+            "name": "Abstract",
+            "type": "text",
+        },
+        {
+            "name": "Title",
+            "type": "categorical",
+        },
+        {
+            "name": "DOI",
+            "type": "categorical",
+        },
+        {
+            "name": "Link",
+            "type": "categorical",
+        },
+        {
+            "name": "FirstPage",
+            "type": "number",
+        },
+        {
+            "name": "LastPage",
+            "type": "number",
+        },
+        {
+            "name": "AuthorNames-Deduped",
+            "type": "categorical",
+        },
+        {
+            "name": "AuthorNames",
+            "type": "categorical",
+        },
+        {
+            "name": "AuthorAffiliation",
+            "type": "categorical",
+        },
+        {
+            "name": "InternalReferences",
+            "type": "categorical",
+        },
+        {
+            "name": "AuthorKeywords",
+            "type": "categorical",
+        },
+        {
+            "name": "id",
+            "type": "number",
+        },
+        {
+            "name": "Conference",
+            "type": "categorical",
+        },
+        {
+            "name": "Year",
+            "type": "number",
+        },
+        {
+            "name": "PaperType",
+            "type": "categorical",
+        },
+        {
+            "name": "AminerCitationCount",
+            "type": "number",
+        },
+        {
+            "name": "CitationCount_CrossRef",
+            "type": "number",
+        },
+        {
+            "name": "PubsCited_CrossRef",
+            "type": "number",
+        },
+        {
+            "name": "Award",
+            "type": "categorical",
+        },
+        {
+            "name": "Abstract_text_length",
+            "type": "number",
+            "associated_text_col_name": "Abstract",
+        },
+        {
+            "name": "Abstract_num_words",
+            "type": "number",
+            "associated_text_col_name": "Abstract",
+        },
+        {
+            "name": "Abstract_max_word_length",
+            "type": "number",
+            "associated_text_col_name": "Abstract",
+        },
+        {
+            "name": "Abstract_avg_word_length",
+            "type": "number",
+            "associated_text_col_name": "Abstract",
+        },
+        {
+            "name": "Abstract_perc_special_chars",
+            "type": "number",
+            "associated_text_col_name": "Abstract",
+        },
+    ],
+)
+
 
 EXAMPLE_DATASETS = [
     dataset_vast2021,
+    dataset_vis_papers,
     dataset_dolly,
     dataset_opus,
     dataset_squad,
