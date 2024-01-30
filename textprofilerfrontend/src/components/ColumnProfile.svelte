@@ -5,7 +5,6 @@
   import DataTypeIcon from "./DataTypeIcon.svelte";
   import Histogram from "./charts/Histogram.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";
-  import SearchBar from "./charts/SearchBar.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
   import { filters, showBackgroundDist } from "../stores";
@@ -44,10 +43,6 @@
   <div class="w-full">
     {#if active}
       <div transition:slide|local={{ duration: 200 }} class="ml-4 mt-2">
-        {#if displayCol.type === "text"}
-          <SearchBar columnName={displayCol.name} />
-        {/if}
-
         {#if colType === "text" && $filters.joinDatasetInfo}
           <h3 class="italic">Words</h3>
 
@@ -77,7 +72,6 @@
                 columnName={col.name}
               />
             {:else if col.type === "categorical"}
-              <SearchBar columnName={col.name} />
               <CategoricalChart
                 mainDatasetName={$filters.datasetName}
                 joinDatasetInfo={$filters.joinDatasetInfo}

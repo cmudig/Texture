@@ -14,6 +14,7 @@
   import Table from "./components/table/Table.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
+  import Search from "./components/search/Search.svelte";
   import {
     Button,
     Select,
@@ -119,6 +120,12 @@
     >Text Profiler</span
   >
   <div class="grow" />
+
+  <Search
+    columnNames={datasetInfo?.column_info
+      .filter((col) => col.type === "text")
+      .map((col) => col.name)}
+  />
 
   <FilePlusSolid
     id="addDatasetIcon"
