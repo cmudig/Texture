@@ -14,7 +14,7 @@
   import Table from "./components/table/Table.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
-  import SearchBar from "./components/search/SearchBar.svelte";
+  import Search from "./components/search/Search.svelte";
   import {
     Button,
     Select,
@@ -121,7 +121,12 @@
   >
   <div class="grow" />
 
-  <SearchBar columnName={"message"} />
+  <Search
+    mainDatasetName={datasetInfo?.name}
+    columnNames={datasetInfo?.column_info
+      .filter((col) => col.type === "text")
+      .map((col) => col.name)}
+  />
 
   <FilePlusSolid
     id="addDatasetIcon"
