@@ -9,7 +9,7 @@
     formatDate,
   } from "../../shared/format";
   import { onDestroy } from "svelte";
-  import type { SelectionMap } from "../../shared/types";
+  import { type SelectionMap, isStringArray } from "../../shared/types";
   import Highlight from "./Highlight.svelte";
   import Regular from "./Regular.svelte";
 
@@ -98,15 +98,19 @@
     selections: SelectionMap,
     joinInfo?: JoinInfo,
   ) {
-    let highlights = [];
+    let highlights: string[] = [];
 
     if (
       joinInfo?.joinColumn.associated_text_col_name == schemaItem.column &&
-      joinInfo?.joinColumn.name in selections
+      joinInfo?.joinColumn.name in selections &&
+      isStringArray(selections[joinInfo.joinColumn.name])
     ) {
       highlights = [...highlights, ...selections[joinInfo.joinColumn.name]];
     }
-    if (schemaItem.column in selections) {
+    if (
+      schemaItem.column in selections &&
+      isStringArray(selections[schemaItem.column])
+    ) {
       highlights = [...highlights, ...selections[schemaItem.column]];
     }
 

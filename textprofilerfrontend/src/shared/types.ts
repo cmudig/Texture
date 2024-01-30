@@ -12,7 +12,21 @@ export type SelectionMap = {
   [key: string]: SelectionRange;
 };
 
-export type SelectionRange = number[] | string[];
+export type SelectionRange = string[] | number[];
+
+// Type guard for number array
+export function isNumberArray(
+  selectionRange: SelectionRange,
+): selectionRange is number[] {
+  return selectionRange.length === 0 || typeof selectionRange[0] === "number";
+}
+
+// Type guard for string array
+export function isStringArray(
+  selectionRange: SelectionRange,
+): selectionRange is string[] {
+  return selectionRange.length === 0 || typeof selectionRange[0] === "string";
+}
 
 // this is format from `summarize tablename` in duckdb
 export type ColumnSummary = {

@@ -12,7 +12,7 @@ export type FieldInfo = {
   table: any;
   column: string;
   sqlType: string;
-  type: string;
+  type: string; // ["string" | "number" | "date"] but maybe more
   nullable: boolean;
 };
 
@@ -71,6 +71,7 @@ export class TableClient extends vg.MosaicClient {
    * Called by the coordinator to set the field info for this client.
    */
   fieldInfo(info: FieldInfo[]) {
+    console.log("fieldInfo", info);
     this.schema.set(info);
     return this;
   }
