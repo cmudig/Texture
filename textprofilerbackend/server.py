@@ -12,6 +12,7 @@ from textprofilerbackend.models import (
     DatasetUploadResponse,
     DatasetVerifyResponse,
     DatasetTokenizeResponse,
+    VectorSearchResponse,
 )
 from textprofilerbackend.process_data import process_new_file
 from textprofilerbackend.transform import word_tokenize
@@ -41,7 +42,7 @@ def get_server() -> FastAPI:
         default_response_class=ORJSONResponse,
     )
 
-    duckdb_conn, datasetMetadataCache = init_db()
+    duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
 
     # TODO this is prob need to use actual cache here rather than just in memory
     datasetUploadCache = {}
@@ -145,6 +146,22 @@ def get_server() -> FastAPI:
         return DatasetTokenizeResponse(
             success=False,
             message=f"Failed to tokenize, unkown dataset: {datasetName}.",
+        )
+
+    @api_app.get("/query_embed_from_id", response_model=VectorSearchResponse)
+    async def query_embed_from_id(datasetName: str, id: int):
+        vector = vectordb_conn.get_embedding_from_id(datasetName, id)
+        result_df = vectordb_conn.search(datasetName, vector)
+        return VectorSearchResponse(
+            success=True, result=result_df.to_dict(orient="records")
+        )
+
+    @api_app.get("/query_embed_from_string", response_model=VectorSearchResponse)
+    async def query_embed_from_string(datasetName: str, queryString: str):
+        vector = vectordb_conn.get_embedding_from_string(datasetName, queryString)
+        result_df = vectordb_conn.search(datasetName, vector)
+        return VectorSearchResponse(
+            success=True, result=result_df.to_dict(orient="records")
         )
 
     # @api_app.get("/example_arrow")

@@ -79,3 +79,8 @@ class DatasetVerifyResponse(BaseModel):
 class DatasetTokenizeResponse(BaseModel):
     success: bool
     message: str
+
+
+class VectorSearchResponse(BaseModel):
+    success: bool
+    result: List[Dict[str, Any]]

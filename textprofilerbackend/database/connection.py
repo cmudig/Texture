@@ -12,16 +12,26 @@ from textprofilerbackend.models import (
 from fastapi.responses import Response
 from textprofilerbackend.example_data import EXAMPLE_DATASETS
 import pandas as pd
+import numpy as np
+import lancedb
+import torch
+import sentence_transformers
 
 # NOTE: this path is affected by where the server is run from, assuming it is run in textprofilerbackend for now
 CACHE_PATH = ".textprofiler_cache/"
 
 
+def get_embedding(col: np.ndarray, model_name):
+    model = sentence_transformers.SentenceTransformer(model_name)
+    e = model.encode(col)
+    return e
+
+
 def init_db():
     duckdbconn = DatabaseConnection()
+    vectordbconn = VectorDBConnection()
 
-    print("Loading example data...")
-
+    print("Loading duckdb data...")
     datasetPaths = {
         "vast2021": "raw_data/vast_w_id.parquet",
         "vast2021_word": "raw_data/vast_word_w_id.parquet"
@@ -30,9 +40,7 @@ def init_db():
         # "squad": "raw_data/squad_validation.parquet",
         # "bbc": "raw_data/bbc_with_lava.parquet",
     }
-
     metadataCache = {}
-
     # load example datasets into duckdb
     # for datasetInfo in EXAMPLE_DATASETS:
     #     dsName = datasetInfo.name
@@ -42,21 +50,28 @@ def init_db():
     # TEMP: load example data
     duckdbconn.load_dataset("vast2021", "raw_data/vast_w_id.parquet")
     duckdbconn.load_dataset("vast2021_word", "raw_data/vast_word_w_id.parquet")
-
     duckdbconn.load_dataset("vis_papers", "raw_data/vis_papers/vis_papers.parquet")
-    # duckdbconn.load_dataset(
-    #     "vis_papers_words", "raw_data/vis_papers/vis_papers_words.parquet"
-    # )
     duckdbconn.load_dataset(
         "vis_papers_words", "raw_data/vis_papers/vis_papers_words.parquet"
     )
-
     metadataCache["vis_papers"] = EXAMPLE_DATASETS[0]
     metadataCache["vast2021"] = EXAMPLE_DATASETS[1]
 
+    print("Loading vector data...")
+    vis_paper_embeddings = torch.load(
+        ".textprofiler_cache/raw_data/vis_papers/vis_papers_embeddings.pt"
+    )
+    vis_paper_df = pd.read_parquet(
+        ".textprofiler_cache/raw_data/vis_papers/vis_papers.parquet"
+    )
+    vis_paper_df["vector"] = list(vis_paper_embeddings.numpy())
+    embed_func = lambda x: get_embedding(x, "all-mpnet-base-v2")
+
+    vectordbconn.add_table("vis_papers", vis_paper_df, "id", embed_func)
+
     print("Example data loaded.")
 
-    return duckdbconn, metadataCache
+    return duckdbconn, vectordbconn, metadataCache
 
 
 class DatabaseConnection:
@@ -186,3 +201,83 @@ class DatabaseConnection:
         # print(f"DONE. Query { uuid } took { total } ms.\n{ sql }")
 
         return response_message
+
+
+class VectorDBConnection:
+    def __init__(self, database_dir="lancedb"):
+        """
+        embed_func: function that takes a string and returns a numpy array embedding.
+        This MUST be same model as original embeddings or else comparison will not work
+        """
+        Path(CACHE_PATH).mkdir(parents=True, exist_ok=True)
+        p = Path(CACHE_PATH) / database_dir
+
+        print("Making new LanceDB connection")
+
+        self.connection = lancedb.connect(p)
+        self.id_cols = {}
+        self.embed_funcs = {}
+
+    def _check(self, table_name, check_conn=False, check_id=False, check_embed=False):
+        if check_conn and table_name not in self.connection:
+            raise ValueError(f"Table {table_name} not found in LanceDB.")
+
+        if check_id and table_name not in self.id_cols:
+            raise ValueError(f"Table {table_name} does not have an id column saved.")
+
+        if check_embed and table_name not in self.embed_funcs:
+            raise ValueError(f"Table {table_name} does not have an embedding function.")
+
+    def add_table(
+        self, table_name: str, data: pd.DataFrame, id_col_name: str, embed_func
+    ):
+        """
+        Add a table to the database.
+
+        Args:
+            table_name (str): The name of the table.
+            data (pd.DataFrame): The dataframe containing the metadata and a column called "vector" with numpy arrays per row representing the vector representation.
+            id_col_name (str): The name of the column in the dataframe that contains the unique identifier for each row.
+            embed_func: function that takes a string and returns a numpy array embedding for this table
+
+        Returns:
+            None
+        """
+        self.table = self.connection.create_table(
+            table_name, data=data, mode="overwrite"
+        )
+        self.id_cols[table_name] = id_col_name
+        self.embed_funcs[table_name] = embed_func
+
+    def search(self, table_name: str, vector: np.array, limit: int = 20):
+        """
+        Find ids of KNN docs to vector
+        """
+        self._check(table_name, check_conn=True, check_id=True)
+
+        id_col = self.id_cols[table_name]
+        result = (
+            self.connection[table_name].search(vector).limit(limit).select([id_col])
+        )
+
+        return result.to_pandas()[[id_col, "_distance"]]
+
+    def get_embedding_from_string(self, table_name, text: str) -> np.array:
+        self._check(table_name, check_embed=True)
+
+        return self.embed_funcs[table_name](text)
+
+    def get_embedding_from_id(self, table_name, id: str) -> np.array:
+        """
+        Get the embedding from the table by id
+        """
+        self._check(table_name, check_conn=True, check_id=True)
+
+        df = (
+            self.connection[table_name]
+            .search()
+            .where(f"{self.id_cols[table_name]} = {id}")
+            .to_pandas()["vector"]
+        )
+
+        return df.iloc[0]
