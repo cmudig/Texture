@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Input } from "flowbite-svelte";
   import { SearchOutline } from "flowbite-svelte-icons";
-  import { filters } from "../../stores";
+  import { filters } from "../stores";
   import { writable, type Writable } from "svelte/store";
   import { isSelection } from "@uwdata/mosaic-core";
   import {

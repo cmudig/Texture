@@ -14,7 +14,7 @@
   import Table from "./components/table/Table.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
-  import Search from "./components/search/Search.svelte";
+  import Search from "./components/Search.svelte";
   import {
     Button,
     Select,
