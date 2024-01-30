@@ -8,3 +8,4 @@ analysis/_scratch.ipynb
 
 .textprofiler_cache/
 .vite/
+dist/
