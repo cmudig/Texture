@@ -59,11 +59,13 @@ function updateValue(mosaicSelection: any): SelectionMap {
   if (mosaicSelection?.clauses) {
     let r = mosaicSelection.clauses.reduce((d: SelectionMap, clause: any) => {
       try {
-        let colName = clause.predicate.columns[0];
+        let colNames = clause.predicate.columns;
         let v = clause.value;
         let val = Array.isArray(v) ? v.flat() : [v];
 
-        d[colName] = val;
+        // BUG: if multiple filters for same column, this only stores the last one
+
+        colNames.forEach((c) => (d[c] = val));
       } catch (error) {
         console.error(error);
       }

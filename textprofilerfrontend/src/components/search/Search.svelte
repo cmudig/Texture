@@ -9,12 +9,12 @@
 
   export let columnNames: string[] | undefined; // columns to search over
   export let mainDatasetName: string | undefined;
-  //   export let as: any; // selection
+
+  $: console.log("searching over cols: ", columnNames);
 
   let mySearchClient: SearchClient;
   let previousClient: SearchClient;
   let ready = false;
-  //   let inputValue: Writable<string>; //= writable();
   let currentQuery: Writable<string>;
 
   onDestroy(() => {
@@ -27,10 +27,10 @@
       columns: columnNames,
       from: mainDatasetName,
       filterBy: $filters.brush,
-      //   inputValue,
     });
 
     if (previousClient) {
+      console.log("disconnecting previous client");
       vg.coordinator().disconnect(previousClient);
     }
     previousClient = mySearchClient;
@@ -43,12 +43,11 @@
   }
 
   $: if (mySearchClient) {
-    ({ currentQuery } = mySearchClient);
+    currentQuery = mySearchClient.currentQuery;
   }
 </script>
 
 {#if ready}
-  debug: {$currentQuery}
   <div class="relative w-full max-w-80">
     <div
       class="flex absolute inset-y-0 start-0 items-center ps-3 pointer-events-none"

@@ -1,13 +1,14 @@
 import * as vg from "@uwdata/vgplot";
-import { isSelection, isParam } from "@uwdata/mosaic-core";
+import { isSelection } from "@uwdata/mosaic-core";
 import {
   regexp_matches,
   contains,
   prefix,
   suffix,
   literal,
+  or,
 } from "@uwdata/mosaic-sql";
-import { type Writable, writable } from "svelte/store";
+import { writable, type Writable } from "svelte/store";
 
 export type SearchMatchType = "contains" | "prefix" | "suffix" | "regexp";
 
@@ -17,7 +18,6 @@ export type SearchProps = {
   selection: any; // mosaic selection
   columns: string[];
   from: any;
-  // inputValue: Writable<string>;
   filterBy?: any;
   type?: SearchMatchType;
 };
@@ -35,10 +35,11 @@ export class SearchClient extends vg.MosaicClient {
     columns,
     filterBy,
     from,
-    // inputValue,
     type = "contains",
   }: SearchProps) {
     super(filterBy);
+
+    console.log("SearchClient constructor called: ");
 
     this.selection = selection;
     this.columns = columns;
@@ -74,20 +75,28 @@ export class SearchClient extends vg.MosaicClient {
   publish(value: string | undefined) {
     const { selection, columns, type } = this;
     if (isSelection(selection)) {
-      // TODO iterate over columns here or combine into predicate clause?
+      // adds predicates to provided selection; if a cross filter then these will be OR'd
+
+      let pred = null;
+
+      if (value) {
+        pred =
+          columns.length > 1
+            ? or(columns.map((col) => FUNCTIONS[type](col, literal(value))))
+            : FUNCTIONS[type](columns[0], literal(value));
+      }
 
       let updateInfo = {
         source: this,
         schema: { type },
         value,
-        predicate: value ? FUNCTIONS[type](columns[0], literal(value)) : null,
+        predicate: pred,
       };
 
       console.log("Updating selection with: ", updateInfo);
+      console.log("....pred: ", updateInfo.predicate?.toString());
 
       selection.update(updateInfo);
-    } else if (isParam(selection)) {
-      selection.update(value);
     }
   }
 
@@ -103,14 +112,16 @@ export class SearchClient extends vg.MosaicClient {
     return vg.Query.from(from)
       .select({ list: columns })
       .distinct()
-      .where(filter);
+      .where(filter)
+      .limit(1);
   }
 
   /**
    * Called by the coordinator to return a query result.
    */
   queryResult(newData: any) {
-    console.log("SearchClient queryResult called: ", newData);
+    console.log("SearchClient queryResult called: ", [...newData]);
+    // console.table([...newData]);
     // TODO dont think need ths becuase not saving to list
     // this.data = newData;
     return this;
