@@ -137,7 +137,7 @@
       class="max-h-screen overflow-auto"
       on:scroll={(e) => myTableClient.scroll(e)}
     >
-      <table class="w-full table-fixed">
+      <table class="w-full">
         <thead>
           <tr>
             {#each $schema as schemaItem}
