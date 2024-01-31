@@ -68,10 +68,11 @@
 
     currentColToggleStates = datasetInfo.column_info.reduce(
       (acc: Record<string, boolean>, col) => {
-        if (col.associated_text_col_name) {
-          acc[col.name] = false;
-        } else {
+        // Only show text columns in table view by default
+        if (col.type === "text") {
           acc[col.name] = true;
+        } else {
+          acc[col.name] = false;
         }
         return acc;
       },
