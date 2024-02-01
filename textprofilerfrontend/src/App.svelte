@@ -1,7 +1,5 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
-  import { DatabaseConnection } from "./database/db";
-  import { getCount, getColSummaries } from "./database/queries";
   import type { ColumnSummary } from "./shared/types";
   import type { DatasetInfo } from "./backendapi/models/DatasetInfo";
   import {
@@ -9,6 +7,7 @@
     selectionDisplay,
     showBackgroundDist,
     filteredCount,
+    databaseConnection,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import Table from "./components/table/Table.svelte";
@@ -37,17 +36,6 @@
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
   import { formatNumber } from "./shared/format";
-  import { TextProfileClient, DefaultService } from "./backendapi";
-  import { setContext } from "svelte";
-
-  // CLIENT INIT
-  // This needs to match API url
-  const API_URL = "http://localhost:8000/api";
-  const backendService: DefaultService = new TextProfileClient({
-    BASE: API_URL,
-  }).default;
-  setContext("backendService", backendService);
-  let databaseConnection = new DatabaseConnection(backendService);
 
   // Locals
   let datasets: Record<string, DatasetInfo>;
@@ -62,7 +50,7 @@
   let dataPromise: Promise<any> = populateDataTables();
 
   async function populateDataTables(datasetName?: string): Promise<void> {
-    let d = await backendService.readDatasetInfo();
+    let d = await databaseConnection.api.readDatasetInfo();
     datasets = d;
 
     if (datasetName && datasetName in datasets) {
@@ -97,8 +85,8 @@
       joinDatasetInfo: info.joinDatasetInfo,
     };
 
-    datasetSize = await getCount(info.name);
-    datasetColSummaries = await getColSummaries(info.name);
+    datasetSize = await databaseConnection.getCount(info.name);
+    datasetColSummaries = await databaseConnection.getColSummaries(info.name);
   }
 
   function updateData() {

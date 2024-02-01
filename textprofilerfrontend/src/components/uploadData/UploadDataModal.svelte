@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { getContext } from "svelte";
+  import { databaseConnection } from "../../stores";
   import { Button, Modal, Spinner, Dropzone } from "flowbite-svelte";
   import { CheckSolid } from "flowbite-svelte-icons";
-
   import type {
-    DefaultService,
     DatasetUploadResponse,
     DatasetVerifyResponse,
     DatasetInfo,
@@ -22,7 +20,6 @@
   let currentStatus: Status = Status.INITIAL_UPLOAD;
 
   // stage 1 vars
-  let backendService: DefaultService = getContext("backendService");
   let fileUpload: File | undefined;
   let firstResponse: Promise<DatasetUploadResponse> | undefined;
   let currentlyDragging = false;
@@ -36,7 +33,9 @@
     if (fileUpload) {
       // Perform file upload logic here
       console.log("Uploading file:", fileUpload.name);
-      firstResponse = backendService.uploadDataset({ file: fileUpload });
+      firstResponse = databaseConnection.api.uploadDataset({
+        file: fileUpload,
+      });
 
       firstResponse.then((response) => {
         if (response.success) {
@@ -56,7 +55,7 @@
 
   function handleSchemaVerification() {
     if (parsedSchema && parsedOriginalName) {
-      secondResponse = backendService.verifySchema(
+      secondResponse = databaseConnection.api.verifySchema(
         parsedOriginalName,
         parsedSchema,
       );

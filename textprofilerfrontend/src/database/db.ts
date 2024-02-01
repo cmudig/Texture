@@ -1,4 +1,6 @@
 import * as vg from "@uwdata/vgplot";
+import type { ColumnSummary } from "../shared/types";
+import type { JoinInfo } from "../backendapi";
 // @ts-ignore
 import { tableFromIPC } from "apache-arrow";
 
@@ -25,6 +27,10 @@ export class DatabaseConnection {
     this.backendService = backendService;
     this.isReady = false;
     this.init("custom");
+  }
+
+  get api() {
+    return this.backendService;
   }
 
   private whenReady(): Promise<void> {
@@ -148,5 +154,39 @@ export class DatabaseConnection {
 
   reset() {
     vg.coordinator().clear();
+  }
+
+  // custom queries: TODO in futre put these under api as well somehow? or in new api method or something
+
+  async getCount(
+    datasetName: string,
+    joinDsInfo?: JoinInfo,
+    selection?: any,
+  ): Promise<number> {
+    let fromClause = datasetName;
+
+    if (joinDsInfo) {
+      fromClause = vg.fromJoinDistinct({
+        table: datasetName,
+        rightTable: joinDsInfo.joinDatasetName,
+        joinKey: joinDsInfo.joinKey,
+      });
+    }
+
+    let q = vg.Query.from(fromClause).select({ count: vg.count() });
+    if (selection) {
+      q = q.where(selection.predicate());
+    }
+
+    let r = await vg.coordinator().query(q, { type: "json" });
+    let datasetSize = r[0]?.["count"];
+    return datasetSize;
+  }
+
+  async getColSummaries(datasetName: string): Promise<ColumnSummary[]> {
+    let q = vg.sql`summarize ${vg.column(datasetName)}`;
+    let r = await vg.coordinator().query(q, { type: "json" });
+
+    return r;
   }
 }

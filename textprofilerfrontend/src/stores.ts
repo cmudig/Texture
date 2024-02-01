@@ -1,8 +1,19 @@
 import { type Writable, type Readable, writable, derived } from "svelte/store";
-
 import type { FilterWrapper, SelectionMap } from "./shared/types";
-import { getCount } from "./database/queries";
+import { TextProfileClient, DefaultService } from "./backendapi";
+import { DatabaseConnection } from "./database/db";
 
+// CLIENT INIT
+// This needs to match API url
+const API_URL = "http://localhost:8000/api";
+const backendService: DefaultService = new TextProfileClient({
+  BASE: API_URL,
+}).default;
+
+// This isnt gonna update so not a store
+export const databaseConnection = new DatabaseConnection(backendService);
+
+// ~~~~~~~~~~~~~~~ App wide stores ~~~~~~~~~~~~~~~
 export const filters: Writable<FilterWrapper> = writable({
   brush: undefined,
   datasetName: "",
@@ -36,7 +47,7 @@ export const filteredCount: Readable<number | undefined> = derived(
   ($filters, set) => {
     if ($filters.brush && $filters.datasetName) {
       $filters.brush.addEventListener("value", async () => {
-        let v = await getCount(
+        let v = await databaseConnection.getCount(
           $filters.datasetName,
           $filters.joinDatasetInfo,
           $filters.brush,
@@ -44,11 +55,13 @@ export const filteredCount: Readable<number | undefined> = derived(
         set(v);
       });
       // event listener not triggered on initial set so call manually
-      let v = getCount(
-        $filters.datasetName,
-        $filters.joinDatasetInfo,
-        $filters.brush,
-      ).then((v) => set(v));
+      let v = databaseConnection
+        .getCount(
+          $filters.datasetName,
+          $filters.joinDatasetInfo,
+          $filters.brush,
+        )
+        .then((v) => set(v));
     } else {
       set(undefined);
     }
