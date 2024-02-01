@@ -21,6 +21,7 @@ uvicorn = {extras = ["standard"], version = "^0.24.0.post1"}
 python-multipart = "^0.0.6"
 nltk = "^3.8.1"
 tiktoken = "^0.5.2"
+lancedb = "^0.5.1"
 
 
 [build-system]

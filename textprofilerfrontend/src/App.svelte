@@ -8,12 +8,14 @@
     showBackgroundDist,
     filteredCount,
     databaseConnection,
+    compareSimilarID,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import Table from "./components/table/Table.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import Search from "./components/Search.svelte";
+  import SimilarView from "./components/SimilarView.svelte";
   import {
     Button,
     Select,
@@ -68,10 +70,11 @@
 
     currentColToggleStates = datasetInfo.column_info.reduce(
       (acc: Record<string, boolean>, col) => {
-        if (col.associated_text_col_name) {
-          acc[col.name] = false;
-        } else {
+        // Only show text columns in table view by default
+        if (col.type === "text") {
           acc[col.name] = true;
+        } else {
+          acc[col.name] = false;
         }
         return acc;
       },
@@ -266,11 +269,17 @@
             Table
           </div>
 
-          <Table
-            mainDatasetName={datasetInfo.name}
-            joinDatasetInfo={datasetInfo.joinDatasetInfo}
-            {currentColToggleStates}
-          />
+          {#if $compareSimilarID !== undefined}
+            <SimilarView
+              {datasetInfo}
+              similarDocID={$compareSimilarID}
+              clearFunc={() => {
+                $compareSimilarID = undefined;
+              }}
+            />
+          {:else}
+            <Table {datasetInfo} {currentColToggleStates} />
+          {/if}
         </TabItem>
       </Tabs>
     </div>

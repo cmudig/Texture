@@ -11,6 +11,7 @@ export type DatasetInfo = {
   column_info: Array<Column>;
   origin: DatasetInfo.origin;
   joinDatasetInfo?: JoinInfo;
+  primary_key: Column;
 };
 
 export namespace DatasetInfo {

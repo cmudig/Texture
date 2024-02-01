@@ -11,6 +11,7 @@ import type { DuckQueryData } from "../models/DuckQueryData";
 import type { ErrorResponse } from "../models/ErrorResponse";
 import type { ExecResponse } from "../models/ExecResponse";
 import type { JsonResponse } from "../models/JsonResponse";
+import type { VectorSearchResponse } from "../models/VectorSearchResponse";
 
 import type { CancelablePromise } from "../core/CancelablePromise";
 import type { BaseHttpRequest } from "../core/BaseHttpRequest";
@@ -148,6 +149,54 @@ export class DefaultService {
         datasetName: datasetName,
         columnName: columnName,
         tokenType: tokenType,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Query Embed From Id
+   * @param datasetName
+   * @param id
+   * @returns VectorSearchResponse Successful Response
+   * @throws ApiError
+   */
+  public queryEmbedFromId(
+    datasetName: string,
+    id: number,
+  ): CancelablePromise<VectorSearchResponse> {
+    return this.httpRequest.request({
+      method: "GET",
+      url: "/query_embed_from_id",
+      query: {
+        datasetName: datasetName,
+        id: id,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Query Embed From String
+   * @param datasetName
+   * @param queryString
+   * @returns VectorSearchResponse Successful Response
+   * @throws ApiError
+   */
+  public queryEmbedFromString(
+    datasetName: string,
+    queryString: string,
+  ): CancelablePromise<VectorSearchResponse> {
+    return this.httpRequest.request({
+      method: "GET",
+      url: "/query_embed_from_string",
+      query: {
+        datasetName: datasetName,
+        queryString: queryString,
       },
       errors: {
         422: `Validation Error`,

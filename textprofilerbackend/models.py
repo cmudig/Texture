@@ -21,6 +21,7 @@ class DatasetInfo(BaseModel):
     column_info: List[Column]
     origin: Literal["example", "uploaded"]
     joinDatasetInfo: Optional[JoinInfo] = None
+    primary_key: Column
 
 
 class ColumnSummary(BaseModel):
@@ -79,3 +80,8 @@ class DatasetVerifyResponse(BaseModel):
 class DatasetTokenizeResponse(BaseModel):
     success: bool
     message: str
+
+
+class VectorSearchResponse(BaseModel):
+    success: bool
+    result: List[Dict[str, Any]]

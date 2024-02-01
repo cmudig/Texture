@@ -44,15 +44,16 @@
     {#if active}
       <div transition:slide|local={{ duration: 200 }} class="ml-4 mt-2">
         {#if colType === "text" && $filters.joinDatasetInfo}
-          <h3 class="italic">Words</h3>
+          <h3 class="italic">{$filters.joinDatasetInfo.joinColumn.name}</h3>
 
           <CategoricalChart
             mainDatasetName={$filters.joinDatasetInfo.joinDatasetName}
             joinDatasetInfo={{
               joinDatasetName: $filters.datasetName,
               joinKey: $filters.joinDatasetInfo.joinKey,
+              joinColumn: undefined,
             }}
-            columnName={"word"}
+            columnName={$filters.joinDatasetInfo.joinColumn.name}
             showBackground={false}
             limit={20}
           />

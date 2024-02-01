@@ -14,6 +14,8 @@ const backendService: DefaultService = new TextProfileClient({
 export const databaseConnection = new DatabaseConnection(backendService);
 
 // ~~~~~~~~~~~~~~~ App wide stores ~~~~~~~~~~~~~~~
+export const compareSimilarID: Writable<number | undefined> = writable();
+
 export const filters: Writable<FilterWrapper> = writable({
   brush: undefined,
   datasetName: "",
