@@ -12,8 +12,7 @@
   import { type SelectionMap, isStringArray } from "../../shared/types";
   import Highlight from "./Highlight.svelte";
   import Regular from "./Regular.svelte";
-  import { DotsVerticalOutline } from "flowbite-svelte-icons";
-  import { Dropdown, DropdownItem } from "flowbite-svelte";
+  import { FilterOutline } from "flowbite-svelte-icons";
 
   export let datasetInfo: DatasetInfo;
   export let currentColToggleStates: Record<string, boolean> = {};
@@ -172,21 +171,20 @@
         </thead>
         {#if $data}
           <tbody>
-            {#each $data as row, i}
+            {#each $data as row}
               <tr class="hover:bg-blue-50">
-                <td class="pt-2 align-top border-b border-gray-100">
+                <td class="pt-2 pl-2 align-top border-b border-gray-100">
                   <div
-                    class="text-gray-500 bg-gray-50 hover:bg-gray-100 rounded py-1 hover:text-primary-700"
+                    class="text-gray-500 rounded-full py-1 hover:text-primary-700 hover:bg-primary-100"
+                    title="Show similar"
                   >
-                    <DotsVerticalOutline id={`table-dropdown-${i}`} size="sm" />
-                  </div>
-                  <Dropdown triggeredBy={`#table-dropdown-${i}`}>
-                    <DropdownItem
+                    <FilterOutline
+                      title="filter me"
+                      size="sm"
                       on:click={() =>
                         displaySimilar(row[datasetInfo.primary_key.name])}
-                      >Show similar</DropdownItem
-                    >
-                  </Dropdown>
+                    />
+                  </div>
                 </td>
                 {#each $schema as schemaItem}
                   {@const myValue = row[schemaItem.column]}
