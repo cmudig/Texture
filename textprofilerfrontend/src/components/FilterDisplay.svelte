@@ -2,6 +2,7 @@
   import type { SelectionRange } from "../shared/types";
   import { formatFloat } from "../shared/format";
   import { CloseSolid } from "flowbite-svelte-icons";
+  import { deleteFilter } from "../stores";
 
   export let colName: string;
   export let filterRange: SelectionRange;
@@ -31,6 +32,7 @@
   </div>
   <button
     class="bg-gray-300 hover:bg-primary-500 hover:text-white p-2 rounded-full ml-1"
+    on:click={() => deleteFilter(colName)}
   >
     <CloseSolid class="h-2 w-2" />
   </button>
