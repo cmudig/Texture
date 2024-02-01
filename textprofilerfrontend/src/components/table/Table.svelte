@@ -2,7 +2,7 @@
   import type { JoinInfo, DatasetInfo } from "../../backendapi";
   import * as vg from "@uwdata/vgplot";
   import { TableClient, type FieldInfo } from "./TableClient";
-  import { filters, selectionDisplay } from "../../stores";
+  import { filters, selectionDisplay, compareSimilarID } from "../../stores";
   import {
     formatLocaleAuto,
     formatNumber,
@@ -141,6 +141,7 @@
   // TODO CRITICAL -- right now hard coded to get column "id" need to add this to table info for PK
   function displaySimilar(id) {
     console.log("Display similar for id: ", id);
+    $compareSimilarID = id;
   }
 </script>
 

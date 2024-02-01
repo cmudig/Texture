@@ -8,12 +8,14 @@
     showBackgroundDist,
     filteredCount,
     databaseConnection,
+    compareSimilarID,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import Table from "./components/table/Table.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import Search from "./components/Search.svelte";
+  import SimilarView from "./components/SimilarView.svelte";
   import {
     Button,
     Select,
@@ -267,7 +269,16 @@
             Table
           </div>
 
-          <Table {datasetInfo} {currentColToggleStates} />
+          {#if $compareSimilarID !== undefined}
+            <SimilarView
+              similarDocID={$compareSimilarID}
+              clearFunc={() => {
+                $compareSimilarID = undefined;
+              }}
+            />
+          {:else}
+            <Table {datasetInfo} {currentColToggleStates} />
+          {/if}
         </TabItem>
       </Tabs>
     </div>
