@@ -10,6 +10,7 @@ import type {
   JsonResponse,
   ErrorResponse,
   DuckQueryData,
+  DatasetInfo,
 } from "../backendapi";
 
 type DuckQueryResult = ExecResponse | JsonResponse | ErrorResponse;
@@ -186,6 +187,31 @@ export class DatabaseConnection {
   async getColSummaries(datasetName: string): Promise<ColumnSummary[]> {
     let q = vg.sql`summarize ${vg.column(datasetName)}`;
     let r = await vg.coordinator().query(q, { type: "json" });
+
+    return r;
+  }
+
+  async getDocsByID(dsInfo: DatasetInfo, ids: any[]): Promise<any[]> {
+    let fromClause = dsInfo.name;
+
+    if (dsInfo.joinDatasetInfo) {
+      fromClause = vg.fromJoinDistinct({
+        table: dsInfo.name,
+        rightTable: dsInfo.joinDatasetInfo.joinDatasetName,
+        joinKey: dsInfo.joinDatasetInfo.joinKey,
+      });
+    }
+
+    let selectQString = vg.Query.from(fromClause).select("*").toString();
+    let numericIds = ids.map((id) => Number(id));
+
+    let q = vg.sql`${selectQString} WHERE ${vg.column(dsInfo.primary_key.name)} IN (${numericIds})`;
+
+    console.log("Executing query: ", q.toString());
+
+    let r = await vg.coordinator().query(q, { type: "json" });
+
+    console.log("response: ", r);
 
     return r;
   }

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { AngleRightOutline, AngleDownOutline } from "flowbite-svelte-icons";
-  export let id: BigInt;
+  export let id: number;
   export let document: string;
   export let docName: string;
-  export let metadata: Record<string, any>[];
+  export let metadata: Array<[string, unknown]>;
   export let highlight = false;
 
   let toggle = false;
@@ -42,12 +42,10 @@
       <div class="bg-gray-50 p-2 min-w-48">
         <table class="table-fixed">
           <tbody>
-            {#each metadata as item (item)}
+            {#each metadata as [itemKey, itemValue] (itemKey)}
               <tr>
-                {#each Object.entries(item) as [key, value]}
-                  <td class="font-semibold italic">{key}</td>
-                  <td>{value}</td>
-                {/each}
+                <td class="font-semibold italic">{itemKey}</td>
+                <td>{itemValue}</td>
               </tr>
             {/each}
           </tbody>
