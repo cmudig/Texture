@@ -26,14 +26,10 @@
     CloseButton,
     Tooltip,
     Spinner,
-    Tabs,
-    TabItem,
   } from "flowbite-svelte";
   import {
     AdjustmentsHorizontalOutline,
     FilterSolid,
-    ChartMixedSolid,
-    TableSolid,
     FilePlusSolid,
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
@@ -250,38 +246,20 @@
 
   <div class="flex flex-row">
     <div class="h-screen w-1/3 overflow-scroll">
-      <Tabs style="underline" contentClass="">
-        <TabItem open>
-          <div slot="title" class="flex items-center gap-2">
-            <ChartMixedSolid size="sm" />
-            Explore
-          </div>
-
-          <Sidebar {datasetInfo} {datasetColSummaries} />
-        </TabItem>
-      </Tabs>
+      <Sidebar {datasetInfo} {datasetColSummaries} />
     </div>
-    <div class="h-screen w-2/3 overflow-scroll">
-      <Tabs style="underline" contentClass="border-l-2 border-slate-50">
-        <TabItem open>
-          <div slot="title" class="flex items-center gap-2">
-            <TableSolid size="sm" />
-            Table
-          </div>
-
-          {#if $compareSimilarID !== undefined}
-            <SimilarView
-              {datasetInfo}
-              similarDocID={$compareSimilarID}
-              clearFunc={() => {
-                $compareSimilarID = undefined;
-              }}
-            />
-          {:else}
-            <Table {datasetInfo} {currentColToggleStates} />
-          {/if}
-        </TabItem>
-      </Tabs>
+    <div class="h-screen w-2/3 overflow-scroll border-l-2 border-slate-50">
+      {#if $compareSimilarID !== undefined}
+        <SimilarView
+          {datasetInfo}
+          similarDocID={$compareSimilarID}
+          clearFunc={() => {
+            $compareSimilarID = undefined;
+          }}
+        />
+      {:else}
+        <Table {datasetInfo} {currentColToggleStates} />
+      {/if}
     </div>
   </div>
 {:catch error}
