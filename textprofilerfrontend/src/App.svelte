@@ -39,7 +39,6 @@
   let datasets: Record<string, DatasetInfo>;
   let currentDatasetName: string;
   let datasetInfo: DatasetInfo;
-  // let currentColumns: Column[] = [];
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
   let filterPanelHidden = true;
