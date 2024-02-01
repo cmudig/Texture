@@ -4,25 +4,23 @@
   import type { DatasetInfo } from "../backendapi";
   import { databaseConnection } from "../stores";
 
-  export let similarDocID: BigInt;
+  export let similarDocID: number;
   export let datasetInfo: DatasetInfo;
   export let clearFunc: () => void;
 
   async function getData(
     _datasetInfo: DatasetInfo,
-    _id: BigInt,
+    _id: number,
     _textColName: string,
   ) {
-    let numID = Number(_id);
-
     let originalDocArr = await databaseConnection.getDocsByID(_datasetInfo, [
-      numID,
+      _id,
     ]);
     let originalDc = originalDocArr[0];
 
     let vsResponse = await databaseConnection.api.queryEmbedFromId(
       _datasetInfo.name,
-      numID,
+      _id,
     );
 
     let relatedDocIDs = vsResponse.result.map(
@@ -35,7 +33,7 @@
     );
 
     return {
-      originalDoc: structureDoc(originalDc, _textColName, numID),
+      originalDoc: structureDoc(originalDc, _textColName, _id),
       relatedDocs: relatedDocsFull.map((doc, idx) =>
         structureDoc(doc, _textColName, relatedDocIDs[idx]),
       ),

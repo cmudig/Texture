@@ -44,8 +44,6 @@
     // always include pk
     plotcols.push(datasetInfo.primary_key.name);
 
-    console.log("plotcols: ", plotcols);
-
     let client = new TableClient({
       filterBy: filter,
       from: fromClause,
@@ -137,9 +135,7 @@
     };
   }
 
-  // TODO CRITICAL -- right now hard coded to get column "id" need to add this to table info for PK
-  function displaySimilar(id) {
-    console.log("Display similar for id: ", id);
+  function displaySimilar(id: number) {
     $compareSimilarID = id;
   }
 </script>
@@ -182,7 +178,9 @@
                       title="filter me"
                       size="sm"
                       on:click={() =>
-                        displaySimilar(row[datasetInfo.primary_key.name])}
+                        displaySimilar(
+                          Number(row[datasetInfo.primary_key.name]),
+                        )}
                     />
                   </div>
                 </td>
