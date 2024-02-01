@@ -12,6 +12,8 @@
   import { type SelectionMap, isStringArray } from "../../shared/types";
   import Highlight from "./Highlight.svelte";
   import Regular from "./Regular.svelte";
+  import { DotsVerticalOutline } from "flowbite-svelte-icons";
+  import { Dropdown, DropdownItem } from "flowbite-svelte";
 
   export let mainDatasetName: string;
   export let joinDatasetInfo: JoinInfo | undefined = undefined;
@@ -129,6 +131,11 @@
       props: { value: formatValue(myValue, schemaItem.type) },
     };
   }
+
+  // TODO CRITICAL -- right now hard coded to get column "id" need to add this to table info for PK
+  function displaySimilar(id) {
+    console.log("Display similar for id: ", id);
+  }
 </script>
 
 {#if ready}
@@ -140,10 +147,12 @@
       <table class="w-full">
         <thead>
           <tr>
+            <th
+              class="sticky top-0 font-medium bg-gray-50 border-b-2 border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9"
+            ></th>
             {#each $schema as schemaItem}
               <th
-                class={`sticky top-0 font-medium bg-gray-50 hover:bg-gray-100 cursor-ns-resize border-b-2
-                border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9`}
+                class="sticky top-0 font-medium bg-gray-50 hover:bg-gray-100 cursor-ns-resize border-b-2 border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9"
                 on:click={(e) => myTableClient.sort(e, schemaItem.column)}
               >
                 {formatColumnName(schemaItem.column, $sortDesc, $sortColumn)}
@@ -155,6 +164,18 @@
           <tbody>
             {#each $data as row, i}
               <tr class="hover:bg-blue-50">
+                <td class="pt-2 align-top border-b border-gray-100">
+                  <div
+                    class="text-gray-500 bg-gray-50 hover:bg-gray-100 rounded py-1 hover:text-primary-700"
+                  >
+                    <DotsVerticalOutline id={`table-dropdown-${i}`} size="sm" />
+                  </div>
+                  <Dropdown triggeredBy={`#table-dropdown-${i}`}>
+                    <DropdownItem on:click={() => displaySimilar(row["id"])}
+                      >Show similar</DropdownItem
+                    >
+                  </Dropdown>
+                </td>
                 {#each $schema as schemaItem}
                   {@const myValue = row[schemaItem.column]}
                   {@const item = renderValue(
