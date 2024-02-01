@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { SelectionRange } from "../shared/types";
   import { formatFloat } from "../shared/format";
+  import { CloseSolid } from "flowbite-svelte-icons";
+  import { deleteFilter } from "../stores";
 
   export let colName: string;
   export let filterRange: SelectionRange;
@@ -12,21 +14,26 @@
 </script>
 
 <div
-  class="flex flex-col items-center rounded border-2 p-1 {isString
-    ? 'bg-orange-200'
-    : 'bg-blue-200'}"
+  class={`flex gap-1 items-center  bg-white rounded-lg border-2 p-1  ${isString ? "border-orange-300 " : "border-blue-300"}`}
 >
-  <span
-    class="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center"
-    >{colName}</span
-  >
-  <div class="w-full text-center font-light">
+  <div>
     {#if isString}
-      {filterRange.join(", ")}
+      <span class="font-semibold text-gray-800">{colName}</span>
+      <span> == </span>
+      <span class="italic">
+        {filterRange.map((item) => `"${item}"`).join(", ")}
+      </span>
     {:else}
-      [{formatFloat(Number(filterRange[0]))}, {formatFloat(
-        Number(filterRange[1]),
-      )}]
+      <span>{formatFloat(Number(filterRange[0]))} {"<="} </span>
+      <span class="font-semibold text-gray-800">{colName}</span>
+
+      <span>{"<="} {formatFloat(Number(filterRange[1]))}</span>
     {/if}
   </div>
+  <button
+    class="bg-gray-300 hover:bg-primary-500 hover:text-white p-2 rounded-full ml-1"
+    on:click={() => deleteFilter(colName)}
+  >
+    <CloseSolid class="h-2 w-2" />
+  </button>
 </div>

@@ -16,6 +16,7 @@
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import Search from "./components/Search.svelte";
   import SimilarView from "./components/SimilarView.svelte";
+  import FilterBar from "./components/FilterBar.svelte";
   import {
     Button,
     Select,
@@ -26,14 +27,10 @@
     CloseButton,
     Tooltip,
     Spinner,
-    Tabs,
-    TabItem,
   } from "flowbite-svelte";
   import {
     AdjustmentsHorizontalOutline,
     FilterSolid,
-    ChartMixedSolid,
-    TableSolid,
     FilePlusSolid,
   } from "flowbite-svelte-icons";
   import { sineIn } from "svelte/easing";
@@ -43,7 +40,6 @@
   let datasets: Record<string, DatasetInfo>;
   let currentDatasetName: string;
   let datasetInfo: DatasetInfo;
-  // let currentColumns: Column[] = [];
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
   let filterPanelHidden = true;
@@ -238,7 +234,12 @@
   </div>
 
   <!-- Dataset info -->
-  <div class="flex gap-2 justify-end pr-7 py-2 text-gray-500 bg-gray-100">
+  <div
+    class="flex gap-2 justify-end pr-7 py-2 text-gray-500 bg-gray-100 min-h-14"
+  >
+    <div class="grow px-2 self-center">
+      <FilterBar />
+    </div>
     <div class="text-md self-center">
       {formatNumber($filteredCount)} / {formatNumber(datasetSize)} rows
     </div>
@@ -250,38 +251,20 @@
 
   <div class="flex flex-row">
     <div class="h-screen w-1/3 overflow-scroll">
-      <Tabs style="underline" contentClass="">
-        <TabItem open>
-          <div slot="title" class="flex items-center gap-2">
-            <ChartMixedSolid size="sm" />
-            Explore
-          </div>
-
-          <Sidebar {datasetInfo} {datasetColSummaries} />
-        </TabItem>
-      </Tabs>
+      <Sidebar {datasetInfo} {datasetColSummaries} />
     </div>
-    <div class="h-screen w-2/3 overflow-scroll">
-      <Tabs style="underline" contentClass="border-l-2 border-slate-50">
-        <TabItem open>
-          <div slot="title" class="flex items-center gap-2">
-            <TableSolid size="sm" />
-            Table
-          </div>
-
-          {#if $compareSimilarID !== undefined}
-            <SimilarView
-              {datasetInfo}
-              similarDocID={$compareSimilarID}
-              clearFunc={() => {
-                $compareSimilarID = undefined;
-              }}
-            />
-          {:else}
-            <Table {datasetInfo} {currentColToggleStates} />
-          {/if}
-        </TabItem>
-      </Tabs>
+    <div class="h-screen w-2/3 overflow-scroll border-l-2 border-slate-50">
+      {#if $compareSimilarID !== undefined}
+        <SimilarView
+          {datasetInfo}
+          similarDocID={$compareSimilarID}
+          clearFunc={() => {
+            $compareSimilarID = undefined;
+          }}
+        />
+      {:else}
+        <Table {datasetInfo} {currentColToggleStates} />
+      {/if}
     </div>
   </div>
 {:catch error}

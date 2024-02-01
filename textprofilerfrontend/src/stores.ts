@@ -1,4 +1,10 @@
-import { type Writable, type Readable, writable, derived } from "svelte/store";
+import {
+  type Writable,
+  type Readable,
+  writable,
+  derived,
+  get,
+} from "svelte/store";
 import type { FilterWrapper, SelectionMap } from "./shared/types";
 import { TextProfileClient, DefaultService } from "./backendapi";
 import { DatabaseConnection } from "./database/db";
@@ -17,7 +23,7 @@ export const databaseConnection = new DatabaseConnection(backendService);
 export const compareSimilarID: Writable<number | undefined> = writable();
 
 export const filters: Writable<FilterWrapper> = writable({
-  brush: undefined,
+  brush: undefined, // vg.Selection crossfilter
   datasetName: "",
   joinDatasetName: undefined,
 });
@@ -31,11 +37,11 @@ export const selectionDisplay = derived(
   ($filters, set) => {
     if ($filters.brush) {
       $filters.brush.addEventListener("value", () => {
-        let v = updateValue($filters.brush);
+        let v = updateSelectionMap($filters.brush);
         set(v);
       });
       // event listener not triggered on initial set so call manually
-      let v = updateValue($filters.brush);
+      let v = updateSelectionMap($filters.brush);
       set(v);
     } else {
       set({});
@@ -70,7 +76,7 @@ export const filteredCount: Readable<number | undefined> = derived(
   },
 );
 
-function updateValue(mosaicSelection: any): SelectionMap {
+function updateSelectionMap(mosaicSelection: any): SelectionMap {
   if (mosaicSelection?.clauses) {
     let r = mosaicSelection.clauses.reduce((d: SelectionMap, clause: any) => {
       try {
@@ -78,9 +84,13 @@ function updateValue(mosaicSelection: any): SelectionMap {
         let v = clause.value;
         let val = Array.isArray(v) ? v.flat() : [v];
 
-        // BUG: if multiple filters for same column, this only stores the last one
-
-        colNames.forEach((c) => (d[c] = val));
+        colNames.forEach((c: string) => {
+          if (c in d) {
+            d[c] = [...d[c], ...val];
+          } else {
+            d[c] = val;
+          }
+        });
       } catch (error) {
         console.error(error);
       }
@@ -98,4 +108,33 @@ function updateValue(mosaicSelection: any): SelectionMap {
   }
 
   return {};
+}
+
+export function deleteFilter(col: string) {
+  const brush = get(filters).brush;
+
+  let contains = brush.clauses.filter((clause) =>
+    clause.predicate.columns.includes(col),
+  );
+
+  contains.forEach((clause) => {
+    // removes filter but does not update originating chart -- how to trigger this?
+    let r = brush.update({
+      ...clause,
+      value: null,
+      predicate: null,
+    });
+
+    if (typeof clause.source?.reset === "function") {
+      console.log("clause has reset");
+      clause.source.reset();
+    } else {
+      console.log("Clause has no reset fuction: ", clause);
+      // TODO reset the filter manually if not interval?
+    }
+
+    // this updates but forces all plots to re-render
+    // maybe will work if I fix the re-rendering issue for charts?
+    // $filters = { ...$filters, brush: r };
+  });
 }
