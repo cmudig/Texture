@@ -78,9 +78,13 @@ function updateValue(mosaicSelection: any): SelectionMap {
         let v = clause.value;
         let val = Array.isArray(v) ? v.flat() : [v];
 
-        // BUG: if multiple filters for same column, this only stores the last one
-
-        colNames.forEach((c) => (d[c] = val));
+        colNames.forEach((c: string) => {
+          if (c in d) {
+            d[c] = [...d[c], ...val];
+          } else {
+            d[c] = val;
+          }
+        });
       } catch (error) {
         console.error(error);
       }
