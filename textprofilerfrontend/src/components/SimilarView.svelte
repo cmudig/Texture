@@ -1,10 +1,16 @@
 <script lang="ts">
+  import { getContext } from "svelte";
   import { CloseButton } from "flowbite-svelte";
   import DocumentDisplay from "./DocumentDisplay.svelte";
+  import type { DefaultService, DatasetInfo } from "../backendapi";
+
   export let similarDocID: BigInt;
+  export let datasetInfo: DatasetInfo;
   export let clearFunc: () => void;
 
-  let testArr: BigInt[] = [10n, 20n, 3n, 43n, 1232n];
+  let backendService: DefaultService = getContext("backendService");
+
+  function getDocument(id: BigInt) {}
 </script>
 
 <div class="flex items-center bg-gray-50 h-10 px-2">
@@ -30,7 +36,7 @@
     />
   </div>
   <div class="bg-gray-100 p-4 flex flex-col gap-2">
-    {#each testArr as item (item)}
+    {#each [1n, 2n] as item (item)}
       <DocumentDisplay
         id={item}
         document={"hello world ".repeat(Number(item) * 100)}

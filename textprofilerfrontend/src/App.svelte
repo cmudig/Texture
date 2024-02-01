@@ -271,6 +271,7 @@
 
           {#if $compareSimilarID !== undefined}
             <SimilarView
+              {datasetInfo}
               similarDocID={$compareSimilarID}
               clearFunc={() => {
                 $compareSimilarID = undefined;
