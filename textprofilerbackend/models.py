@@ -21,6 +21,7 @@ class DatasetInfo(BaseModel):
     column_info: List[Column]
     origin: Literal["example", "uploaded"]
     joinDatasetInfo: Optional[JoinInfo] = None
+    primary_key: Column
 
 
 class ColumnSummary(BaseModel):

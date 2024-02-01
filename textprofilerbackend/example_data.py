@@ -3,6 +3,7 @@ from textprofilerbackend.models import DatasetInfo
 
 dataset_vast2021 = DatasetInfo(
     name="vast2021",
+    primary_key={"name": "id", "type": "number"},
     joinDatasetInfo={
         "joinDatasetName": "vast2021_word",
         "joinKey": "id",
@@ -86,6 +87,7 @@ dataset_vast2021 = DatasetInfo(
 
 dataset_dolly = DatasetInfo(
     name="dolly",
+    primary_key={"name": "id", "type": "number"},
     origin="example",
     column_info=[
         # text columns
@@ -310,6 +312,7 @@ dataset_dolly = DatasetInfo(
 
 dataset_opus = DatasetInfo(
     name="opus",
+    primary_key={"name": "id", "type": "number"},
     origin="example",
     column_info=[
         # text columns
@@ -461,6 +464,7 @@ dataset_opus = DatasetInfo(
 
 dataset_squad = DatasetInfo(
     name="squad",
+    primary_key={"name": "id", "type": "number"},
     origin="example",
     column_info=[
         # text columns
@@ -685,6 +689,7 @@ dataset_squad = DatasetInfo(
 
 dataset_bbc = DatasetInfo(
     name="bbc",
+    primary_key={"name": "id", "type": "number"},
     origin="example",
     column_info=[
         # text columns
@@ -702,6 +707,7 @@ dataset_bbc = DatasetInfo(
 
 dataset_vis_papers = DatasetInfo(
     name="vis_papers",
+    primary_key={"name": "id", "type": "number"},
     joinDatasetInfo={
         "joinDatasetName": "vis_papers_words",
         "joinKey": "id",
