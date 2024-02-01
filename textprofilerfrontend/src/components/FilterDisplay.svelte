@@ -20,7 +20,7 @@
       <span class="font-semibold text-gray-800">{colName}</span>
       <span> == </span>
       <span class="italic">
-        {filterRange.join(", ")}
+        {filterRange.map((item) => `"${item}"`).join(", ")}
       </span>
     {:else}
       <span>{formatFloat(Number(filterRange[0]))} {"<="} </span>

@@ -234,8 +234,10 @@
   </div>
 
   <!-- Dataset info -->
-  <div class="flex gap-2 justify-end pr-7 py-2 text-gray-500 bg-gray-100">
-    <div class="grow px-2">
+  <div
+    class="flex gap-2 justify-end pr-7 py-2 text-gray-500 bg-gray-100 min-h-14"
+  >
+    <div class="grow px-2 self-center">
       <FilterBar />
     </div>
     <div class="text-md self-center">
