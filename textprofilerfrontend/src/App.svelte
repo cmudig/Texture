@@ -16,6 +16,7 @@
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import Search from "./components/Search.svelte";
   import SimilarView from "./components/SimilarView.svelte";
+  import FilterBar from "./components/FilterBar.svelte";
   import {
     Button,
     Select,
@@ -234,6 +235,9 @@
 
   <!-- Dataset info -->
   <div class="flex gap-2 justify-end pr-7 py-2 text-gray-500 bg-gray-100">
+    <div class="grow px-2">
+      <FilterBar />
+    </div>
     <div class="text-md self-center">
       {formatNumber($filteredCount)} / {formatNumber(datasetSize)} rows
     </div>
