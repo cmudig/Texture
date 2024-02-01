@@ -207,11 +207,8 @@ export class DatabaseConnection {
 
     let q = vg.sql`${selectQString} WHERE ${vg.column(dsInfo.primary_key.name)} IN (${numericIds})`;
 
-    console.log("Executing query: ", q.toString());
-
+    // TODO make work with arrow?
     let r = await vg.coordinator().query(q, { type: "json" });
-
-    console.log("response: ", r);
 
     return r;
   }
