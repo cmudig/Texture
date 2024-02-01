@@ -23,5 +23,6 @@ export type { HTTPValidationError } from "./models/HTTPValidationError";
 export type { JoinInfo } from "./models/JoinInfo";
 export type { JsonResponse } from "./models/JsonResponse";
 export type { ValidationError } from "./models/ValidationError";
+export type { VectorSearchResponse } from "./models/VectorSearchResponse";
 
 export { DefaultService } from "./services/DefaultService";
