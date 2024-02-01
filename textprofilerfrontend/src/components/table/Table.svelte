@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { JoinInfo } from "../../backendapi";
+  import type { JoinInfo, DatasetInfo } from "../../backendapi";
   import * as vg from "@uwdata/vgplot";
   import { TableClient, type FieldInfo } from "./TableClient";
   import { filters, selectionDisplay } from "../../stores";
@@ -15,8 +15,7 @@
   import { DotsVerticalOutline } from "flowbite-svelte-icons";
   import { Dropdown, DropdownItem } from "flowbite-svelte";
 
-  export let mainDatasetName: string;
-  export let joinDatasetInfo: JoinInfo | undefined = undefined;
+  export let datasetInfo: DatasetInfo;
   export let currentColToggleStates: Record<string, boolean> = {};
 
   let myTableClient: TableClient;
@@ -37,9 +36,16 @@
         })
       : _mainDatasetName;
 
+    // only get columns with toggle on; remove duplicate pk
     let plotcols = Object.keys(_currentColToggleStates).filter(
-      (col) => _currentColToggleStates[col],
+      (col) =>
+        _currentColToggleStates[col] && col !== datasetInfo.primary_key.name,
     );
+
+    // always include pk
+    plotcols.push(datasetInfo.primary_key.name);
+
+    console.log("plotcols: ", plotcols);
 
     let client = new TableClient({
       filterBy: filter,
@@ -56,8 +62,8 @@
 
   $: {
     myTableClient = createClient(
-      joinDatasetInfo,
-      mainDatasetName,
+      datasetInfo.joinDatasetInfo,
+      datasetInfo.name,
       currentColToggleStates,
       $filters.brush,
     );
@@ -151,12 +157,15 @@
               class="sticky top-0 font-medium bg-gray-50 border-b-2 border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9"
             ></th>
             {#each $schema as schemaItem}
-              <th
-                class="sticky top-0 font-medium bg-gray-50 hover:bg-gray-100 cursor-ns-resize border-b-2 border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9"
-                on:click={(e) => myTableClient.sort(e, schemaItem.column)}
-              >
-                {formatColumnName(schemaItem.column, $sortDesc, $sortColumn)}
-              </th>
+              <!-- plot if not pk or if the pk and is toggled on -->
+              {#if schemaItem.column !== datasetInfo.primary_key.name || currentColToggleStates[datasetInfo.primary_key.name]}
+                <th
+                  class="sticky top-0 font-medium bg-gray-50 hover:bg-gray-100 cursor-ns-resize border-b-2 border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9"
+                  on:click={(e) => myTableClient.sort(e, schemaItem.column)}
+                >
+                  {formatColumnName(schemaItem.column, $sortDesc, $sortColumn)}
+                </th>
+              {/if}
             {/each}
           </tr>
         </thead>
@@ -171,7 +180,9 @@
                     <DotsVerticalOutline id={`table-dropdown-${i}`} size="sm" />
                   </div>
                   <Dropdown triggeredBy={`#table-dropdown-${i}`}>
-                    <DropdownItem on:click={() => displaySimilar(row["id"])}
+                    <DropdownItem
+                      on:click={() =>
+                        displaySimilar(row[datasetInfo.primary_key.name])}
                       >Show similar</DropdownItem
                     >
                   </Dropdown>
@@ -184,15 +195,17 @@
                     $selectionDisplay,
                     $filters.joinDatasetInfo,
                   )}
-                  <td
-                    class={`whitespace-normal text-ellipsis overflow-hidden p-2 align-top text-sm border-b border-gray-100 ${
-                      myValue == undefined
-                        ? "text-gray-300 italic"
-                        : "text-gray-800"
-                    }`}
-                  >
-                    <svelte:component this={item.component} {...item.props} />
-                  </td>
+                  {#if schemaItem.column !== datasetInfo.primary_key.name || currentColToggleStates[datasetInfo.primary_key.name]}
+                    <td
+                      class={`whitespace-normal text-ellipsis overflow-hidden p-2 align-top text-sm border-b border-gray-100 ${
+                        myValue == undefined
+                          ? "text-gray-300 italic"
+                          : "text-gray-800"
+                      }`}
+                    >
+                      <svelte:component this={item.component} {...item.props} />
+                    </td>
+                  {/if}
                 {/each}
               </tr>
             {/each}

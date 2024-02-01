@@ -267,11 +267,7 @@
             Table
           </div>
 
-          <Table
-            mainDatasetName={datasetInfo.name}
-            joinDatasetInfo={datasetInfo.joinDatasetInfo}
-            {currentColToggleStates}
-          />
+          <Table {datasetInfo} {currentColToggleStates} />
         </TabItem>
       </Tabs>
     </div>
