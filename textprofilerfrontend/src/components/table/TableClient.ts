@@ -38,7 +38,7 @@ export class TableClient extends vg.MosaicClient {
     this.filterBy = filterBy;
     this.from = from;
     this.data = writable();
-    this.limit = 20;
+    this.limit = 100;
     this.loaded = false;
     this.offset = 0;
     this.pending = false;
