@@ -11,7 +11,7 @@
     compareSimilarID,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
-  import Table from "./components/table/Table.svelte";
+  import DataDisplay from "./components/table/DataDisplay.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import Search from "./components/Search.svelte";
@@ -263,7 +263,7 @@
           }}
         />
       {:else}
-        <Table {datasetInfo} {currentColToggleStates} />
+        <DataDisplay {datasetInfo} {currentColToggleStates} />
       {/if}
     </div>
   </div>
