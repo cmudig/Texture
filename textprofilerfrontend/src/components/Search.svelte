@@ -58,6 +58,6 @@
     class="ps-10"
     placeholder="Search over text columns..."
     bind:value={$currentQuery}
-    on:change={() => publishUpdate()}
+    on:input={() => publishUpdate()}
   />
 </div>
