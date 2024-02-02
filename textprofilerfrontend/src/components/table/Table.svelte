@@ -3,11 +3,7 @@
   import * as vg from "@uwdata/vgplot";
   import { TableClient, type FieldInfo } from "./TableClient";
   import { filters, selectionDisplay, compareSimilarID } from "../../stores";
-  import {
-    formatLocaleAuto,
-    formatNumber,
-    formatDate,
-  } from "../../shared/format";
+  import { formatValue } from "../../shared/format";
   import { onDestroy } from "svelte";
   import { type SelectionMap, isStringArray } from "../../shared/types";
   import Highlight from "./Highlight.svelte";
@@ -91,12 +87,6 @@
     return columnName;
   }
 
-  function formatValue(value: any, type: string) {
-    if (type === "number") return formatNumber(value);
-    if (type === "date") return formatDate(value);
-    return formatLocaleAuto(value);
-  }
-
   function renderValue(
     myValue: any,
     schemaItem: FieldInfo,
@@ -131,7 +121,7 @@
 
     return {
       component: Regular,
-      props: { value: formatValue(myValue, schemaItem.type) },
+      props: { value: formatValue(myValue, { type: schemaItem.type }) },
     };
   }
 

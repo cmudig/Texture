@@ -1,33 +1,42 @@
 <script lang="ts">
   import type { SelectionRange } from "../shared/types";
-  import { formatFloat } from "../shared/format";
   import { CloseSolid } from "flowbite-svelte-icons";
   import { deleteFilters } from "../stores";
+  import { formatValue } from "../shared/format";
+  import { isStringArray } from "../shared/types";
 
   export let colName: string;
   export let filterRange: SelectionRange;
-
-  $: isString = typeof filterRange[0] === "string";
 
   // number is blue-500
   // string is orange-500
 </script>
 
 <div
-  class={`flex gap-1 items-center  bg-white rounded-lg border-2 p-1  ${isString ? "border-orange-300 " : "border-blue-300"}`}
+  class={`flex gap-1 items-center  bg-white rounded-lg border-2 p-1  ${isStringArray(filterRange) || filterRange[0] == undefined ? "border-orange-300 " : "border-blue-300"}`}
 >
   <div>
-    {#if isString}
+    {#if isStringArray(filterRange) || filterRange[0] == undefined}
       <span class="font-semibold text-gray-800">{colName}</span>
       <span> == </span>
       <span class="italic">
-        {filterRange.map((item) => `"${item}"`).join(", ")}
+        {filterRange.map((item) => (item ? `"${item}"` : `${item}`)).join(", ")}
       </span>
     {:else}
-      <span>{formatFloat(Number(filterRange[0]))} {"<="} </span>
+      <span
+        >{formatValue(filterRange[0], {
+          range: filterRange[1] - filterRange[0],
+        })}
+        {"<="}
+      </span>
       <span class="font-semibold text-gray-800">{colName}</span>
 
-      <span>{"<="} {formatFloat(Number(filterRange[1]))}</span>
+      <span
+        >{"<="}
+        {formatValue(filterRange[1], {
+          range: filterRange[1] - filterRange[0],
+        })}</span
+      >
     {/if}
   </div>
   <button
