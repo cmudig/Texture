@@ -9,7 +9,7 @@ import type { FilterWrapper, SelectionMap } from "./shared/types";
 import { TextProfileClient, DefaultService } from "./backendapi";
 import { DatabaseConnection } from "./database/db";
 
-// CLIENT INIT
+// ~~~~~~~~~~~~~~~  Database init ~~~~~~~~~~~~~~~
 // This needs to match API url
 const API_URL = "http://localhost:8000/api";
 const backendService: DefaultService = new TextProfileClient({
@@ -30,7 +30,13 @@ export const filters: Writable<FilterWrapper> = writable({
 
 export const showBackgroundDist: Writable<boolean> = writable(true);
 
-let initialSM: SelectionMap = {};
+export const clearColumnSelections: Writable<
+  {
+    clearFunc: () => void;
+    sourceId: string;
+    colName: string;
+  }[]
+> = writable([]);
 
 export const selectionDisplay = derived(
   filters,
@@ -47,7 +53,7 @@ export const selectionDisplay = derived(
       set({});
     }
   },
-  initialSM,
+  {},
 );
 
 export const filteredCount: Readable<number | undefined> = derived(
@@ -110,31 +116,26 @@ function updateSelectionMap(mosaicSelection: any): SelectionMap {
   return {};
 }
 
-export function deleteFilter(col: string) {
+export function deleteFilters(col: string) {
   const brush = get(filters).brush;
+  const colSelections = get(clearColumnSelections);
 
   let contains = brush.clauses.filter((clause) =>
     clause.predicate.columns.includes(col),
   );
 
   contains.forEach((clause) => {
-    // removes filter but does not update originating chart -- how to trigger this?
-    let r = brush.update({
+    brush.update({
       ...clause,
       value: null,
       predicate: null,
     });
 
+    // only exists on interval selections
     if (typeof clause.source?.reset === "function") {
-      console.log("clause has reset");
       clause.source.reset();
-    } else {
-      console.log("Clause has no reset fuction: ", clause);
-      // TODO reset the filter manually if not interval?
     }
-
-    // this updates but forces all plots to re-render
-    // maybe will work if I fix the re-rendering issue for charts?
-    // $filters = { ...$filters, brush: r };
   });
+
+  colSelections.filter((c) => c.colName === col).forEach((c) => c.clearFunc());
 }
