@@ -41,56 +41,54 @@
     {/if}
   </button>
   <div class="w-full">
-    {#if active}
-      <div transition:slide|local={{ duration: 200 }} class="ml-4 mt-2">
-        {#if colType === "text" && $filters.joinDatasetInfo}
-          <h3 class="italic">{$filters.joinDatasetInfo.joinColumn.name}</h3>
+    <div class="ml-4 mt-2" class:hidden={!active}>
+      {#if colType === "text" && $filters.joinDatasetInfo}
+        <h3 class="italic">{$filters.joinDatasetInfo.joinColumn.name}</h3>
 
-          <CategoricalChart
-            mainDatasetName={$filters.joinDatasetInfo.joinDatasetName}
-            joinDatasetInfo={{
-              joinDatasetName: $filters.datasetName,
-              joinKey: $filters.joinDatasetInfo.joinKey,
-              joinColumn: undefined,
-            }}
-            columnName={$filters.joinDatasetInfo.joinColumn.name}
-            showBackground={false}
-            limit={20}
-          />
+        <CategoricalChart
+          mainDatasetName={$filters.joinDatasetInfo.joinDatasetName}
+          joinDatasetInfo={{
+            joinDatasetName: $filters.datasetName,
+            joinKey: $filters.joinDatasetInfo.joinKey,
+            joinColumn: undefined,
+          }}
+          columnName={$filters.joinDatasetInfo.joinColumn.name}
+          showBackground={false}
+          limit={20}
+        />
+      {/if}
+
+      <div class="flex flex-col">
+        {#if colType === "text" && plotCols.length}
+          <h3 class="italic">Extracted metadata</h3>
         {/if}
 
-        <div class="flex flex-col">
-          {#if colType === "text" && plotCols.length}
-            <h3 class="italic">Extracted metadata</h3>
+        {#each plotCols as col}
+          {#if col.type === "number"}
+            <Histogram
+              mainDatasetName={$filters.datasetName}
+              joinDatasetInfo={$filters.joinDatasetInfo}
+              showBackground={$showBackgroundDist}
+              columnName={col.name}
+            />
+          {:else if col.type === "categorical"}
+            <CategoricalChart
+              mainDatasetName={$filters.datasetName}
+              joinDatasetInfo={$filters.joinDatasetInfo}
+              showBackground={$showBackgroundDist}
+              columnName={col.name}
+            />
+          {:else if col.type === "date"}
+            <DateChart
+              mainDatasetName={$filters.datasetName}
+              joinDatasetInfo={$filters.joinDatasetInfo}
+              columnName={col.name}
+            />
+          {:else}
+            <div>{col.name}: Unsupported column type ({col.type})</div>
           {/if}
-
-          {#each plotCols as col}
-            {#if col.type === "number"}
-              <Histogram
-                mainDatasetName={$filters.datasetName}
-                joinDatasetInfo={$filters.joinDatasetInfo}
-                showBackground={$showBackgroundDist}
-                columnName={col.name}
-              />
-            {:else if col.type === "categorical"}
-              <CategoricalChart
-                mainDatasetName={$filters.datasetName}
-                joinDatasetInfo={$filters.joinDatasetInfo}
-                showBackground={$showBackgroundDist}
-                columnName={col.name}
-              />
-            {:else if col.type === "date"}
-              <DateChart
-                mainDatasetName={$filters.datasetName}
-                joinDatasetInfo={$filters.joinDatasetInfo}
-                columnName={col.name}
-              />
-            {:else}
-              <div>{col.name}: Unsupported column type ({col.type})</div>
-            {/if}
-          {/each}
-        </div>
+        {/each}
       </div>
-    {/if}
+    </div>
   </div>
 </div>
