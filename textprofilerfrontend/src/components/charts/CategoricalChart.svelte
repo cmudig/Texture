@@ -1,9 +1,10 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
-  import { afterUpdate } from "svelte";
+  import { afterUpdate, onDestroy } from "svelte";
   import { filters } from "../../stores";
   import type { JoinInfo } from "../../backendapi";
   import { getDatasetName } from "../../shared/utils";
+  import { getPlot } from "./chartUtils";
 
   export let columnName: string;
   export let mainDatasetName: string;
@@ -13,6 +14,7 @@
   export let limit = 10;
 
   let el: HTMLElement;
+  let plotWrapper;
 
   /* BUG: on component destory, the brush is not  preserved rn. 
   Right now still filters chart but cannot change when new component created
@@ -42,7 +44,7 @@
     }
 
     if (showBackground) {
-      c = vg.plot(
+      plotWrapper = getPlot(
         // including this breaks the click interation and doesnt cut off text?
         // vg.axisY({
         //   textOverflow: "ellipsis",
@@ -80,7 +82,7 @@
         vg.width(400),
       );
     } else {
-      c = vg.plot(
+      plotWrapper = getPlot(
         vg.barX(vg.from(fromClause, { filterBy: $filters.brush }), {
           x: vg.count(),
           y: cName,
@@ -106,11 +108,17 @@
       );
     }
 
-    el.replaceChildren(c);
+    el.replaceChildren(plotWrapper.element);
   }
 
   afterUpdate(() => {
     renderChart(mainDatasetName, columnName, plotNulls, joinDatasetInfo);
+  });
+
+  onDestroy(() => {
+    if (plotWrapper) {
+      plotWrapper.marks.forEach((mark) => vg.coordinator().disconnect(mark));
+    }
   });
 </script>
 

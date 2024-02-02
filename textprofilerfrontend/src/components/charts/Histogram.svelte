@@ -1,9 +1,10 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
-  import { afterUpdate } from "svelte";
+  import { afterUpdate, onDestroy } from "svelte";
   import { filters } from "../../stores";
   import type { JoinInfo } from "../../backendapi";
   import { getDatasetName } from "../../shared/utils";
+  import { getPlot } from "./chartUtils";
 
   export let columnName: string;
   export let mainDatasetName: string;
@@ -12,6 +13,7 @@
   export let plotNulls = false;
 
   let el: HTMLElement;
+  let plotWrapper;
 
   async function renderChart(
     mainDsName: string,
@@ -19,8 +21,6 @@
     pltNullsFlag: boolean,
     joinDsInfo?: JoinInfo,
   ) {
-    let c;
-
     let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
 
     let fromClause: any = datasetName;
@@ -34,7 +34,7 @@
     }
 
     if (showBackground) {
-      c = vg.plot(
+      plotWrapper = getPlot(
         vg.rectY(vg.from(fromClause), {
           x: vg.bin(columnName),
           y: vg.count(),
@@ -55,7 +55,7 @@
         vg.height(150),
       );
     } else {
-      c = vg.plot(
+      plotWrapper = getPlot(
         vg.rectY(vg.from(fromClause, { filterBy: $filters.brush }), {
           x: vg.bin(columnName),
           y: vg.count(),
@@ -70,13 +70,19 @@
       );
     }
 
-    el.replaceChildren(c);
+    el.replaceChildren(plotWrapper.element);
   }
 
   // This re-renders unnecessarily but is required or else will not re-render on $brush updates
   afterUpdate(() =>
     renderChart(mainDatasetName, columnName, plotNulls, joinDatasetInfo),
   );
+
+  onDestroy(() => {
+    if (plotWrapper) {
+      plotWrapper.marks.forEach((mark) => vg.coordinator().disconnect(mark));
+    }
+  });
 </script>
 
 <div bind:this={el} />
