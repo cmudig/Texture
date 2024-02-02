@@ -147,6 +147,4 @@
   });
 </script>
 
-<button on:click={resetSelection}> reset selection</button>
-
 <div class="summaryChart" bind:this={el} />
