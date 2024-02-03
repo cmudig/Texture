@@ -1,14 +1,11 @@
 <script lang="ts">
-  import type { JoinInfo, DatasetInfo } from "../../backendapi";
+  import type { DatasetInfo } from "../../backendapi";
   import * as vg from "@uwdata/vgplot";
-  import { TableClient, type FieldInfo } from "./TableClient";
-  import { filters, selectionDisplay, compareSimilarID } from "../../stores";
-  import { formatValue } from "../../shared/format";
+  import { TableClient } from "./TableClient";
+  import { filters, compareSimilarID } from "../../stores";
   import { onDestroy } from "svelte";
-  import { type SelectionMap, isStringArray } from "../../shared/types";
-  import Highlight from "./Highlight.svelte";
-  import Regular from "./Regular.svelte";
   import { FilterOutline } from "flowbite-svelte-icons";
+  import DocumentDisplay from "../DocumentDisplay.svelte";
 
   export let datasetInfo: DatasetInfo;
   export let currentColToggleStates: Record<string, boolean> = {};
@@ -75,59 +72,14 @@
 
   $: ({ schema, data, sortColumn, sortDesc } = myTableClient);
 
-  // Utils
-  function formatColumnName(
-    columnName: string,
-    sortDesc: boolean,
-    sortName?: string,
-  ) {
-    if (sortName === columnName) {
-      return `${columnName} ${sortDesc ? "▾" : "▴"}`;
-    }
-    return columnName;
-  }
-
-  function renderValue(
-    myValue: any,
-    schemaItem: FieldInfo,
-    selections: SelectionMap,
-    joinInfo?: JoinInfo,
-  ) {
-    let highlights: string[] = [];
-
-    if (
-      joinInfo?.joinColumn.associated_text_col_name == schemaItem.column &&
-      joinInfo?.joinColumn.name in selections &&
-      isStringArray(selections[joinInfo.joinColumn.name])
-    ) {
-      highlights = [...highlights, ...selections[joinInfo.joinColumn.name]];
-    }
-    if (
-      schemaItem.column in selections &&
-      isStringArray(selections[schemaItem.column])
-    ) {
-      highlights = [...highlights, ...selections[schemaItem.column]];
-    }
-
-    if (highlights.length) {
-      return {
-        component: Highlight,
-        props: {
-          value: myValue,
-          highlights,
-        },
-      };
-    }
-
-    return {
-      component: Regular,
-      props: { value: formatValue(myValue, { type: schemaItem.type }) },
-    };
-  }
-
   function displaySimilar(id: number) {
     $compareSimilarID = id;
   }
+
+  $: colTypeMap = datasetInfo.column_info.reduce((acc, col) => {
+    acc[col.name] = col.type;
+    return acc;
+  }, {});
 </script>
 
 {#if ready}
@@ -136,71 +88,37 @@
       class="max-h-screen overflow-auto"
       on:scroll={(e) => myTableClient.scroll(e)}
     >
-      <table class="w-full">
-        <thead>
-          <tr>
-            <th
-              class="sticky top-0 font-medium bg-gray-50 border-b-2 border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9"
-            ></th>
-            {#each $schema as schemaItem}
-              <!-- plot if not pk or if the pk and is toggled on -->
-              {#if schemaItem.column !== datasetInfo.primary_key.name || currentColToggleStates[datasetInfo.primary_key.name]}
-                <th
-                  class="sticky top-0 font-medium bg-gray-50 hover:bg-gray-100 cursor-ns-resize border-b-2 border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9"
-                  on:click={(e) => myTableClient.sort(e, schemaItem.column)}
-                >
-                  {formatColumnName(schemaItem.column, $sortDesc, $sortColumn)}
-                </th>
-              {/if}
-            {/each}
-          </tr>
-        </thead>
-        {#if $data}
-          <tbody>
-            {#each $data as row}
-              <tr class="hover:bg-blue-50">
-                <td class="pt-2 pl-2 align-top border-b border-gray-100">
-                  <div
-                    class="text-gray-500 rounded-full py-1 hover:text-primary-700 hover:bg-primary-100"
-                    title="Show similar"
-                  >
-                    <FilterOutline
-                      title="filter me"
-                      size="sm"
-                      on:click={() =>
-                        displaySimilar(
-                          Number(row[datasetInfo.primary_key.name]),
-                        )}
-                    />
-                  </div>
-                </td>
-                {#each $schema as schemaItem}
-                  {@const myValue = row[schemaItem.column]}
-                  {@const item = renderValue(
-                    myValue,
-                    schemaItem,
-                    $selectionDisplay,
-                    $filters.joinDatasetInfo,
-                  )}
-                  {#if schemaItem.column !== datasetInfo.primary_key.name || currentColToggleStates[datasetInfo.primary_key.name]}
-                    <td
-                      class={`whitespace-normal text-ellipsis overflow-hidden p-2 align-top text-sm border-b border-gray-100 ${
-                        myValue == undefined
-                          ? "text-gray-300 italic"
-                          : "text-gray-800"
-                      }`}
-                    >
-                      <svelte:component this={item.component} {...item.props} />
-                    </td>
-                  {/if}
-                {/each}
-              </tr>
-            {/each}
-          </tbody>
-        {:else}
-          <p class="mt-4 ml-2">Loading data...</p>
-        {/if}
-      </table>
+      {#if $data}
+        <div class="bg-gray-100 p-4 flex flex-col gap-2">
+          {#each $data as row}
+            {@const rowArr = Object.entries(row)}
+            <DocumentDisplay
+              id={Number(row[datasetInfo.primary_key.name])}
+              textData={rowArr.filter(([k, v]) => colTypeMap[k] === "text")}
+              metadata={rowArr.filter(
+                ([k, v]) =>
+                  colTypeMap[k] !== "text" &&
+                  k !== datasetInfo.primary_key.name,
+              )}
+            >
+              <div
+                slot="optionButtons"
+                class="text-gray-500 rounded-full py-1 hover:text-primary-700 hover:bg-primary-100"
+                title="Show similar"
+              >
+                <FilterOutline
+                  title="filter me"
+                  size="sm"
+                  on:click={() =>
+                    displaySimilar(Number(row[datasetInfo.primary_key.name]))}
+                />
+              </div>
+            </DocumentDisplay>
+          {/each}
+        </div>
+      {:else}
+        <p class="mt-4 ml-2">Loading data...</p>
+      {/if}
     </div>
   {:else}
     <p class="mt-4 ml-2">Loading table info...</p>

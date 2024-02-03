@@ -3,16 +3,13 @@
   import DocumentDisplay from "./DocumentDisplay.svelte";
   import type { DatasetInfo } from "../backendapi";
   import { databaseConnection } from "../stores";
+  import { formatNumber } from "../shared/format";
 
   export let similarDocID: number;
   export let datasetInfo: DatasetInfo;
   export let clearFunc: () => void;
 
-  async function getData(
-    _datasetInfo: DatasetInfo,
-    _id: number,
-    _textColName: string,
-  ) {
+  async function getData(_datasetInfo: DatasetInfo, _id: number) {
     let originalDocArr = await databaseConnection.getDocsByID(_datasetInfo, [
       _id,
     ]);
@@ -27,34 +24,54 @@
       (doc) => doc[_datasetInfo.primary_key.name],
     );
 
+    const idDistMap = vsResponse.result.reduce((acc, doc) => {
+      // distance returned will be in col "_distance"
+      acc[doc[_datasetInfo.primary_key.name]] = doc["_distance"];
+      return acc;
+    }, {});
+
     let relatedDocsFull = await databaseConnection.getDocsByID(
       _datasetInfo,
       relatedDocIDs,
     );
 
     return {
-      originalDoc: structureDoc(originalDc, _textColName, _id),
+      originalDoc: structureDoc(originalDc, _datasetInfo, _id),
       relatedDocs: relatedDocsFull.map((doc, idx) =>
-        structureDoc(doc, _textColName, relatedDocIDs[idx]),
+        structureDoc(
+          doc,
+          _datasetInfo,
+          relatedDocIDs[idx],
+          idDistMap[relatedDocIDs[idx]],
+        ),
       ),
     };
   }
 
-  function structureDoc(doc: any, textColKey: string, id: number) {
+  function structureDoc(
+    record: any,
+    _datasetInfo: DatasetInfo,
+    id: number,
+    distance?: number,
+  ) {
+    const rowArr = Object.entries(record);
+    const colTypeMap = datasetInfo.column_info.reduce((acc, col) => {
+      acc[col.name] = col.type;
+      return acc;
+    }, {});
+
     return {
       id,
-      document: doc[textColKey],
-      docName: textColKey,
-      metadata: Object.entries(doc).filter(([k, v]) => k !== textColKey),
+      distance,
+      textData: rowArr.filter(([k, v]) => colTypeMap[k] === "text"),
+      metadata: rowArr.filter(
+        ([k, v]) =>
+          colTypeMap[k] !== "text" && k !== datasetInfo.primary_key.name,
+      ),
     };
   }
 
-  // TODO -- TEMP this only renders the first text col, rest is metadata
-  $: firstTextColName =
-    datasetInfo.column_info.find((col) => col.type === "text")?.name ??
-    "None found";
-
-  $: dataPromise = getData(datasetInfo, similarDocID, firstTextColName);
+  $: dataPromise = getData(datasetInfo, similarDocID);
 </script>
 
 <div class="max-h-screen overflow-auto">
@@ -73,19 +90,23 @@
 
       <DocumentDisplay
         id={data.originalDoc.id}
-        document={data.originalDoc.document}
-        docName={data.originalDoc.docName}
+        textData={data.originalDoc.textData}
         metadata={data.originalDoc.metadata}
-      />
+      >
+        <div slot="title" class="font-semibold">Original Record</div>
+      </DocumentDisplay>
     </div>
     <div class="bg-gray-100 p-4 flex flex-col gap-2">
       {#each data.relatedDocs as relatedDoc}
         <DocumentDisplay
           id={relatedDoc.id}
-          document={relatedDoc.document}
-          docName={relatedDoc.docName}
+          textData={relatedDoc.textData}
           metadata={relatedDoc.metadata}
-        />
+        >
+          <div slot="title" class="italic text-gray-500">
+            Distance: {formatNumber(relatedDoc.distance)}
+          </div>
+        </DocumentDisplay>
       {/each}
     </div>
   {:catch error}
