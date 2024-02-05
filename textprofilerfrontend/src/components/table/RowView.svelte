@@ -1,50 +1,54 @@
 <script lang="ts">
   import { AngleRightOutline, AngleDownOutline } from "flowbite-svelte-icons";
+  import { formatValue } from "../../shared/format";
+  import { type SelectionMap, isStringArray } from "../../shared/types";
+  import Highlight from "./Highlight.svelte";
+  import Regular from "./Regular.svelte";
+  import type { JoinInfo } from "../../backendapi";
+  import { filters, selectionDisplay } from "../../stores";
+
   export let id: number;
   export let textData: Array<[string, unknown]>;
   export let metadata: Array<[string, unknown]>;
   export let highlight = false;
 
-  // console.log("Document display, textData: ", textData);
-  // console.log("Document display, metadata: ", metadata);
+  function renderValue(
+    value: any,
+    colName: string,
+    selections: SelectionMap,
+    joinInfo?: JoinInfo,
+  ) {
+    let highlights: string[] = [];
 
-  // function renderValue(
-  //   myValue: any,
-  //   schemaItem: FieldInfo,
-  //   selections: SelectionMap,
-  //   joinInfo?: JoinInfo,
-  // ) {
-  //   let highlights: string[] = [];
+    if (
+      joinInfo?.joinColumn.associated_text_col_name === colName &&
+      joinInfo?.joinColumn.name in selections &&
+      isStringArray(selections[joinInfo.joinColumn.name])
+    ) {
+      highlights = [
+        ...highlights,
+        ...(selections[joinInfo.joinColumn.name] as string[]),
+      ];
+    }
+    if (colName in selections && isStringArray(selections[colName])) {
+      highlights = [...highlights, ...(selections[colName] as string[])];
+    }
 
-  //   if (
-  //     joinInfo?.joinColumn.associated_text_col_name == schemaItem.column &&
-  //     joinInfo?.joinColumn.name in selections &&
-  //     isStringArray(selections[joinInfo.joinColumn.name])
-  //   ) {
-  //     highlights = [...highlights, ...selections[joinInfo.joinColumn.name]];
-  //   }
-  //   if (
-  //     schemaItem.column in selections &&
-  //     isStringArray(selections[schemaItem.column])
-  //   ) {
-  //     highlights = [...highlights, ...selections[schemaItem.column]];
-  //   }
+    if (highlights.length) {
+      return {
+        component: Highlight,
+        props: {
+          value: value,
+          highlights,
+        },
+      };
+    }
 
-  //   if (highlights.length) {
-  //     return {
-  //       component: Highlight,
-  //       props: {
-  //         value: myValue,
-  //         highlights,
-  //       },
-  //     };
-  //   }
-
-  //   return {
-  //     component: Regular,
-  //     props: { value: formatValue(myValue, { type: schemaItem.type }) },
-  //   };
-  // }
+    return {
+      component: Regular,
+      props: { value: formatValue(value) },
+    };
+  }
 
   let toggle = false;
 </script>
@@ -73,10 +77,21 @@
   <div class={`flex  ${toggle ? "max-h-none " : "max-h-48 "}`}>
     <div class={` overflow-auto grow p-2 text-gray-800 flex flex-col gap-1`}>
       {#each textData as [textColName, textColData] (textColName)}
+        {@const renderComponent = renderValue(
+          textColData,
+          textColName,
+          $selectionDisplay,
+          $filters.joinDatasetInfo,
+        )}
         <div>
           <div class="border-b border-gray-300 italic">{textColName}</div>
 
-          <div>{textColData}</div>
+          <div>
+            <svelte:component
+              this={renderComponent.component}
+              {...renderComponent.props}
+            />
+          </div>
         </div>
       {/each}
     </div>
@@ -84,6 +99,12 @@
     {#if metadata.length}
       <div class="overflow-auto shrink bg-gray-50 min-w-80">
         {#each metadata as [itemKey, itemValue] (itemKey)}
+          {@const renderComponent = renderValue(
+            itemValue,
+            itemKey,
+            $selectionDisplay,
+            $filters.joinDatasetInfo,
+          )}
           <div class="flex border-b border-gray-200 px-2">
             <div
               class="whitespace-normal text-ellipsis overflow-hidden text-sm w-1/3 font-semibold italic"
@@ -91,8 +112,13 @@
             >
               {itemKey}
             </div>
-            <div class="whitespace-normal overflow-scroll text-sm w-2/3">
-              {itemValue}
+            <div
+              class={`whitespace-normal overflow-scroll text-sm w-2/3 ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-800"}`}
+            >
+              <svelte:component
+                this={renderComponent.component}
+                {...renderComponent.props}
+              />
             </div>
           </div>
         {/each}
