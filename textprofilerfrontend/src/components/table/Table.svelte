@@ -128,6 +128,19 @@
   function displaySimilar(id: number) {
     $compareSimilarID = id;
   }
+
+  function handleSort(event, colName: string) {
+    if (colName === $sortColumn) {
+      if (event.metaKey) {
+        $sortColumn = undefined;
+      } else {
+        $sortDesc = !$sortDesc;
+      }
+    } else {
+      $sortColumn = colName;
+      $sortDesc = false;
+    }
+  }
 </script>
 
 {#if ready}
@@ -147,7 +160,7 @@
               {#if schemaItem.column !== datasetInfo.primary_key.name || currentColToggleStates[datasetInfo.primary_key.name]}
                 <th
                   class="sticky top-0 font-medium bg-gray-50 hover:bg-gray-100 cursor-ns-resize border-b-2 border-gray-300 whitespace-normal text-ellipsis overflow-hidden text-left align-bottom p-2 h-9"
-                  on:click={(e) => myTableClient.sort(e, schemaItem.column)}
+                  on:click={(e) => handleSort(e, schemaItem.column)}
                 >
                   {formatColumnName(schemaItem.column, $sortDesc, $sortColumn)}
                 </th>

@@ -11,7 +11,7 @@
     compareSimilarID,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
-  import Table from "./components/table/Table.svelte";
+  import DataDisplay from "./components/table/DataDisplay.svelte";
   import FilterDisplay from "./components/FilterDisplay.svelte";
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import Search from "./components/Search.svelte";
@@ -66,12 +66,8 @@
 
     currentColToggleStates = datasetInfo.column_info.reduce(
       (acc: Record<string, boolean>, col) => {
-        // Only show text columns in table view by default
-        if (col.type === "text") {
-          acc[col.name] = true;
-        } else {
-          acc[col.name] = false;
-        }
+        acc[col.name] = true;
+
         return acc;
       },
       {},
@@ -263,7 +259,7 @@
           }}
         />
       {:else}
-        <Table {datasetInfo} {currentColToggleStates} />
+        <DataDisplay {datasetInfo} {currentColToggleStates} />
       {/if}
     </div>
   </div>

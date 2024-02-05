@@ -38,7 +38,7 @@ export class TableClient extends vg.MosaicClient {
     this.filterBy = filterBy;
     this.from = from;
     this.data = writable();
-    this.limit = 20;
+    this.limit = 100;
     this.loaded = false;
     this.offset = 0;
     this.pending = false;
@@ -47,6 +47,10 @@ export class TableClient extends vg.MosaicClient {
     this.sortColumn = writable();
     this.sortDesc = writable(false);
     this.sortHeader = null;
+
+    // subsribe to updates
+    this.sortColumn.subscribe((newValue) => this.requestData());
+    this.sortDesc.subscribe((newValue) => this.requestData());
   }
 
   requestData(offset = 0) {
@@ -127,20 +131,6 @@ export class TableClient extends vg.MosaicClient {
   update() {
     this.pending = false;
     return this;
-  }
-
-  sort(event: any, column: string) {
-    if (column === get(this.sortColumn)) {
-      if (event.metaKey) {
-        this.sortColumn.set(undefined);
-      } else {
-        this.sortDesc.update((d) => !d);
-      }
-    } else {
-      this.sortColumn.set(column);
-      this.sortDesc.set(false);
-    }
-    this.requestData();
   }
 
   scroll(event: any) {
