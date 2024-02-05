@@ -103,7 +103,7 @@
             >
               <div
                 slot="optionButtons"
-                class="text-gray-500 rounded-full py-1 hover:text-primary-700 hover:bg-primary-100"
+                class="hover:bg-gray-100 text-gray-500 p-1 rounded"
                 title="Show similar"
               >
                 <FilterOutline

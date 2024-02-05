@@ -54,7 +54,7 @@
 >
   <div class="flex items-center border-b border-gray-300 p-2 gap-1">
     <button
-      class="bg-gray-50 hover:bg-gray-100 text-gray-500 p-1 rounded"
+      class="hover:bg-gray-100 text-gray-500 p-1 rounded"
       on:click={() => (toggle = !toggle)}
     >
       {#if toggle}
