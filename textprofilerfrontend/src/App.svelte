@@ -4,7 +4,6 @@
   import type { DatasetInfo } from "./backendapi/models/DatasetInfo";
   import {
     filters,
-    selectionDisplay,
     showBackgroundDist,
     filteredCount,
     databaseConnection,
@@ -12,28 +11,22 @@
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import DataDisplay from "./components/table/DataDisplay.svelte";
-  import FilterDisplay from "./components/FilterDisplay.svelte";
   import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import Search from "./components/Search.svelte";
   import SimilarView from "./components/SimilarView.svelte";
   import FilterBar from "./components/FilterBar.svelte";
   import {
-    Button,
     Select,
     Popover,
     Toggle,
     Label,
-    Drawer,
-    CloseButton,
     Tooltip,
     Spinner,
   } from "flowbite-svelte";
   import {
     AdjustmentsHorizontalOutline,
-    FilterSolid,
     FilePlusSolid,
   } from "flowbite-svelte-icons";
-  import { sineIn } from "svelte/easing";
   import { formatNumber } from "./shared/format";
 
   // Locals
@@ -42,7 +35,6 @@
   let datasetInfo: DatasetInfo;
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
-  let filterPanelHidden = true;
   let showAddDataModel = false;
   let datasetColSummaries: ColumnSummary[];
   let dataPromise: Promise<any> = populateDataTables();
@@ -171,16 +163,6 @@
       dataPromise = populateDataTables(name);
     }}
   />
-
-  <FilterSolid
-    id="filterToggle"
-    on:click={() => (filterPanelHidden = false)}
-    class="mx-1 self-center text-white hover:text-primary-700"
-    size="md"
-  />
-  <Tooltip class="z-10" triggeredBy="#filterToggle" type="light"
-    >Display filters</Tooltip
-  >
 </div>
 
 {#await dataPromise}
@@ -188,47 +170,6 @@
     <Spinner />
   </div>
 {:then}
-  <div>
-    <Drawer
-      placement="right"
-      transitionType="fly"
-      transitionParams={{
-        x: 320,
-        duration: 200,
-        easing: sineIn,
-      }}
-      bind:hidden={filterPanelHidden}
-      id="sidebar-filter-display"
-    >
-      <div class="flex items-center">
-        <h3
-          id="drawer-label"
-          class="mb-4 inline-flex items-center text-base font-semibold"
-        >
-          Applied filters
-        </h3>
-        <CloseButton
-          on:click={() => (filterPanelHidden = true)}
-          class="mb-4 dark:text-white"
-        />
-      </div>
-      <div class="flex flex-col gap-2">
-        {#if Object.keys($selectionDisplay).length === 0}
-          <div class="italic">No filters applied</div>
-        {:else}
-          {#each Object.keys($selectionDisplay) as k}
-            <FilterDisplay colName={k} filterRange={$selectionDisplay[k]} />
-          {/each}
-        {/if}
-      </div>
-      <div>
-        <Button class="mt-6 w-full" on:click={resetBrush}
-          >Reset all filters</Button
-        >
-      </div>
-    </Drawer>
-  </div>
-
   <!-- Dataset info -->
   <div
     class="flex gap-2 justify-end pr-7 py-2 text-gray-500 bg-gray-100 min-h-14"
