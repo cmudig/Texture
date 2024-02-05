@@ -5,7 +5,7 @@
   import { filters, compareSimilarID } from "../../stores";
   import { onDestroy } from "svelte";
   import { FilterOutline } from "flowbite-svelte-icons";
-  import DocumentDisplay from "../DocumentDisplay.svelte";
+  import RowView from "./RowView.svelte";
 
   export let datasetInfo: DatasetInfo;
   export let currentColToggleStates: Record<string, boolean> = {};
@@ -92,7 +92,7 @@
         <div class="bg-gray-100 p-4 flex flex-col gap-2">
           {#each $data as row}
             {@const rowArr = Object.entries(row)}
-            <DocumentDisplay
+            <RowView
               id={Number(row[datasetInfo.primary_key.name])}
               textData={rowArr.filter(([k, v]) => colTypeMap[k] === "text")}
               metadata={rowArr.filter(
@@ -113,7 +113,7 @@
                     displaySimilar(Number(row[datasetInfo.primary_key.name]))}
                 />
               </div>
-            </DocumentDisplay>
+            </RowView>
           {/each}
         </div>
       {:else}

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { CloseButton } from "flowbite-svelte";
-  import DocumentDisplay from "./DocumentDisplay.svelte";
+  import RowView from "./table/RowView.svelte";
   import type { DatasetInfo } from "../backendapi";
   import { databaseConnection } from "../stores";
   import { formatNumber } from "../shared/format";
@@ -88,17 +88,17 @@
         <CloseButton on:click={clearFunc} />
       </div>
 
-      <DocumentDisplay
+      <RowView
         id={data.originalDoc.id}
         textData={data.originalDoc.textData}
         metadata={data.originalDoc.metadata}
       >
         <div slot="title" class="font-semibold">Original Record</div>
-      </DocumentDisplay>
+      </RowView>
     </div>
     <div class="bg-gray-100 p-4 flex flex-col gap-2">
       {#each data.relatedDocs as relatedDoc}
-        <DocumentDisplay
+        <RowView
           id={relatedDoc.id}
           textData={relatedDoc.textData}
           metadata={relatedDoc.metadata}
@@ -106,7 +106,7 @@
           <div slot="title" class="italic text-gray-500">
             Distance: {formatNumber(relatedDoc.distance)}
           </div>
-        </DocumentDisplay>
+        </RowView>
       {/each}
     </div>
   {:catch error}
