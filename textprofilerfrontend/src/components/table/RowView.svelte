@@ -74,8 +74,10 @@
     <div class="text-gray-500">{id}</div>
   </div>
 
-  <div class={`flex  ${toggle ? "max-h-none " : "max-h-48 "}`}>
-    <div class={` overflow-auto grow p-2 text-gray-800 flex flex-col gap-1`}>
+  <div
+    class={`flex  ${toggle ? "max-h-96 overflow-auto " : "max-h-48 overflow-hidden"}`}
+  >
+    <div class={`grow px-2 pt-2 pb-4 text-gray-800 flex flex-col gap-1`}>
       {#each textData as [textColName, textColData] (textColName)}
         {@const renderComponent = renderValue(
           textColData,
@@ -97,7 +99,7 @@
     </div>
 
     {#if metadata.length}
-      <div class="overflow-auto shrink bg-gray-50 min-w-80">
+      <div class="shrink bg-gray-50 min-w-80 h-full">
         {#each metadata as [itemKey, itemValue] (itemKey)}
           {@const renderComponent = renderValue(
             itemValue,
@@ -113,7 +115,7 @@
               {itemKey}
             </div>
             <div
-              class={`whitespace-normal overflow-scroll text-sm w-2/3 ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-800"}`}
+              class={`whitespace-normal break-words text-sm w-2/3 ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-800"}`}
             >
               <svelte:component
                 this={renderComponent.component}
