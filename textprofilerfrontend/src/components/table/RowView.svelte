@@ -77,7 +77,7 @@
   <div
     class={`flex  ${toggle ? "max-h-96 overflow-auto " : "max-h-48 overflow-hidden"}`}
   >
-    <div class={`grow px-2 pt-2 pb-4 text-gray-800 flex flex-col gap-1`}>
+    <div class={`w-full px-2 pt-2 pb-4 text-gray-800 flex flex-col gap-1`}>
       {#each textData as [textColName, textColData] (textColName)}
         {@const renderComponent = renderValue(
           textColData,
@@ -99,7 +99,7 @@
     </div>
 
     {#if metadata.length}
-      <div class="shrink bg-gray-50 min-w-80 h-full">
+      <div class="bg-gray-50 w-80 shrink-0 h-full">
         {#each metadata as [itemKey, itemValue] (itemKey)}
           {@const renderComponent = renderValue(
             itemValue,
