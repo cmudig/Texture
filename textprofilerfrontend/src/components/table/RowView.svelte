@@ -6,17 +6,20 @@
   import Regular from "./Regular.svelte";
   import type { JoinInfo } from "../../backendapi";
   import { filters, selectionDisplay } from "../../stores";
+  import type { DatasetInfo } from "../../backendapi";
 
   export let id: number;
   export let textData: Array<[string, unknown]>;
   export let metadata: Array<[string, unknown]>;
   export let highlight = false;
+  export let datasetInfo: DatasetInfo | undefined = undefined;
 
   function renderValue(
     value: any,
     colName: string,
     selections: SelectionMap,
     joinInfo?: JoinInfo,
+    datatype?: string,
   ) {
     let highlights: string[] = [];
 
@@ -46,7 +49,7 @@
 
     return {
       component: Regular,
-      props: { value: formatValue(value) },
+      props: { value: formatValue(value, { type: datatype }) },
     };
   }
 
@@ -106,6 +109,7 @@
             itemKey,
             $selectionDisplay,
             $filters.joinDatasetInfo,
+            datasetInfo?.column_info.find((col) => col.name === itemKey)?.type,
           )}
           <div class="flex border-b border-gray-200 px-2">
             <div

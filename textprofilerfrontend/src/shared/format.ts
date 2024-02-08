@@ -48,9 +48,9 @@ export function formatValue(value: any, options: FormatOptions = {}) {
   const { type, ...otherOptions } = options;
 
   if (value === undefined || value === null) return "null";
+  if (type === "date" || value instanceof Date) return formatDate(value);
   if (type === "number" || typeof value === "number")
     return formatNumber(value, otherOptions);
-  if (type === "date" || value instanceof Date) return formatDate(value);
 
   return `${value}`;
 }

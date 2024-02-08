@@ -134,6 +134,7 @@
                     colTypeMap[k] !== "text" &&
                     k !== datasetInfo.primary_key.name,
                 )}
+                {datasetInfo}
               >
                 <div
                   slot="optionButtons"
