@@ -1,6 +1,8 @@
 import nltk
+from nltk.tokenize import TreebankWordTokenizer as twt
 import tiktoken
 from concurrent.futures import ThreadPoolExecutor
+import pandas as pd
 
 encoding = tiktoken.get_encoding("cl100k_base")
 
@@ -37,3 +39,28 @@ def encode_as_bytes(s: str) -> list[bytes]:
 def get_byte_encoding_batch(arr: list[str], num_threads=8) -> list[list[bytes]]:
     with ThreadPoolExecutor(num_threads) as executor:
         return list(executor.map(encode_as_bytes, arr))
+
+
+twt_tokenizer = twt()
+
+
+def get_words_w_span(text):
+    token_idx = twt_tokenizer.span_tokenize(text)
+    _df = pd.DataFrame(token_idx, columns=["span_start", "span_end"])
+    _df["word"] = _df.apply(lambda x: text[x.span_start : x.span_end], axis=1)
+
+    return _df
+
+
+def get_words_w_span_batch(arr: list[str], num_threads=8) -> list[list[str]]:
+    with ThreadPoolExecutor(num_threads) as executor:
+        return list(executor.map(get_words_w_span, arr))
+
+
+def get_df_words_w_span(arr: list):
+    r = get_words_w_span_batch(arr)
+
+    for i, _mydf in enumerate(r):
+        _mydf["id"] = i
+
+    return pd.concat(r, ignore_index=True)
