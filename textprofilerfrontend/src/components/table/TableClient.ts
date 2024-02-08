@@ -44,24 +44,30 @@ export class TableClient extends vg.MosaicClient {
     this.pending = false;
     this.prevScrollTop = -1;
     this.schema = writable([]);
-    this.sortColumn = writable();
+    this.sortColumn = writable(undefined);
     this.sortDesc = writable(false);
     this.sortHeader = null;
 
     // subsribe to updates
+    // NOTE: this fires on subscription so request data has to manually check if schema is initialized
     this.sortColumn.subscribe((newValue) => this.requestData());
     this.sortDesc.subscribe((newValue) => this.requestData());
   }
 
   requestData(offset = 0) {
-    this.offset = offset;
+    let schema = get(this.schema);
 
-    // request next data batch
-    const query = this.query(this.filterBy?.predicate(this));
-    this.requestQuery(query);
+    // only do this if schema initialized
+    if (schema?.length) {
+      this.offset = offset;
 
-    // prefetch subsequent data batch
-    vg.coordinator().prefetch(query.clone().offset(offset + this.limit));
+      // request next data batch
+      const query = this.query(this.filterBy?.predicate(this));
+      this.requestQuery(query);
+
+      // prefetch subsequent data batch
+      vg.coordinator().prefetch(query.clone().offset(offset + this.limit));
+    }
   }
 
   /**

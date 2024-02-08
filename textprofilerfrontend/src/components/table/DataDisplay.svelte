@@ -161,15 +161,11 @@
     {:else}
       <div class="p-4">
         <p class="mb-4">Loading table info...</p>
-
-        <TablePlaceholder />
       </div>
     {/if}
   {:else}
     <div class="p-4">
       <p class="mb-4">Connecting to database...</p>
-
-      <TablePlaceholder />
     </div>
   {/if}
 </div>
