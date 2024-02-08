@@ -11,6 +11,7 @@
   } from "flowbite-svelte-icons";
   import RowView from "./RowView.svelte";
   import { Select } from "flowbite-svelte";
+  import TablePlaceholder from "../utils/TablePlaceholder.svelte";
 
   export let datasetInfo: DatasetInfo;
   export let currentColToggleStates: Record<string, boolean> = {};
@@ -87,76 +88,88 @@
   }, {});
 </script>
 
-{#if ready}
-  {#if $schema}
-    <div
-      class="bg-gray-100 flex gap-1 justify-end items-center text-gray-500 px-4 pb-1"
-    >
-      <Select
-        class="max-w-40"
-        size="sm"
-        items={[
-          { value: undefined, name: "Not sorted" },
-          ...Object.keys(colTypeMap).map((k) => ({ value: k, name: k })),
-        ]}
-        bind:value={$sortColumn}
-        placeholder="Sort by..."
-      />
+<div class="bg-gray-100 h-full">
+  {#if ready}
+    {#if $schema}
+      <div class="flex gap-1 justify-end items-center text-gray-500 px-4 pb-1">
+        <Select
+          class="max-w-40"
+          size="sm"
+          items={[
+            { value: undefined, name: "Not sorted" },
+            ...Object.keys(colTypeMap).map((k) => ({ value: k, name: k })),
+          ]}
+          bind:value={$sortColumn}
+          placeholder="Sort by..."
+        />
 
-      <button
-        class={`hover:bg-gray-200 bg-gray-100 text-gray-500 p-1 rounded ${
-          !$sortColumn && "cursor-not-allowed !text-gray-300"
-        }`}
-        on:click={() => ($sortDesc = !$sortDesc)}
-        title={"Toggle sort order"}
-        disabled={!$sortColumn}
+        <button
+          class={`hover:bg-gray-200 bg-gray-100 text-gray-500 p-1 rounded ${
+            !$sortColumn && "cursor-not-allowed !text-gray-300"
+          }`}
+          on:click={() => ($sortDesc = !$sortDesc)}
+          title={"Toggle sort order"}
+          disabled={!$sortColumn}
+        >
+          {#if $sortDesc}
+            <ArrowUpSolid size="xs" />
+          {:else}
+            <ArrowDownSolid size="xs" />
+          {/if}
+        </button>
+      </div>
+      <div
+        class="max-h-screen overflow-auto"
+        on:scroll={(e) => myTableClient.scroll(e)}
       >
-        {#if $sortDesc}
-          <ArrowUpSolid size="xs" />
-        {:else}
-          <ArrowDownSolid size="xs" />
-        {/if}
-      </button>
-    </div>
-    <div
-      class="max-h-screen overflow-auto"
-      on:scroll={(e) => myTableClient.scroll(e)}
-    >
-      {#if $data}
-        <div class="bg-gray-100 p-4 flex flex-col gap-2">
-          {#each $data as row}
-            {@const rowArr = Object.entries(row)}
-            <RowView
-              id={Number(row[datasetInfo.primary_key.name])}
-              textData={rowArr.filter(([k, v]) => colTypeMap[k] === "text")}
-              metadata={rowArr.filter(
-                ([k, v]) =>
-                  colTypeMap[k] !== "text" &&
-                  k !== datasetInfo.primary_key.name,
-              )}
-            >
-              <div
-                slot="optionButtons"
-                class="hover:bg-gray-100 text-gray-500 p-1 rounded"
-                title="Show similar"
+        {#if $data}
+          <div class="p-4 flex flex-col gap-2">
+            {#each $data as row}
+              {@const rowArr = Object.entries(row)}
+              <RowView
+                id={Number(row[datasetInfo.primary_key.name])}
+                textData={rowArr.filter(([k, v]) => colTypeMap[k] === "text")}
+                metadata={rowArr.filter(
+                  ([k, v]) =>
+                    colTypeMap[k] !== "text" &&
+                    k !== datasetInfo.primary_key.name,
+                )}
               >
-                <FilterOutline
-                  title="filter me"
-                  size="sm"
-                  on:click={() =>
-                    displaySimilar(Number(row[datasetInfo.primary_key.name]))}
-                />
-              </div>
-            </RowView>
-          {/each}
-        </div>
-      {:else}
-        <p class="mt-4 ml-2">Loading data...</p>
-      {/if}
-    </div>
+                <div
+                  slot="optionButtons"
+                  class="hover:bg-gray-100 text-gray-500 p-1 rounded"
+                  title="Show similar"
+                >
+                  <FilterOutline
+                    title="filter me"
+                    size="sm"
+                    on:click={() =>
+                      displaySimilar(Number(row[datasetInfo.primary_key.name]))}
+                  />
+                </div>
+              </RowView>
+            {/each}
+          </div>
+        {:else}
+          <div class="p-4">
+            <p class="mb-4">Loading data...</p>
+
+            <TablePlaceholder />
+          </div>
+        {/if}
+      </div>
+    {:else}
+      <div class="p-4">
+        <p class="mb-4">Loading table info...</p>
+
+        <TablePlaceholder />
+      </div>
+    {/if}
   {:else}
-    <p class="mt-4 ml-2">Loading table info...</p>
+    <div class="p-4">
+      <p class="mb-4">Connecting to database...</p>
+
+      <TablePlaceholder />
+    </div>
   {/if}
-{:else}
-  <p class="mt-4 ml-2">Not ready yet...</p>
-{/if}
+</div>

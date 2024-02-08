@@ -4,6 +4,7 @@
   import type { DatasetInfo } from "../backendapi";
   import { databaseConnection } from "../stores";
   import { formatNumber } from "../shared/format";
+  import TablePlaceholder from "./utils/TablePlaceholder.svelte";
 
   export let similarDocID: number;
   export let datasetInfo: DatasetInfo;
@@ -74,9 +75,11 @@
   $: dataPromise = getData(datasetInfo, similarDocID);
 </script>
 
-<div class="max-h-screen overflow-auto">
+<div class="max-h-screen overflow-auto bg-gray-100 h-full">
   {#await dataPromise}
-    <div>Loading...</div>
+    <div class="p-4">
+      <TablePlaceholder />
+    </div>
   {:then data}
     <div
       class="p-4 sticky top-0 w-full bg-white border border-dashed border-primary-500"
