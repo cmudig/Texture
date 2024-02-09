@@ -135,7 +135,9 @@
                     k !== datasetInfo.primary_key.name,
                 )}
                 {datasetInfo}
-                tableClient={myTableClient}
+                getFilters={() => {
+                  return myTableClient.filterBy?.predicate(myTableClient);
+                }}
               >
                 <div
                   slot="optionButtons"

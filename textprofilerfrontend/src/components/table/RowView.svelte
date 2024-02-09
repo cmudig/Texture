@@ -7,7 +7,6 @@
   import type { JoinInfo } from "../../backendapi";
   import { filters, selectionDisplay, databaseConnection } from "../../stores";
   import type { DatasetInfo } from "../../backendapi";
-  import type { TableClient } from "./TableClient";
   import { Spinner } from "flowbite-svelte";
   import { shouldHighlight } from "../../shared/utils";
 
@@ -16,7 +15,7 @@
   export let metadata: Array<[string, unknown]>;
   export let highlight = false;
   export let datasetInfo: DatasetInfo | undefined = undefined;
-  export let tableClient: TableClient | undefined = undefined;
+  export let getFilters: (() => any) | undefined = undefined;
 
   let toggle = false;
 
@@ -24,16 +23,16 @@
     id: number,
     textCols: string[],
     selectionMap: SelectionMap,
-    tableClient?: TableClient,
+    _getFilters?: () => any,
     datasetInfo?: DatasetInfo,
     joinInfo?: JoinInfo,
   ): Promise<undefined | Record<string, unknown[]>> {
-    if (!datasetInfo || !tableClient || !Object.keys(selectionMap).length) {
+    if (!datasetInfo || !_getFilters || !Object.keys(selectionMap).length) {
       return undefined;
     }
 
     let spanMap = {};
-    const filters = tableClient.filterBy?.predicate(tableClient);
+    const filters = _getFilters();
 
     for (let textCol of textCols) {
       if (
@@ -52,11 +51,16 @@
     return spanMap;
   }
 
+  /**
+   * BUG: this is called twice now, once when $selectionDisplay updates, and then again once textData prop
+   * updates, not sure how to batch these?
+   *
+   */
   $: wordSpans = getWordSpans(
     id,
     textData.map((d) => d[0]),
     $selectionDisplay,
-    tableClient,
+    getFilters,
     datasetInfo,
     $filters.joinDatasetInfo,
   );
