@@ -34,7 +34,7 @@ def init_db():
     print("Loading duckdb data...")
     datasetPaths = {
         "vast2021": "raw_data/vast_w_id.parquet",
-        "vast2021_word": "raw_data/vast_word_w_id.parquet"
+        "vast2021_word": "raw_data/vast_word_w_id.parquet",
         # "dolly": "raw_data/dolly15k.parquet",
         # "opus": "raw_data/opus100_en_es.parquet",
         # "squad": "raw_data/squad_validation.parquet",
@@ -52,7 +52,7 @@ def init_db():
     duckdbconn.load_dataset("vast2021_word", "raw_data/vast_word_w_id.parquet")
     duckdbconn.load_dataset("vis_papers", "raw_data/vis_papers/vis_papers.parquet")
     duckdbconn.load_dataset(
-        "vis_papers_words", "raw_data/vis_papers/vis_papers_words.parquet"
+        "vis_papers_words", "raw_data/vis_papers/vis_papers_words_span.parquet"
     )
     metadataCache["vis_papers"] = EXAMPLE_DATASETS[0]
     metadataCache["vast2021"] = EXAMPLE_DATASETS[1]
