@@ -1,6 +1,11 @@
 <script lang="ts">
-  export let value: string;
-  export let highlights: string[];
+  /**
+   * SubstringHighlight.svelte
+   * Given a value string and an array of highlights, will highlight every
+   * intance of the highlights in the value string by matching substrings.
+   */
+  export let value: any;
+  export let highlights: any[];
 
   type AnnotatedSpan = {
     span: string;

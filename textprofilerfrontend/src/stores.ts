@@ -53,7 +53,7 @@ export const selectionDisplay = derived(
       set({});
     }
   },
-  {},
+  {} as SelectionMap,
 );
 
 export const filteredCount: Readable<number | undefined> = derived(

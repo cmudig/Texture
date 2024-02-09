@@ -135,6 +135,7 @@
                     k !== datasetInfo.primary_key.name,
                 )}
                 {datasetInfo}
+                tableClient={myTableClient}
               >
                 <div
                   slot="optionButtons"
