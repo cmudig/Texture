@@ -212,4 +212,26 @@ export class DatabaseConnection {
 
     return r;
   }
+
+  async getSpansPerDoc(
+    datasetInfo: DatasetInfo,
+    id: number,
+    mosaicSelection,
+  ): Promise<any[]> {
+    let baseTable = vg.column(datasetInfo.name);
+    let joinTable = vg.column(datasetInfo.joinDatasetInfo?.joinDatasetName);
+    let joinKey = vg.column(datasetInfo.joinDatasetInfo?.joinKey);
+    let joinColumn = vg.column(datasetInfo.joinDatasetInfo?.joinColumn.name);
+
+    // join tables, apply filters, and get words with span for a given document id
+    let q = vg.sql`SELECT ${joinTable}.${joinKey}, "span_start", "span_end", ${joinColumn} FROM ${baseTable} JOIN ${joinTable} ON ${baseTable}.${joinKey} = ${joinTable}.${joinKey} WHERE ${mosaicSelection.join(
+      " AND ",
+    )} AND ${joinTable}.${joinKey} = ${id}`;
+
+    console.log("base query is: ", q.toString());
+
+    let r = await vg.coordinator().query(q, { type: "json" });
+
+    return r;
+  }
 }

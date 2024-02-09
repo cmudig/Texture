@@ -2,17 +2,23 @@
   import { AngleRightOutline, AngleDownOutline } from "flowbite-svelte-icons";
   import { formatValue } from "../../shared/format";
   import { type SelectionMap, isStringArray } from "../../shared/types";
-  import Highlight from "./Highlight.svelte";
+  import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
+  import SubstringHighlight from "./SubstringHighlight.svelte";
   import Regular from "./Regular.svelte";
   import type { JoinInfo } from "../../backendapi";
-  import { filters, selectionDisplay } from "../../stores";
+  import { filters, selectionDisplay, databaseConnection } from "../../stores";
   import type { DatasetInfo } from "../../backendapi";
+  import type { TableClient } from "./TableClient";
+  import { Spinner } from "flowbite-svelte";
 
   export let id: number;
   export let textData: Array<[string, unknown]>;
   export let metadata: Array<[string, unknown]>;
   export let highlight = false;
   export let datasetInfo: DatasetInfo | undefined = undefined;
+  export let tableClient: TableClient | undefined = undefined;
+
+  let toggle = false;
 
   function renderValue(
     value: any,
@@ -39,7 +45,7 @@
 
     if (highlights.length) {
       return {
-        component: Highlight,
+        component: SubstringHighlight,
         props: {
           value: value,
           highlights,
@@ -53,7 +59,64 @@
     };
   }
 
-  let toggle = false;
+  async function getWordSpans(
+    datasetInfo: DatasetInfo | undefined,
+    id: number,
+    filterBy,
+    selectionMap: SelectionMap,
+    tableClient: TableClient | undefined,
+    textCols: string[],
+    joinInfo?: JoinInfo,
+  ): Promise<undefined | Record<string, unknown[]>> {
+    // console.log("[getWordsPerDoc] selection is: ", filterBy);
+    // console.log("[getWordsPerDoc] selectionMap is: ", selectionMap);
+    if (!datasetInfo) {
+      console.log("no dataset info");
+      return undefined;
+    }
+
+    if (!Object.keys(selectionMap).length) {
+      console.log("no selectionmap");
+      return undefined;
+    }
+
+    // TODO might be able to just do this with table client and so selection
+    if (!tableClient) {
+      console.log("no table client");
+      return undefined;
+    }
+
+    let spanMap = {};
+    const filters = tableClient.filterBy?.predicate(tableClient);
+
+    for (let textCol of textCols) {
+      if (
+        joinInfo?.joinColumn.associated_text_col_name === textCol &&
+        joinInfo?.joinColumn.name in selectionMap
+      ) {
+        let spans = await databaseConnection.getSpansPerDoc(
+          datasetInfo,
+          id,
+          filters,
+        );
+        spanMap[textCol] = spans;
+      }
+    }
+
+    console.log("words::: ", spanMap);
+
+    return spanMap;
+  }
+
+  $: wordSpans = getWordSpans(
+    datasetInfo,
+    id,
+    $filters.brush,
+    $selectionDisplay, // for reactivity to filter updates
+    tableClient,
+    textData.map((d) => d[0]),
+    $filters.joinDatasetInfo,
+  );
 </script>
 
 <div
@@ -81,24 +144,39 @@
     class={`flex  ${toggle ? "max-h-96 overflow-auto " : "max-h-48 overflow-hidden"}`}
   >
     <div class={`w-full px-2 pt-2 pb-4 text-gray-800 flex flex-col gap-1`}>
-      {#each textData as [textColName, textColData] (textColName)}
-        {@const renderComponent = renderValue(
-          textColData,
-          textColName,
-          $selectionDisplay,
-          $filters.joinDatasetInfo,
-        )}
-        <div>
-          <div class="border-b border-gray-300 italic">{textColName}</div>
-
+      {#await wordSpans}
+        {#each textData as [textColName, textColData] (textColName)}
           <div>
-            <svelte:component
-              this={renderComponent.component}
-              {...renderComponent.props}
-            />
+            <div class="border-b border-gray-300 italic">
+              {textColName}
+              <Spinner class="ml-1" size="4" />
+            </div>
+
+            <div>
+              {formatValue(textColData, { type: "text" })}
+            </div>
           </div>
-        </div>
-      {/each}
+        {/each}
+      {:then wordSpanMap}
+        {#each textData as [textColName, textColData] (textColName)}
+          <div>
+            <div class="border-b border-gray-300 italic">
+              {textColName}
+            </div>
+
+            {#if wordSpanMap && textColName in wordSpanMap}
+              <SpanIndexHighlight
+                highlights={wordSpanMap[textColName]}
+                value={textColData}
+              />
+            {:else}
+              <div>
+                {formatValue(textColData, { type: "text" })}
+              </div>
+            {/if}
+          </div>
+        {/each}
+      {/await}
     </div>
 
     {#if metadata.length}
