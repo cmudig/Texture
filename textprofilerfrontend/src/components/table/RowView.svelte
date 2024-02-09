@@ -3,6 +3,7 @@
   import { formatValue } from "../../shared/format";
   import { type SelectionMap } from "../../shared/types";
   import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
+  import SubstringHighlight from "./SubstringHighlight.svelte";
   import type { JoinInfo } from "../../backendapi";
   import { filters, selectionDisplay, databaseConnection } from "../../stores";
   import type { DatasetInfo } from "../../backendapi";
@@ -106,9 +107,15 @@
               {textColName}
             </div>
 
+            <!-- TODO: can be both, but right now only doing one at a time -->
             {#if wordSpanMap && textColName in wordSpanMap}
               <SpanIndexHighlight
                 highlights={wordSpanMap[textColName]}
+                value={textColData}
+              />
+            {:else if textColName in $selectionDisplay}
+              <SubstringHighlight
+                highlights={$selectionDisplay[textColName]}
                 value={textColData}
               />
             {:else}
