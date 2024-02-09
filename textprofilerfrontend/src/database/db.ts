@@ -228,8 +228,6 @@ export class DatabaseConnection {
       " AND ",
     )} AND ${joinTable}.${joinKey} = ${id}`;
 
-    console.log("base query is: ", q.toString());
-
     let r = await vg.coordinator().query(q, { type: "json" });
 
     return r;

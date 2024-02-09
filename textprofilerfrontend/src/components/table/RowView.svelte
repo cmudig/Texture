@@ -1,15 +1,14 @@
 <script lang="ts">
   import { AngleRightOutline, AngleDownOutline } from "flowbite-svelte-icons";
   import { formatValue } from "../../shared/format";
-  import { type SelectionMap, isStringArray } from "../../shared/types";
+  import { type SelectionMap } from "../../shared/types";
   import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
-  import SubstringHighlight from "./SubstringHighlight.svelte";
-  import Regular from "./Regular.svelte";
   import type { JoinInfo } from "../../backendapi";
   import { filters, selectionDisplay, databaseConnection } from "../../stores";
   import type { DatasetInfo } from "../../backendapi";
   import type { TableClient } from "./TableClient";
   import { Spinner } from "flowbite-svelte";
+  import { shouldHighlight } from "../../shared/utils";
 
   export let id: number;
   export let textData: Array<[string, unknown]>;
@@ -20,69 +19,15 @@
 
   let toggle = false;
 
-  function renderValue(
-    value: any,
-    colName: string,
-    selections: SelectionMap,
-    joinInfo?: JoinInfo,
-    datatype?: string,
-  ) {
-    let highlights: string[] = [];
-
-    if (
-      joinInfo?.joinColumn.associated_text_col_name === colName &&
-      joinInfo?.joinColumn.name in selections &&
-      isStringArray(selections[joinInfo.joinColumn.name])
-    ) {
-      highlights = [
-        ...highlights,
-        ...(selections[joinInfo.joinColumn.name] as string[]),
-      ];
-    }
-    if (colName in selections && isStringArray(selections[colName])) {
-      highlights = [...highlights, ...(selections[colName] as string[])];
-    }
-
-    if (highlights.length) {
-      return {
-        component: SubstringHighlight,
-        props: {
-          value: value,
-          highlights,
-        },
-      };
-    }
-
-    return {
-      component: Regular,
-      props: { value: formatValue(value, { type: datatype }) },
-    };
-  }
-
   async function getWordSpans(
-    datasetInfo: DatasetInfo | undefined,
     id: number,
-    filterBy,
-    selectionMap: SelectionMap,
-    tableClient: TableClient | undefined,
     textCols: string[],
+    selectionMap: SelectionMap,
+    tableClient?: TableClient,
+    datasetInfo?: DatasetInfo,
     joinInfo?: JoinInfo,
   ): Promise<undefined | Record<string, unknown[]>> {
-    // console.log("[getWordsPerDoc] selection is: ", filterBy);
-    // console.log("[getWordsPerDoc] selectionMap is: ", selectionMap);
-    if (!datasetInfo) {
-      console.log("no dataset info");
-      return undefined;
-    }
-
-    if (!Object.keys(selectionMap).length) {
-      console.log("no selectionmap");
-      return undefined;
-    }
-
-    // TODO might be able to just do this with table client and so selection
-    if (!tableClient) {
-      console.log("no table client");
+    if (!datasetInfo || !tableClient || !Object.keys(selectionMap).length) {
       return undefined;
     }
 
@@ -103,18 +48,15 @@
       }
     }
 
-    console.log("words::: ", spanMap);
-
     return spanMap;
   }
 
   $: wordSpans = getWordSpans(
-    datasetInfo,
     id,
-    $filters.brush,
-    $selectionDisplay, // for reactivity to filter updates
-    tableClient,
     textData.map((d) => d[0]),
+    $selectionDisplay,
+    tableClient,
+    datasetInfo,
     $filters.joinDatasetInfo,
   );
 </script>
@@ -182,13 +124,9 @@
     {#if metadata.length}
       <div class="bg-gray-50 w-80 shrink-0 h-full">
         {#each metadata as [itemKey, itemValue] (itemKey)}
-          {@const renderComponent = renderValue(
-            itemValue,
-            itemKey,
-            $selectionDisplay,
-            $filters.joinDatasetInfo,
-            datasetInfo?.column_info.find((col) => col.name === itemKey)?.type,
-          )}
+          {@const itemType = datasetInfo?.column_info.find(
+            (col) => col.name === itemKey,
+          )?.type}
           <div class="flex border-b border-gray-200 px-2">
             <div
               class="whitespace-normal text-ellipsis overflow-hidden text-sm w-1/3 font-semibold italic"
@@ -198,11 +136,16 @@
             </div>
             <div
               class={`whitespace-normal break-words text-sm w-2/3 ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-800"}`}
+              class:bg-yellow-200={itemKey in $selectionDisplay &&
+                shouldHighlight(
+                  itemValue,
+                  $selectionDisplay[itemKey],
+                  itemType,
+                )}
             >
-              <svelte:component
-                this={renderComponent.component}
-                {...renderComponent.props}
-              />
+              <div>
+                {formatValue(itemValue, { type: itemType })}
+              </div>
             </div>
           </div>
         {/each}
