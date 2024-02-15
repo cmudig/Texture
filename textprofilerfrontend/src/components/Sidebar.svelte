@@ -10,6 +10,12 @@
 </script>
 
 <div>
+  <ColumnProfile
+    displayCol={{name: "Projection", type: "number"}}
+    colType="point"
+    plotCols=[]
+  />
+
   {#each datasetInfo.column_info as col}
     {#if col.type == "text"}
       <ColumnProfile

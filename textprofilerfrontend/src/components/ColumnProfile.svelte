@@ -7,6 +7,7 @@
   import CategoricalChart from "./charts/CategoricalChart.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
+  import Projection from "./charts/Projection.svelte";
   import { filters, showBackgroundDist } from "../stores";
 
   export let displayCol: Column;
@@ -42,6 +43,19 @@
   </button>
   <div class="w-full">
     <div class="ml-4 mt-2" class:hidden={!active}>
+      {#if colType === "point"}
+          <Projection
+            mainDatasetName="projection"
+            joinDatasetInfo={{
+              joinDatasetName: $filters.datasetName,
+              joinKey: "id",
+              joinColumn: undefined,
+            }}
+            columnName="projection_xy"
+            showBackground={$showBackgroundDist}
+          />
+      {:else}
+
       {#if colType === "text" && $filters.joinDatasetInfo}
         <h3 class="italic">{$filters.joinDatasetInfo.joinColumn.name}</h3>
 
@@ -89,6 +103,8 @@
           {/if}
         {/each}
       </div>
+      
+      {/if}
     </div>
   </div>
 </div>

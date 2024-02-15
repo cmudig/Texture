@@ -16,6 +16,7 @@ import numpy as np
 import lancedb
 import torch
 import sentence_transformers
+from umap import UMAP
 
 # NOTE: this path is affected by where the server is run from, assuming it is run in textprofilerbackend for now
 CACHE_PATH = ".textprofiler_cache/"
@@ -26,6 +27,10 @@ def get_embedding(col: np.ndarray, model_name):
     e = model.encode(col)
     return e
 
+def get_projection(vector):
+    reducer = UMAP(metric='cosine')
+    embeddings_2d = reducer.fit_transform(vector)
+    return embeddings_2d
 
 def init_db():
     duckdbconn = DatabaseConnection()
@@ -66,6 +71,11 @@ def init_db():
     )
     vis_paper_df["vector"] = list(vis_paper_embeddings.numpy())
     embed_func = lambda x: get_embedding(x, "all-mpnet-base-v2")
+
+    proj = get_projection(vis_paper_embeddings) #or get_projection(vis_paper_df["vector"]) #(3549,)
+    duckdbconn.load_dataframe("projection", pd.DataFrame(proj, columns=['x', 'y']).assign(id=range(len(proj)))) #add to duckdbconn
+    duckdbconn.insert_projection_to_table("vis_papers") #add to duckdbconn
+    # vis_paper_df["projection"] = list(proj) #add to vectordbconn by .add_table()
 
     vectordbconn.add_table("vis_papers", vis_paper_df, "id", embed_func)
 
@@ -131,6 +141,21 @@ class DatabaseConnection:
         """
         self.connection.register(dataset_name, df)
         print("registed new dataset in duckdb:  ", dataset_name)
+    
+    def insert_projection_to_table(self, dataset_name):
+        self.connection.execute(f"ALTER TABLE '{dataset_name}' ADD COLUMN x DOUBLE")
+        self.connection.execute(f"ALTER TABLE '{dataset_name}' ADD COLUMN y DOUBLE")
+
+        self.connection.execute(f"""
+            UPDATE {dataset_name}
+            SET
+                x = projection.x,
+                y = projection.y
+            FROM
+                projection
+            WHERE
+                {dataset_name}.id = projection.id
+        """)
 
     def _handle_json_message(self, data: DuckQueryData) -> DuckQueryResult:
         """
