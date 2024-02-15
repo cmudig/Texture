@@ -2,7 +2,8 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
-from typing import Dict, Literal
+from typing import List, Dict, Union, Literal
+
 
 from textprofilerbackend.database import init_db
 from textprofilerbackend.models import (
@@ -13,9 +14,12 @@ from textprofilerbackend.models import (
     DatasetVerifyResponse,
     DatasetTokenizeResponse,
     VectorSearchResponse,
+    LLMResponse,
+    LLMTransformRequest,
 )
 from textprofilerbackend.process_data import process_new_file
 from textprofilerbackend.transform import word_tokenize
+from textprofilerbackend.llm.client import LLMClient
 
 from io import BytesIO
 import pandas as pd
@@ -43,6 +47,7 @@ def get_server() -> FastAPI:
     )
 
     duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
+    llm_client = LLMClient()
 
     # TODO this is prob need to use actual cache here rather than just in memory
     datasetUploadCache = {}
@@ -163,6 +168,28 @@ def get_server() -> FastAPI:
         return VectorSearchResponse(
             success=True, result=result_df.to_dict(orient="records")
         )
+
+    @api_app.post("/fetch_llm_response_format", response_model=LLMResponse)
+    def get_llm_response_format(userPrompt: str):
+        task_format = llm_client.get_response_format(userPrompt)
+        return LLMResponse(success=True, result=task_format)
+
+    @api_app.post("/fetch_llm_transform_result", response_model=LLMResponse)
+    def get_llm_transform_result(request: LLMTransformRequest):
+        results = llm_client.get_transformations(
+            request.userPrompt, request.taskFormat, request.columnData
+        )
+        return LLMResponse(success=True, result=results)
+
+    @api_app.post("/commit_llm_transform_result", response_model=LLMResponse)
+    def commit_llm_transform_result(request: LLMTransformRequest):
+        results = llm_client.get_transformations(
+            request.userPrompt, request.taskFormat, request.columnData
+        )
+
+        duckdb_conn.add_column(request.tableName, request.newColumnName, results)
+
+        return LLMResponse(success=True, result=None)
 
     # @api_app.get("/example_arrow")
     # async def example_arrow():

@@ -22,6 +22,8 @@ export type { ExecResponse } from "./models/ExecResponse";
 export type { HTTPValidationError } from "./models/HTTPValidationError";
 export type { JoinInfo } from "./models/JoinInfo";
 export type { JsonResponse } from "./models/JsonResponse";
+export type { LLMResponse } from "./models/LLMResponse";
+export type { LLMTransformRequest } from "./models/LLMTransformRequest";
 export type { ValidationError } from "./models/ValidationError";
 export type { VectorSearchResponse } from "./models/VectorSearchResponse";
 

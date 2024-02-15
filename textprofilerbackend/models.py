@@ -85,3 +85,16 @@ class DatasetTokenizeResponse(BaseModel):
 class VectorSearchResponse(BaseModel):
     success: bool
     result: List[Dict[str, Any]]
+
+
+class LLMResponse(BaseModel):
+    success: bool
+    result: Union[List, Dict]
+
+
+class LLMTransformRequest(BaseModel):
+    userPrompt: str
+    taskFormat: str
+    columnData: List[str]
+    tableName: Optional[str]
+    newColumnName: Optional[str]

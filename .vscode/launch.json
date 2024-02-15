@@ -1,0 +1,13 @@
+{
+  "configurations": [
+    {
+      "name": "Python Debugger: Python File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "cwd": "${fileDirname}",
+      "purpose": ["debug-in-terminal"]
+    }
+  ]
+}

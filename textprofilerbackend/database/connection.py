@@ -32,14 +32,14 @@ def init_db():
     vectordbconn = VectorDBConnection()
 
     print("Loading duckdb data...")
-    datasetPaths = {
-        "vast2021": "raw_data/vast_w_id.parquet",
-        "vast2021_word": "raw_data/vast_word_w_id.parquet",
-        # "dolly": "raw_data/dolly15k.parquet",
-        # "opus": "raw_data/opus100_en_es.parquet",
-        # "squad": "raw_data/squad_validation.parquet",
-        # "bbc": "raw_data/bbc_with_lava.parquet",
-    }
+    # datasetPaths = {
+    #     "vast2021": "raw_data/vast_w_id.parquet",
+    #     "vast2021_word": "raw_data/vast_word_w_id.parquet",
+    #     "dolly": "raw_data/dolly15k.parquet",
+    #     "opus": "raw_data/opus100_en_es.parquet",
+    #     "squad": "raw_data/squad_validation.parquet",
+    #     "bbc": "raw_data/bbc_with_lava.parquet",
+    # }
     metadataCache = {}
     # load example datasets into duckdb
     # for datasetInfo in EXAMPLE_DATASETS:
@@ -48,21 +48,23 @@ def init_db():
     #     metadataCache[dsName] = datasetInfo
 
     # TEMP: load example data
-    duckdbconn.load_dataset("vast2021", "raw_data/vast_w_id.parquet")
-    duckdbconn.load_dataset("vast2021_word", "raw_data/vast_word_w_id.parquet")
-    duckdbconn.load_dataset("vis_papers", "raw_data/vis_papers/vis_papers.parquet")
+    # duckdbconn.load_dataset("vast2021", "raw_data/vast_w_id.parquet")
+    # duckdbconn.load_dataset("vast2021_word", "raw_data/vast_word_w_id.parquet")
     duckdbconn.load_dataset(
-        "vis_papers_words", "raw_data/vis_papers/vis_papers_words_span.parquet"
+        "vis_papers", "raw_data/vis_papers_sample/vis_papers.parquet"
+    )
+    duckdbconn.load_dataset(
+        "vis_papers_words", "raw_data/vis_papers_sample/vis_papers_words_span.parquet"
     )
     metadataCache["vis_papers"] = EXAMPLE_DATASETS[0]
-    metadataCache["vast2021"] = EXAMPLE_DATASETS[1]
+    # metadataCache["vast2021"] = EXAMPLE_DATASETS[1]
 
     print("Loading vector data...")
     vis_paper_embeddings = torch.load(
-        ".textprofiler_cache/raw_data/vis_papers/vis_papers_embeddings.pt"
+        ".textprofiler_cache/raw_data/vis_papers_sample/vis_papers_embeddings.pt"
     )
     vis_paper_df = pd.read_parquet(
-        ".textprofiler_cache/raw_data/vis_papers/vis_papers.parquet"
+        ".textprofiler_cache/raw_data/vis_papers_sample/vis_papers.parquet"
     )
     vis_paper_df["vector"] = list(vis_paper_embeddings.numpy())
     embed_func = lambda x: get_embedding(x, "all-mpnet-base-v2")
@@ -131,6 +133,22 @@ class DatabaseConnection:
         """
         self.connection.register(dataset_name, df)
         print("registed new dataset in duckdb:  ", dataset_name)
+
+    def add_column(self, tableName, columnName, data):
+        """Add a new column to the table with the given data. Data must match the length of the table."""
+
+        # get current data
+        current_df = self.connection.execute(f"SELECT * FROM {tableName}").fetchdf()
+        current_df[columnName] = data
+
+        # modify existing table
+        viewName = f"{tableName}_TEMP_NEW"
+
+        self.connection.register(viewName, current_df)
+        self.connection.execute(
+            f"CREATE OR REPLACE TABLE {tableName} as SELECT * FROM {viewName}"
+        )
+        self.connection.execute(f"DROP VIEW IF EXISTS {viewName}")
 
     def _handle_json_message(self, data: DuckQueryData) -> DuckQueryResult:
         """

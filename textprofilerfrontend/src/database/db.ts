@@ -232,4 +232,15 @@ export class DatabaseConnection {
 
     return r;
   }
+
+  async getValues(
+    tableName: string,
+    colName: string,
+    limit = 5,
+  ): Promise<any[]> {
+    let q = vg.Query.from(tableName).select(colName).limit(limit);
+    let r = await vg.coordinator().query(q, { type: "json" });
+
+    return r;
+  }
 }
