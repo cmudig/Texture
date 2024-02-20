@@ -2,6 +2,7 @@
   import type { ColumnSummary } from "../shared/types";
   import type { DatasetInfo } from "../backendapi/models/DatasetInfo";
   import ColumnProfile from "./ColumnProfile.svelte";
+  import ProjectionOverview from "./ProjectionOverview.svelte";
 
   export let datasetInfo: DatasetInfo;
   export let datasetColSummaries: ColumnSummary[];
@@ -10,6 +11,8 @@
 </script>
 
 <div>
+  <ProjectionOverview />
+
   {#each datasetInfo.column_info as col}
     {#if col.type == "text"}
       <ColumnProfile
