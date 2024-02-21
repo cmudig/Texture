@@ -30,7 +30,7 @@ export async function getDatasetName(
     if (_excludeList) {
       let formattedOps = _excludeList
         .map((item) => {
-          const s = item.replace("'", "''");
+          const s = item.replaceAll("'", "''");
           return `'${s}'`;
         })
         .join(", ");

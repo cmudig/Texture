@@ -16,6 +16,10 @@
     _value: string,
     _highlights: string[],
   ): AnnotatedSpan[] {
+    if (_highlights.length > 0) {
+      // ' gets escaped as '' in SQL, so we need to unescape it
+      _highlights = _highlights.map((v) => v.replaceAll("''", "'"));
+    }
     let annotatedSpans: AnnotatedSpan[] = [];
     let lastIndex = 0;
 

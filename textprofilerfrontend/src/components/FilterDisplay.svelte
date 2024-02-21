@@ -20,7 +20,9 @@
       <span class="font-semibold text-gray-800">{colName}</span>
       <span> == </span>
       <span class="italic">
-        {filterRange.map((item) => (item ? `"${item}"` : `${item}`)).join(", ")}
+        {filterRange
+          .map((item) => (item ? `"${item.replaceAll("''", "'")}"` : `${item}`))
+          .join(", ")}
       </span>
     {:else}
       <span

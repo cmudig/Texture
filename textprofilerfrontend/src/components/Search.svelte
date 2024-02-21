@@ -43,22 +43,23 @@
       // adds predicates to provided selection; if a cross filter then these will be OR'd
 
       let pred = null;
+      let cleanedQuery = currentQuery?.replaceAll("'", "''");
 
-      if (currentQuery) {
+      if (cleanedQuery) {
         pred =
           columnNames.length > 1
             ? or(
                 columnNames.map((col) =>
-                  FUNCTIONS[type](col, literal(currentQuery)),
+                  FUNCTIONS[type](col, literal(cleanedQuery)),
                 ),
               )
-            : FUNCTIONS[type](columnNames[0], literal(currentQuery));
+            : FUNCTIONS[type](columnNames[0], literal(cleanedQuery));
       }
 
       let updateInfo = {
         source: undefined,
         schema: { type },
-        value: currentQuery,
+        value: cleanedQuery,
         predicate: pred,
       };
 
