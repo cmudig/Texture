@@ -57,8 +57,6 @@
     );
     let fromClause: any = datasetName;
 
-    console.log("datasetName", datasetName);
-
     if (joinDsInfo) {
       fromClause = vg.fromJoinDistinct({
         table: datasetName,
@@ -132,8 +130,6 @@
       );
     }
 
-    console.log("rendering chart");
-    el.replace;
     el.replaceChildren(plotWrapper.element);
   }
 
