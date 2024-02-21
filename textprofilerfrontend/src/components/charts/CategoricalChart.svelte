@@ -3,7 +3,9 @@
   import { afterUpdate, onDestroy } from "svelte";
   import { mosaicSelection, clearColumnSelections } from "../../stores";
   import { getDatasetName, getUUID } from "../../shared/utils";
-  import { getPlot } from "./chartUtils";
+  import { getPlot, categoricalLayout } from "./chartUtils";
+  import { reduce } from "lodash";
+  import { databaseConnection } from "../../stores";
 
   export let columnName: string;
   export let mainDatasetName: string;
@@ -11,6 +13,8 @@
   export let plotNulls = true;
   export let limit = 10;
   export let excludeList: string[] | undefined = undefined;
+
+  const layout = categoricalLayout;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -54,6 +58,14 @@
     );
     let fromClause: any = datasetName;
 
+    let colCount = await databaseConnection.getColCount(fromClause, cName);
+    colCount = Math.min(limit, colCount);
+    const height =
+      colCount * layout.barHeight +
+      (colCount - 1) * (layout.inset + 1) +
+      layout.marginTop +
+      layout.marginBottom;
+
     if (showBackground) {
       plotWrapper = getPlot(
         // including this breaks the click interation and doesnt cut off text?
@@ -68,13 +80,15 @@
           fill: "#ccc",
           fillOpacity: 0.4,
           sort: { y: "-x", limit },
+          inset: layout.inset,
         }),
         vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
-          fill: "steelblue",
+          fill: layout.color,
           sort: { y: "-x", limit },
+          inset: layout.inset,
         }),
         vg.highlight({ by: selection }),
         vg.toggleY({ as: selection }),
@@ -87,10 +101,17 @@
           text: vg.count(),
           dx: 5,
           textAnchor: "start",
+          textOverflow: "ellipsis",
+          lineWidth: layout.textLineWidth,
         }),
         vg.yLabel(null),
-        vg.marginLeft(80),
-        vg.width(400),
+        vg.marginLeft(layout.marginLeft),
+        vg.marginRight(layout.marginRight),
+        vg.marginTop(layout.marginTop),
+        vg.marginBottom(layout.marginBottom),
+        vg.width(layout.width),
+        vg.height(height),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: layout.axisLineWidth }),
       );
     } else {
       plotWrapper = getPlot(
@@ -98,8 +119,9 @@
           x: vg.count(),
           y: cName,
           order: cName,
-          fill: "steelblue",
+          fill: layout.color,
           sort: { y: "-x", limit },
+          inset: layout.inset,
         }),
         vg.highlight({ by: selection }),
         vg.toggleY({ as: selection }),
@@ -112,10 +134,17 @@
           text: vg.count(),
           dx: 5,
           textAnchor: "start",
+          textOverflow: "ellipsis",
+          lineWidth: layout.textLineWidth,
         }),
         vg.yLabel(null),
-        vg.marginLeft(80),
-        vg.width(400),
+        vg.marginLeft(layout.marginLeft),
+        vg.marginRight(layout.marginRight),
+        vg.marginTop(layout.marginTop),
+        vg.marginBottom(layout.marginBottom),
+        vg.width(layout.width),
+        vg.height(height),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: layout.axisLineWidth }),
       );
     }
 

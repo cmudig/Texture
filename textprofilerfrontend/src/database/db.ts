@@ -191,6 +191,16 @@ export class DatabaseConnection {
     return resultMap;
   }
 
+  async getColCount(
+    fromClause: any,
+    cName: any,
+  ): Promise<number> {
+    // let q = vg.Query.from(fromClause).select({count: vg.sql`COUNT(DISTINCT ${vg.column(cName)})`});
+    let q = vg.Query.from(fromClause).select({count: vg.sql`COUNT(DISTINCT CASE WHEN ${vg.column(cName)} IS NULL THEN 'null' ELSE ${vg.column(cName)} END)`});
+    let r = await vg.coordinator().query(q, { type: "json" });
+    return r[0]?.["count"];
+  }
+
   async getDocsByID(dsInfo: DatasetInfo, ids: any[]): Promise<any[]> {
     let fromClause = dsInfo.name;
 

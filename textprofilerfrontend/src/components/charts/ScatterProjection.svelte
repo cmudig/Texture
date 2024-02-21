@@ -3,11 +3,13 @@
   import { afterUpdate, onDestroy } from "svelte";
   import { mosaicSelection, clearColumnSelections } from "../../stores";
   import { getDatasetName, getUUID } from "../../shared/utils";
-  import { getPlot } from "./chartUtils";
+  import { getPlot, projectionLayout } from "./chartUtils";
 
   export let columnName: string;
   export let mainDatasetName: string;
   export let plotNulls = true;
+
+  const layout = projectionLayout;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -58,15 +60,15 @@
         x: "umap_x",
         y: "umap_y",
         r: 1,
-        fill: "steelblue",
+        fill: layout.color,
       }),
       vg.xAxis(null),
       vg.yAxis(null),
       vg.highlight({ by: selection, opacity: 0.1 }),
       vg.intervalXY({ as: selection }),
       vg.intervalXY({ as: $mosaicSelection }),
-      vg.width(400),
-      vg.height(280),
+      vg.width(layout.width),
+      vg.height(layout.height),
     );
 
     el.replaceChildren(plotWrapper.element);

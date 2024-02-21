@@ -3,12 +3,14 @@
   import { afterUpdate, onDestroy } from "svelte";
   import { mosaicSelection } from "../../stores";
   import { getDatasetName } from "../../shared/utils";
-  import { getPlot } from "./chartUtils";
+  import { getPlot, histogramLayout } from "./chartUtils";
 
   export let columnName: string;
   export let mainDatasetName: string;
   export let showBackground = true;
   export let plotNulls = false;
+
+  const layout = histogramLayout;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -25,37 +27,39 @@
     if (showBackground) {
       plotWrapper = getPlot(
         vg.rectY(vg.from(fromClause), {
-          x: vg.bin(columnName),
+          x: vg.bin(columnName, { steps: layout.steps }),
           y: vg.count(),
           fill: "#ccc",
           fillOpacity: 0.4,
-          inset: 0.5,
+          inset: layout.inset,
         }),
         vg.rectY(vg.from(fromClause, { filterBy: $mosaicSelection }), {
-          x: vg.bin(columnName),
+          x: vg.bin(columnName, { steps: layout.steps }),
           y: vg.count(),
-          fill: "steelblue",
-          inset: 0.5,
+          fill: layout.color,
+          inset: layout.inset,
         }),
         vg.intervalX({ as: $mosaicSelection }),
         vg.xDomain(vg.Fixed),
-        vg.marginLeft(55),
-        vg.width(400),
-        vg.height(150),
+        vg.marginLeft(layout.marginLeft),
+        vg.width(layout.width),
+        vg.height(layout.height),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: layout.axisLineWidth }),
       );
     } else {
       plotWrapper = getPlot(
         vg.rectY(vg.from(fromClause, { filterBy: $mosaicSelection }), {
-          x: vg.bin(columnName),
+          x: vg.bin(columnName, { steps: layout.steps }),
           y: vg.count(),
-          fill: "steelblue",
-          inset: 0.5,
+          fill: layout.color,
+          inset: layout.inset,
         }),
         vg.intervalX({ as: $mosaicSelection }),
         vg.xDomain(vg.Fixed),
-        vg.marginLeft(55),
-        vg.width(400),
-        vg.height(150),
+        vg.marginLeft(layout.marginLeft),
+        vg.width(layout.width),
+        vg.height(layout.height),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: layout.axisLineWidth }),
       );
     }
 
