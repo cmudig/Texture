@@ -2,29 +2,48 @@ import * as vg from "@uwdata/vgplot";
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
 import type { Column } from "../backendapi";
-import type { SelectionRange } from "../shared/types";
 
 export function getUUID() {
   return uuidv4();
 }
 
+const randomSixDigitInt = () => Math.floor(Math.random() * 900000) + 100000;
+
 export async function getDatasetName(
   mainDSName: string,
   cName: string,
   pltNullsFlag: boolean,
-) {
-  let viewName = vg.column(`${mainDSName}NoNulls${cName}`);
+  _excludeList?: string[],
+): Promise<string> {
+  // if filter updates but view name does not change then mosaic might not refresh so we append random int every time
+  let viewNameStr = `${mainDSName}_VIEW_${cName}_${randomSixDigitInt()}`;
 
-  if (!pltNullsFlag) {
-    await vg
-      .coordinator()
-      .exec(
-        vg.sql`create view if not exists ${viewName} as select * from ${vg.column(
-          mainDSName,
-        )} where ${vg.column(cName)} is not null;`,
-      );
+  if (!pltNullsFlag || _excludeList) {
+    let baseQ = vg.sql`CREATE OR REPLACE VIEW ${vg.column(viewNameStr)} as select * from ${vg.column(mainDSName)} `;
+    let whereClauses: string[] = [];
 
-    return viewName;
+    if (!pltNullsFlag) {
+      let s = vg.sql`${vg.column(cName)} is not null`;
+      whereClauses.push(s);
+    }
+
+    if (_excludeList) {
+      let formattedOps = _excludeList
+        .map((item) => {
+          const s = item.replace("'", "''");
+          return `'${s}'`;
+        })
+        .join(", ");
+
+      let s = vg.sql`${vg.column(cName)} NOT IN (${formattedOps})`;
+      whereClauses.push(s);
+    }
+
+    let finalQ = baseQ + "WHERE " + whereClauses.join(" AND ");
+
+    await vg.coordinator().exec(finalQ);
+
+    return viewNameStr;
   }
 
   return mainDSName;

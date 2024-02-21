@@ -12,6 +12,7 @@
   export let showBackground = true;
   export let plotNulls = true;
   export let limit = 10;
+  export let excludeList: string[] | undefined = undefined;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -46,8 +47,14 @@
     pltNullsFlag: boolean,
     selection: any,
     joinDsInfo?: JoinInfo,
+    _excludeList?: string[],
   ) {
-    let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
+    let datasetName = await getDatasetName(
+      mainDsName,
+      cName,
+      pltNullsFlag,
+      _excludeList,
+    );
     let fromClause: any = datasetName;
 
     if (joinDsInfo) {
@@ -133,6 +140,7 @@
       plotNulls,
       thisSelection,
       joinDatasetInfo,
+      excludeList,
     );
   });
 
