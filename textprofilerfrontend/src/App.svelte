@@ -15,6 +15,7 @@
   import Search from "./components/Search.svelte";
   import SimilarView from "./components/SimilarView.svelte";
   import FilterBar from "./components/FilterBar.svelte";
+  import StopwordEditor from "./components/settings/StopwordEditor.svelte";
   import {
     Select,
     Popover,
@@ -133,6 +134,10 @@
         bind:value={currentDatasetName}
         on:change={updateData}
       />
+
+      <div class="mt-2">
+        <StopwordEditor />
+      </div>
 
       <div class="mt-2">
         <Label>Background distributions</Label>

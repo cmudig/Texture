@@ -12,6 +12,7 @@
   export let showBackground = true;
   export let plotNulls = true;
   export let limit = 10;
+  export let excludeList: string[] | undefined = undefined;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -46,9 +47,17 @@
     pltNullsFlag: boolean,
     selection: any,
     joinDsInfo?: JoinInfo,
+    _excludeList?: string[],
   ) {
-    let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
+    let datasetName = await getDatasetName(
+      mainDsName,
+      cName,
+      pltNullsFlag,
+      _excludeList,
+    );
     let fromClause: any = datasetName;
+
+    console.log("datasetName", datasetName);
 
     if (joinDsInfo) {
       fromClause = vg.fromJoinDistinct({
@@ -123,6 +132,8 @@
       );
     }
 
+    console.log("rendering chart");
+    el.replace;
     el.replaceChildren(plotWrapper.element);
   }
 
@@ -133,6 +144,7 @@
       plotNulls,
       thisSelection,
       joinDatasetInfo,
+      excludeList,
     );
   });
 

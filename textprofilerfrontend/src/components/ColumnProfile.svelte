@@ -8,6 +8,7 @@
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
   import { filters, showBackgroundDist } from "../stores";
+  import { stopwords } from "../shared/stopwords";
 
   export let displayCol: Column;
   export let plotCols: Column[];
@@ -55,6 +56,7 @@
           columnName={$filters.joinDatasetInfo.joinColumn.name}
           showBackground={false}
           limit={20}
+          excludeList={$stopwords}
         />
       {/if}
 
