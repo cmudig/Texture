@@ -96,5 +96,11 @@ class LLMTransformRequest(BaseModel):
     userPrompt: str
     taskFormat: str
     columnData: List[str]
-    tableName: Optional[str]
-    newColumnName: Optional[str]
+
+
+class LLMTransformCommit(BaseModel):
+    userPrompt: str
+    taskFormat: str
+    columnName: str
+    tableName: str
+    newColumnName: str

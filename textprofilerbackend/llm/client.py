@@ -2,6 +2,7 @@ import openai
 from openai import AsyncOpenAI
 import json
 import asyncio
+from tqdm.asyncio import tqdm_asyncio
 
 from textprofilerbackend.utils import timeit
 
@@ -10,7 +11,8 @@ PROMPT_GET_JSON_FORMAT = """# Instruction
 You are a data processing assistant. You will be helping a user transform a text column by extracting the requested information and turning it into new columns. To do this, we need to know the JSON specification of the requested columns. Given a user instruction, return the following information about the columns that will be generated to help answer that question.
 
 # Response format
-The response should be an object where the keys are the column names that map to an object with two keys
+The response should be an object with three keys:
+1. "name": the column name
 1. "type": the response type of either "number", "string", or "bool"
 2. "num_replies": if the response will be a "single" item or "multiple" items
 
@@ -19,26 +21,22 @@ The response should be an object where the keys are the column names that map to
 - Instruction: 
 Extract all email addresses from the given text string.
 - JSON format: 
-{ "email_addresses": { "type": "string", "num_replies": "multiple" } }
+{ "name": "email_addresses", "type": "string", "num_replies": "multiple" }
 -----
 - Instruction: 
 Summarize this document
 - JSON format: 
-{ "summary": { "type": "string", "num_replies": "single" } }
+{ "name": "summary", "type": "string", "num_replies": "single" }
 -----
 - Instruction: 
 Extract the salary from this job posting
 - JSON format: 
-{ "salaries": { "type": "number", "num_replies": "single" } }
+{ "name": "salaries", "type": "number", "num_replies": "single" }
 -----
 - Instruction: 
-keywords about each study, the number of participants in the study, and if the study was successful 
+keywords about each study
 - JSON format: 
-{
-  "keywords": { "type": "string", "num_replies": "multiple" },
-  "num_participants": { "type": "number", "num_replies": "single" },
-  "study_success": { "type": "string", "num_replies": "single" }
-}
+{ "name": "keywords", "type": "string", "num_replies": "multiple" }
 -----
 """
 
@@ -61,7 +59,7 @@ Please email me at username@gmail.com or myotheremail@uni.edu.
 -----
 - Instruction: 
 Extract the salary from this job posting
-- JSON format: 
+- Response JSON format: 
 { "salary": { "type": "number", "num_replies": "single" } }
 - Text:
 Hello there! We are looking for a new employee to join our team. The salary is $50,000 per year.
@@ -69,20 +67,16 @@ Hello there! We are looking for a new employee to join our team. The salary is $
 { "salary": 50000 }
 -----
 - Instruction: 
-keywords about each study and the number of participants in the study
-- JSON format: 
+keywords about each study
+- Response JSON format: 
 {
   "keywords": { "type": "string", "num_replies": "multiple" },
-  "num_participants": { "type": "number", "num_replies": "single" },
 }
 - Text:
 In this paper we discuss a study on caffeine and its effect on sleep. We ran a comparative study with 48 participants across 3 age groups. Each participants consumed caffeine or a placebo
 and then we measured how long it took them to fall asleep they slept. We found that on average, participants in the caffeine group took 30 minutes longer to fall asleep than the placebo group.
 - Response:
-{
-  "keywords": ["caffeine", "sleep", "comparative study"],
-  "num_participants": 48,
-}
+{ "keywords": ["caffeine", "sleep", "comparative study"] }
 -----
 """
 
@@ -90,7 +84,7 @@ and then we measured how long it took them to fall asleep they slept. We found t
 def format_query(instruction, format, document):
     return f"""- Instruction: 
 {instruction}
-- JSON format: 
+- Response format: 
 {format}
 - Text: 
 {document}
@@ -146,29 +140,42 @@ class LLMClient:
         """
         Get the transformation response from OpenAI API. Retry twice if rate limited.
         """
+        print(f"[RQ {id}]\tGetting response...")
 
         sleepAmount = [10, 60]
 
         for tryIdx in range(len(sleepAmount)):
             try:
-                r = await self.client.chat.completions.create(
-                    model="gpt-3.5-turbo-0125",
-                    response_format={"type": "json_object"},
-                    messages=[
-                        {"role": "system", "content": PROMPT_GET_RESULT},
-                        {
-                            "role": "user",
-                            "content": format_query(instruction, task_format, document),
-                        },
-                    ],
+                q = format_query(instruction, task_format, document)
+                r = await asyncio.wait_for(
+                    self.client.chat.completions.create(
+                        model="gpt-3.5-turbo-0125",
+                        response_format={"type": "json_object"},
+                        messages=[
+                            {"role": "system", "content": PROMPT_GET_RESULT},
+                            {
+                                "role": "user",
+                                "content": q,
+                            },
+                        ],
+                    ),
+                    timeout=15,
                 )
                 return r
+            except asyncio.TimeoutError:
+                print(f"[RQ {id}]\tTry {tryIdx}: Operation timed out after 15 seconds")
+                # Handle the timeout specifically, if needed
+                continue  # Skip to the next iteration
             except openai.RateLimitError as e:
                 print(
                     f"[RQ {id}]\tTry {tryIdx}: Rate limit error, waiting for ",
                     sleepAmount[tryIdx],
                 )
                 await asyncio.sleep(sleepAmount[tryIdx])
+
+            except Exception as e:
+                print(f"[RQ {id}]\tTry {tryIdx}: ERROR: ", e)
+                return None
 
         print(f"[RQ {id}]\tFailed to get response after {len(sleepAmount)} tries")
         return None
@@ -177,7 +184,7 @@ class LLMClient:
         # limiter = aiolimiter.AsyncLimiter(MAX_REQUESTS_PER_MINUTE)
 
         # issue parallel queries
-        responses = await asyncio.gather(
+        responses = await tqdm_asyncio.gather(
             *[
                 self._get_transform_retry(idx, instruction, d, task_format)
                 for idx, d in enumerate(documents)
@@ -214,6 +221,7 @@ class LLMClient:
 
     @timeit
     def get_transformations(self, user_prompt, task_format, data):
+        print("Getting transformations...")
         response = asyncio.run(self._run_parallel(user_prompt, data, task_format))
 
         return response

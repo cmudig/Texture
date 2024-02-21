@@ -3,8 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type LLMTransformRequest = {
+export type LLMTransformCommit = {
   userPrompt: string;
   taskFormat: string;
-  columnData: Array<string>;
+  columnName: string;
+  tableName: string;
+  newColumnName: string;
 };

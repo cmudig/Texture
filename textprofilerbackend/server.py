@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
-from typing import List, Dict, Union, Literal
+from typing import Dict, Literal
 
 
 from textprofilerbackend.database import init_db
@@ -16,10 +16,13 @@ from textprofilerbackend.models import (
     VectorSearchResponse,
     LLMResponse,
     LLMTransformRequest,
+    LLMTransformCommit,
+    Column,
 )
 from textprofilerbackend.process_data import process_new_file
 from textprofilerbackend.transform import word_tokenize
 from textprofilerbackend.llm.client import LLMClient
+from textprofilerbackend.utils import process_results
 
 from io import BytesIO
 import pandas as pd
@@ -176,20 +179,45 @@ def get_server() -> FastAPI:
 
     @api_app.post("/fetch_llm_transform_result", response_model=LLMResponse)
     def get_llm_transform_result(request: LLMTransformRequest):
+
         results = llm_client.get_transformations(
             request.userPrompt, request.taskFormat, request.columnData
         )
         return LLMResponse(success=True, result=results)
 
     @api_app.post("/commit_llm_transform_result", response_model=LLMResponse)
-    def commit_llm_transform_result(request: LLMTransformRequest):
+    def commit_llm_transform_result(request: LLMTransformCommit):
+
+        print("Request is: ", request)
+
+        data = duckdb_conn.connection.execute(
+            f'SELECT "{request.columnName}" from "{request.tableName}"'
+        ).df()[request.columnName]
+
+        print("Data is: ", data.head())
+
+        # get results and turn into flat array
         results = llm_client.get_transformations(
-            request.userPrompt, request.taskFormat, request.columnData
+            request.userPrompt, request.taskFormat, data
         )
 
-        duckdb_conn.add_column(request.tableName, request.newColumnName, results)
+        print("RAW RESULTS ARE: ", results)
 
-        return LLMResponse(success=True, result=None)
+        processed_results = process_results(results, request.newColumnName)
+
+        print("RESULTS TO COMMIT ARE: ", processed_results)
+
+        # add new col to tables and metadata store
+        # TODO dedup column name before adding
+        new_col_name = "MODEL_" + request.newColumnName
+        duckdb_conn.add_column(request.tableName, new_col_name, processed_results)
+        datasetMetadataCache[request.tableName].column_info.append(
+            Column(
+                name=new_col_name, type="categorical"
+            )  # TODO: infer type from LLM response
+        )
+
+        return LLMResponse(success=True, result=[])
 
     # @api_app.get("/example_arrow")
     # async def example_arrow():

@@ -2,7 +2,11 @@
   import { databaseConnection } from "../../stores";
   import { Modal, Spinner, Select, Textarea, Button } from "flowbite-svelte";
   import type { DatasetInfo } from "../../backendapi";
-  import { CheckSolid } from "flowbite-svelte-icons";
+  import {
+    CheckSolid,
+    TrashBinOutline,
+    RocketSolid,
+  } from "flowbite-svelte-icons";
   import TextPlaceholder from "../utils/TextPlaceholder.svelte";
 
   enum LLMQueryStatus {
@@ -21,12 +25,12 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   // locals
   let targetColName: string;
-  let responseFormat;
+  let responseFormat; // { "name": "email_addresses", "type": "string", "num_replies": "multiple" }
   let previewResult;
   let columnData: any[];
-  let resultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
+  let sampleResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
+  let finalResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
   let userPrompt: string;
-  // let userPrompt: string = "Extract all urls from the passage, if any";
 
   async function init(_textCols) {
     targetColName = _textCols?.[0].name;
@@ -48,26 +52,68 @@ For example, "Extract 3 - 5 keywords per article"`;
   }
 
   async function submitInitialTransformation() {
-    resultStatus = LLMQueryStatus.PENDING;
-    let _responseFormat =
-      await databaseConnection.api.getLlmResponseFormat(userPrompt);
-    responseFormat = _responseFormat.result;
+    if (columnData) {
+      sampleResultStatus = LLMQueryStatus.PENDING;
+      let _responseFormat =
+        await databaseConnection.api.getLlmResponseFormat(userPrompt);
+      responseFormat = _responseFormat.result;
 
-    console.log("response format is: ", responseFormat);
+      console.log("response format is: ", responseFormat);
 
+      const stringFormat = `{ "${responseFormat.name ?? "colName"}": { "type": "${responseFormat.type ?? "string"}", "num_replies": "${responseFormat.num_replies ?? "single"}" } }`;
+
+      databaseConnection.api
+        .getLlmTransformResult({
+          userPrompt,
+          taskFormat: stringFormat,
+          columnData: columnData.map((cd) => cd[targetColName]),
+        })
+        .then((r) => {
+          let parsedResult = r.result;
+          previewResult = parsedResult.map(
+            (item) => item[responseFormat.name] ?? "",
+          );
+          console.log("preview result is: ", previewResult);
+          sampleResultStatus = LLMQueryStatus.COMPLETED;
+        });
+    } else {
+      console.error("No column data to transform!");
+    }
+  }
+
+  async function applyToEntireColumn() {
+    console.log("Applying to entire column");
+
+    // FUTURE: use curated dataset examples
+    // const data = {
+    //   exampleData: columnData.map((cd) => cd[targetColName]),
+    //   exampleResponse: previewResult,
+    // };
+    // console.log(data);
+
+    const stringFormat = `{ "${responseFormat.name ?? "colName"}": { "type": "${responseFormat.type ?? "string"}", "num_replies": "${responseFormat.num_replies ?? "single"}" } }`;
+
+    finalResultStatus = LLMQueryStatus.PENDING;
     databaseConnection.api
-      .getLlmTransformResult({
+      .commitLlmTransformResult({
         userPrompt,
-        taskFormat: JSON.stringify(responseFormat),
-        columnData: columnData.map((cd) => cd[targetColName]),
-        tableName: null,
-        newColumnName: null,
+        taskFormat: stringFormat,
+        columnName: targetColName,
+        tableName: datasetInfo.name,
+        newColumnName: responseFormat.name,
       })
       .then((r) => {
-        previewResult = r.result;
-        console.log("preview result is: ", previewResult);
-        resultStatus = LLMQueryStatus.COMPLETED;
+        finalResultStatus = LLMQueryStatus.COMPLETED;
+        console.log("commit result finished with: ", r);
       });
+  }
+
+  function deleteResult(index) {
+    columnData.splice(index, 1);
+    previewResult.splice(index, 1);
+
+    columnData = columnData; // trigger reactivity
+    previewResult = previewResult; // trigger reactivity
   }
 
   $: initPromise = init(textCols);
@@ -115,7 +161,7 @@ For example, "Extract 3 - 5 keywords per article"`;
             }}
             disabled={!userPrompt}
           >
-            {#if resultStatus === LLMQueryStatus.PENDING}
+            {#if sampleResultStatus === LLMQueryStatus.PENDING}
               <Spinner size="4" class="mr-2" />
             {:else}
               <CheckSolid size="sm" class="mr-2" />
@@ -124,48 +170,74 @@ For example, "Extract 3 - 5 keywords per article"`;
           </Button>
         </div>
       </div>
-      {#if resultStatus !== LLMQueryStatus.NOT_STARTED && columnData}
-        <div class="border border-gray-200">
-          <div class="flex bg-gray-50 border-b border-gray-200 font-semibold">
-            <div class="w-1/2 whitespace-normal break-words p-2">
+      {#if sampleResultStatus !== LLMQueryStatus.NOT_STARTED && columnData}
+        <div class="">
+          <div class="flex font-semibold">
+            <div
+              class="w-1/2 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
+            >
               {targetColName}
             </div>
             <div
-              class="w-1/2 whitespace-normal break-words p-2 border-l border-gray-200 text-black"
+              class="grow whitespace-normal break-words p-2 border-l border-y border-gray-200 text-black bg-gray-50"
             >
               {#if responseFormat}
-                {Object.keys(responseFormat)
-                  .map(
-                    (k) =>
-                      `${k} (${responseFormat[k]?.type}${responseFormat[k]?.num_replies === "single" ? "" : "[]"})`,
-                  )
-                  .join(", ")}
+                {`${responseFormat.name} (${responseFormat?.type}${responseFormat.num_replies === "single" ? "" : "[]"})`}
               {:else}
                 <Spinner />
               {/if}
             </div>
+            <div class="w-8 border-l border-gray-200" />
           </div>
 
           {#each columnData as cd, index}
-            <div class="flex border-b border-gray-200">
+            <div class="flex">
               <div
-                class="w-1/2 whitespace-normal break-words align-top p-2 overflow-auto max-h-32"
+                class="w-1/2 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
               >
                 {cd[targetColName]}
               </div>
               <div
-                class="w-1/2 whitespace-normal break-words border-l border-gray-200 bg-green-50 text-black align-top p-2 overflow-auto max-h-32"
+                class="grow whitespace-normal break-words border-l border-b border-gray-200 bg-green-50 text-black align-top p-2 overflow-auto max-h-32"
               >
-                {#if resultStatus === LLMQueryStatus.COMPLETED}
-                  {Object.keys(responseFormat)
-                    .map((k) => previewResult[index][k])
-                    .join(", ")}
+                {#if sampleResultStatus === LLMQueryStatus.COMPLETED}
+                  <Textarea
+                    rows="3"
+                    bind:value={previewResult[index]}
+                    class="bg-white/50"
+                  />
                 {:else}
                   <TextPlaceholder />
                 {/if}
               </div>
+
+              <div class="w-8 border-l border-gray-200">
+                <button
+                  class="hover:bg-gray-100 text-gray-500 p-1 rounded m-1"
+                  on:click={() => deleteResult(index)}
+                >
+                  <TrashBinOutline size="sm" />
+                </button>
+              </div>
             </div>
           {/each}
+        </div>
+        <div class="flex gap-2 items-center">
+          {#if finalResultStatus === LLMQueryStatus.PENDING}
+            <Spinner />
+          {:else if finalResultStatus === LLMQueryStatus.COMPLETED}
+            <div class="text-green-500">Completed query!</div>
+          {/if}
+
+          <Button
+            class="w-64 ml-auto"
+            on:click={applyToEntireColumn}
+            disabled={!userPrompt}
+          >
+            <RocketSolid size="sm" class="mr-2" />
+
+            Apply to entire column
+          </Button>
         </div>
       {/if}
     {/if}

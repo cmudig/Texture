@@ -12,6 +12,7 @@ import type { ErrorResponse } from "../models/ErrorResponse";
 import type { ExecResponse } from "../models/ExecResponse";
 import type { JsonResponse } from "../models/JsonResponse";
 import type { LLMResponse } from "../models/LLMResponse";
+import type { LLMTransformCommit } from "../models/LLMTransformCommit";
 import type { LLMTransformRequest } from "../models/LLMTransformRequest";
 import type { VectorSearchResponse } from "../models/VectorSearchResponse";
 
@@ -254,7 +255,7 @@ export class DefaultService {
    * @throws ApiError
    */
   public commitLlmTransformResult(
-    requestBody: LLMTransformRequest,
+    requestBody: LLMTransformCommit,
   ): CancelablePromise<LLMResponse> {
     return this.httpRequest.request({
       method: "POST",
