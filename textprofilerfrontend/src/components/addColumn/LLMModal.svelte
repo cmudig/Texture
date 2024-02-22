@@ -1,6 +1,13 @@
 <script lang="ts">
   import { databaseConnection } from "../../stores";
-  import { Modal, Spinner, Select, Textarea, Button } from "flowbite-svelte";
+  import {
+    Modal,
+    Spinner,
+    Select,
+    Textarea,
+    Button,
+    Input,
+  } from "flowbite-svelte";
   import type { DatasetInfo } from "../../backendapi";
   import {
     CheckSolid,
@@ -22,15 +29,18 @@ For example, "Extract 3 - 5 keywords per article"`;
   export let panelOpen: boolean;
   export let datasetInfo: DatasetInfo;
   $: textCols = datasetInfo?.column_info.filter((col) => col.type === "text");
+  $: allColNames = datasetInfo?.column_info.map((col) => col.name);
 
   // locals
   let targetColName: string;
   let responseFormat; // { "name": "email_addresses", "type": "string", "num_replies": "multiple" }
   let previewResult;
   let columnData: any[];
+  let schemaResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
   let sampleResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
   let finalResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
   let userPrompt: string;
+  // let userPrompt: string = "Does this article mention a user study?";
 
   async function init(_textCols) {
     targetColName = _textCols?.[0].name;
@@ -51,15 +61,24 @@ For example, "Extract 3 - 5 keywords per article"`;
     }
   }
 
-  async function submitInitialTransformation() {
-    if (columnData) {
-      sampleResultStatus = LLMQueryStatus.PENDING;
+  let schemaEditTimer;
+  async function getSchema() {
+    schemaResultStatus = LLMQueryStatus.PENDING;
+    console.log("Getting schema...");
+
+    // TODO this maybe doesnt need to be LLM call, but kinda fun
+    if (userPrompt) {
       let _responseFormat =
         await databaseConnection.api.getLlmResponseFormat(userPrompt);
       responseFormat = _responseFormat.result;
 
-      console.log("response format is: ", responseFormat);
+      console.log("Schema is: ", responseFormat);
+    }
+    schemaResultStatus = LLMQueryStatus.COMPLETED;
+  }
 
+  async function submitInitialTransformation() {
+    if (columnData && responseFormat) {
       const stringFormat = `{ "${responseFormat.name ?? "colName"}": { "type": "${responseFormat.type ?? "string"}", "num_replies": "${responseFormat.num_replies ?? "single"}" } }`;
 
       databaseConnection.api
@@ -117,6 +136,12 @@ For example, "Extract 3 - 5 keywords per article"`;
   }
 
   $: initPromise = init(textCols);
+
+  // error handling
+  $: namingErrorExists =
+    responseFormat?.name &&
+    (allColNames.includes(responseFormat.name) ||
+      allColNames.includes("MODEL_" + responseFormat.name));
 </script>
 
 <Modal
@@ -132,16 +157,9 @@ For example, "Extract 3 - 5 keywords per article"`;
     </div>
   {:then r}
     {#if textCols}
-      <div class="flex flex-col gap-2">
-        <Textarea
-          class="min-h-20"
-          rows="5"
-          placeholder={INSTRUCTION}
-          bind:value={userPrompt}
-        />
-
+      <div class="flex flex-col gap-4">
         <div class="flex gap-2 items-center">
-          Transform column
+          Extract from
           <Select
             class="w-64"
             size="sm"
@@ -153,13 +171,81 @@ For example, "Extract 3 - 5 keywords per article"`;
             bind:value={targetColName}
             on:change={fetchColData}
           />
+        </div>
+
+        <Textarea
+          class="min-h-20"
+          rows="5"
+          placeholder={INSTRUCTION}
+          bind:value={userPrompt}
+          on:input={() => {
+            clearTimeout(schemaEditTimer);
+            schemaEditTimer = setTimeout(getSchema, 1000);
+          }}
+        />
+
+        <div class="flex flex-wrap gap-2 items-center">
+          <!-- Schema editor -->
+          {#if responseFormat}
+            <div class="flex gap-2 items-center">
+              Schema
+              <Input
+                class="w-48"
+                disabled={schemaResultStatus === LLMQueryStatus.PENDING}
+                bind:value={responseFormat.name}
+              />
+              <Select
+                class="w-48"
+                disabled={schemaResultStatus === LLMQueryStatus.PENDING}
+                items={[
+                  {
+                    value: "bool",
+                    name: "bool",
+                  },
+                  {
+                    value: "number",
+                    name: "number",
+                  },
+                  {
+                    value: "string",
+                    name: "string",
+                  },
+                ]}
+                placeholder="Response type..."
+                bind:value={responseFormat.type}
+              />
+              <Select
+                class="w-48"
+                disabled={schemaResultStatus === LLMQueryStatus.PENDING}
+                items={[
+                  {
+                    value: "single",
+                    name: "single",
+                  },
+                  {
+                    value: "multiple",
+                    name: "multiple",
+                  },
+                ]}
+                placeholder="Number responses..."
+                bind:value={responseFormat.num_replies}
+              />
+            </div>
+            <!-- {:else if userPrompt}
+            <Button class="w-64 bg-gray-500" on:click={getSchema}>
+              Generate initial schema
+            </Button> -->
+          {/if}
+          {#if schemaResultStatus === LLMQueryStatus.PENDING}
+            <Spinner />
+          {/if}
 
           <Button
             class="w-64 ml-auto"
             on:click={() => {
               submitInitialTransformation();
             }}
-            disabled={!userPrompt}
+            disabled={!userPrompt || namingErrorExists}
           >
             {#if sampleResultStatus === LLMQueryStatus.PENDING}
               <Spinner size="4" class="mr-2" />
@@ -169,77 +255,84 @@ For example, "Extract 3 - 5 keywords per article"`;
             Generate sample response
           </Button>
         </div>
-      </div>
-      {#if sampleResultStatus !== LLMQueryStatus.NOT_STARTED && columnData}
-        <div class="">
-          <div class="flex font-semibold">
-            <div
-              class="w-1/2 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
-            >
-              {targetColName}
-            </div>
-            <div
-              class="grow whitespace-normal break-words p-2 border-l border-y border-gray-200 text-black bg-gray-50"
-            >
-              {#if responseFormat}
-                {`${responseFormat.name} (${responseFormat?.type}${responseFormat.num_replies === "single" ? "" : "[]"})`}
-              {:else}
-                <Spinner />
-              {/if}
-            </div>
-            <div class="w-8 border-l border-gray-200" />
+        {#if namingErrorExists}
+          <div class="text-red-500">
+            Column {responseFormat.name} is already in the dataset, try another name!
           </div>
+        {/if}
 
-          {#each columnData as cd, index}
-            <div class="flex">
+        {#if sampleResultStatus !== LLMQueryStatus.NOT_STARTED && columnData}
+          <!-- Sample response table -->
+          <div>
+            <div class="flex font-semibold">
               <div
-                class="w-1/2 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
+                class="w-1/2 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
               >
-                {cd[targetColName]}
+                {targetColName}
               </div>
               <div
-                class="grow whitespace-normal break-words border-l border-b border-gray-200 bg-green-50 text-black align-top p-2 overflow-auto max-h-32"
+                class="grow whitespace-normal break-words p-2 border-l border-y border-gray-200 text-black bg-gray-50"
               >
-                {#if sampleResultStatus === LLMQueryStatus.COMPLETED}
-                  <Textarea
-                    rows="3"
-                    bind:value={previewResult[index]}
-                    class="bg-white/50"
-                  />
+                {#if responseFormat}
+                  {`${responseFormat.name} (${responseFormat?.type}${responseFormat.num_replies === "single" ? "" : "[]"})`}
                 {:else}
-                  <TextPlaceholder />
+                  <Spinner />
                 {/if}
               </div>
-
-              <div class="w-8 border-l border-gray-200">
-                <button
-                  class="hover:bg-gray-100 text-gray-500 p-1 rounded m-1"
-                  on:click={() => deleteResult(index)}
-                >
-                  <TrashBinOutline size="sm" />
-                </button>
-              </div>
+              <div class="w-8 border-l border-gray-200" />
             </div>
-          {/each}
-        </div>
-        <div class="flex gap-2 items-center">
-          {#if finalResultStatus === LLMQueryStatus.PENDING}
-            <Spinner />
-          {:else if finalResultStatus === LLMQueryStatus.COMPLETED}
-            <div class="text-green-500">Completed query!</div>
-          {/if}
 
-          <Button
-            class="w-64 ml-auto"
-            on:click={applyToEntireColumn}
-            disabled={!userPrompt}
-          >
-            <RocketSolid size="sm" class="mr-2" />
+            {#each columnData as cd, index}
+              <div class="flex">
+                <div
+                  class="w-1/2 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
+                >
+                  {cd[targetColName]}
+                </div>
+                <div
+                  class="grow whitespace-normal break-words border-l border-b border-gray-200 bg-green-50 text-black align-top p-2 overflow-auto max-h-32"
+                >
+                  {#if sampleResultStatus === LLMQueryStatus.COMPLETED}
+                    <Textarea
+                      rows="3"
+                      bind:value={previewResult[index]}
+                      class="bg-white/50"
+                    />
+                  {:else}
+                    <TextPlaceholder />
+                  {/if}
+                </div>
 
-            Apply to entire column
-          </Button>
-        </div>
-      {/if}
+                <div class="w-8 border-l border-gray-200">
+                  <button
+                    class="hover:bg-gray-100 text-gray-500 p-1 rounded m-1"
+                    on:click={() => deleteResult(index)}
+                  >
+                    <TrashBinOutline size="sm" />
+                  </button>
+                </div>
+              </div>
+            {/each}
+          </div>
+          <div class="flex gap-2 items-center">
+            {#if finalResultStatus === LLMQueryStatus.PENDING}
+              <Spinner />
+            {:else if finalResultStatus === LLMQueryStatus.COMPLETED}
+              <div class="text-green-500">Completed query!</div>
+            {/if}
+
+            <Button
+              class="w-64 ml-auto"
+              on:click={applyToEntireColumn}
+              disabled={!userPrompt}
+            >
+              <RocketSolid size="sm" class="mr-2" />
+
+              Apply to entire column
+            </Button>
+          </div>
+        {/if}
+      </div>
     {/if}
   {/await}
 </Modal>
