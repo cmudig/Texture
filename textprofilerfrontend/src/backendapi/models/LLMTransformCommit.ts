@@ -3,9 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { TaskFormat } from "./TaskFormat";
+
 export type LLMTransformCommit = {
   userPrompt: string;
-  taskFormat: string;
+  taskFormat: TaskFormat;
   columnName: string;
   tableName: string;
   newColumnName: string;

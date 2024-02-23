@@ -92,15 +92,21 @@ class LLMResponse(BaseModel):
     result: Union[List, Dict]
 
 
+class TaskFormat(BaseModel):
+    name: str
+    type: Literal["number", "string", "bool"]
+    num_replies: Literal["single", "multiple"]
+
+
 class LLMTransformRequest(BaseModel):
     userPrompt: str
-    taskFormat: str
+    taskFormat: TaskFormat
     columnData: List[str]
 
 
 class LLMTransformCommit(BaseModel):
     userPrompt: str
-    taskFormat: str
+    taskFormat: TaskFormat
     columnName: str
     tableName: str
     newColumnName: str

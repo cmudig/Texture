@@ -3,8 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { TaskFormat } from "./TaskFormat";
+
 export type LLMTransformRequest = {
   userPrompt: string;
-  taskFormat: string;
+  taskFormat: TaskFormat;
   columnData: Array<string>;
 };

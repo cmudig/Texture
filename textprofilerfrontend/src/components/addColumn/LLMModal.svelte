@@ -8,7 +8,7 @@
     Button,
     Input,
   } from "flowbite-svelte";
-  import type { DatasetInfo } from "../../backendapi";
+  import type { DatasetInfo, TaskFormat } from "../../backendapi";
   import {
     CheckSolid,
     TrashBinOutline,
@@ -30,17 +30,19 @@ For example, "Extract 3 - 5 keywords per article"`;
   export let datasetInfo: DatasetInfo;
   $: textCols = datasetInfo?.column_info.filter((col) => col.type === "text");
   $: allColNames = datasetInfo?.column_info.map((col) => col.name);
+  $: idCol = datasetInfo.joinDatasetInfo?.joinKey;
 
   // locals
+  let example_idxs = [0, 1, 2];
   let targetColName: string;
-  let responseFormat; // { "name": "email_addresses", "type": "string", "num_replies": "multiple" }
+  let responseFormat: TaskFormat;
   let previewResult;
   let columnData: any[];
   let schemaResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
   let sampleResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
   let finalResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
-  let userPrompt: string;
-  // let userPrompt: string = "Does this article mention a user study?";
+  // let userPrompt: string;
+  let userPrompt: string = "Does this article mention a user study?";
 
   async function init(_textCols) {
     targetColName = _textCols?.[0].name;
@@ -51,9 +53,9 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   function fetchColData() {
     // console.log("Getting column data for column: ", targetColName);
-    if (targetColName) {
+    if (targetColName && idCol) {
       databaseConnection
-        .getValues(datasetInfo.name, targetColName, 5)
+        .getValues(datasetInfo.name, idCol, targetColName, example_idxs)
         .then((r) => {
           columnData = r;
           // console.log("column data is: ", columnData);
@@ -70,7 +72,7 @@ For example, "Extract 3 - 5 keywords per article"`;
     if (userPrompt) {
       let _responseFormat =
         await databaseConnection.api.getLlmResponseFormat(userPrompt);
-      responseFormat = _responseFormat.result;
+      responseFormat = _responseFormat.result as TaskFormat;
 
       console.log("Schema is: ", responseFormat);
     }
@@ -79,12 +81,10 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   async function submitInitialTransformation() {
     if (columnData && responseFormat) {
-      const stringFormat = `{ "${responseFormat.name ?? "colName"}": { "type": "${responseFormat.type ?? "string"}", "num_replies": "${responseFormat.num_replies ?? "single"}" } }`;
-
       databaseConnection.api
         .getLlmTransformResult({
           userPrompt,
-          taskFormat: stringFormat,
+          taskFormat: responseFormat,
           columnData: columnData.map((cd) => cd[targetColName]),
         })
         .then((r) => {
@@ -110,13 +110,11 @@ For example, "Extract 3 - 5 keywords per article"`;
     // };
     // console.log(data);
 
-    const stringFormat = `{ "${responseFormat.name ?? "colName"}": { "type": "${responseFormat.type ?? "string"}", "num_replies": "${responseFormat.num_replies ?? "single"}" } }`;
-
     finalResultStatus = LLMQueryStatus.PENDING;
     databaseConnection.api
       .commitLlmTransformResult({
         userPrompt,
-        taskFormat: stringFormat,
+        taskFormat: responseFormat,
         columnName: targetColName,
         tableName: datasetInfo.name,
         newColumnName: responseFormat.name,
@@ -158,6 +156,9 @@ For example, "Extract 3 - 5 keywords per article"`;
   {:then r}
     {#if textCols}
       <div class="flex flex-col gap-4">
+        <div class="text-black text-lg font-semibold">
+          Extraction Prompt & Schema
+        </div>
         <div class="flex gap-2 items-center">
           Extract from
           <Select
@@ -252,7 +253,7 @@ For example, "Extract 3 - 5 keywords per article"`;
             {:else}
               <CheckSolid size="sm" class="mr-2" />
             {/if}
-            Generate sample response
+            Generate example responses
           </Button>
         </div>
         {#if namingErrorExists}
@@ -263,8 +264,14 @@ For example, "Extract 3 - 5 keywords per article"`;
 
         {#if sampleResultStatus !== LLMQueryStatus.NOT_STARTED && columnData}
           <!-- Sample response table -->
+          <div class="text-black text-lg font-semibold">Curate Examples</div>
           <div>
             <div class="flex font-semibold">
+              <div
+                class="w-8 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
+              >
+                {idCol}
+              </div>
               <div
                 class="w-1/2 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
               >
@@ -284,6 +291,11 @@ For example, "Extract 3 - 5 keywords per article"`;
 
             {#each columnData as cd, index}
               <div class="flex">
+                <div
+                  class="w-8 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
+                >
+                  {idCol ? cd[idCol] : ""}
+                </div>
                 <div
                   class="w-1/2 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
                 >
@@ -332,6 +344,13 @@ For example, "Extract 3 - 5 keywords per article"`;
             </Button>
           </div>
         {/if}
+
+        <div>
+          <div class="text-black text-lg font-semibold">
+            See sample transformations
+          </div>
+          <div>TODO table here</div>
+        </div>
       </div>
     {/if}
   {/await}
