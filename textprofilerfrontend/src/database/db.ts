@@ -232,4 +232,19 @@ export class DatabaseConnection {
 
     return r;
   }
+
+  async getValues(
+    tableName: string,
+    idxColName: string,
+    colName: string,
+    indices: number[],
+  ): Promise<any[]> {
+    let q = vg.Query.from(tableName)
+      .select([idxColName, colName])
+      .where(vg.sql`${idxColName} IN (${indices})`);
+    // console.log("query is: ", q.toString());
+    let r = await vg.coordinator().query(q, { type: "json" });
+
+    return r;
+  }
 }

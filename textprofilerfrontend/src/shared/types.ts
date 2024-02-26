@@ -43,3 +43,9 @@ export type ColumnSummary = {
   count: number;
   null_percentage: string;
 };
+
+export enum LLMQueryStatus {
+  NOT_STARTED = 0,
+  PENDING = 1,
+  COMPLETED = 2,
+}

@@ -43,7 +43,7 @@
   </button>
   <div class="w-full">
     <div class="ml-4 mt-2" class:hidden={!active}>
-      {#if colType === "text" && $filters.joinDatasetInfo}
+      {#if colType === "text" && $filters.joinDatasetInfo?.joinColumn.associated_text_col_name === displayCol.name}
         <h3 class="italic">{$filters.joinDatasetInfo.joinColumn.name}</h3>
 
         <CategoricalChart

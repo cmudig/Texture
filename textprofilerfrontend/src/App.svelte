@@ -16,6 +16,7 @@
   import SimilarView from "./components/SimilarView.svelte";
   import FilterBar from "./components/FilterBar.svelte";
   import StopwordEditor from "./components/settings/StopwordEditor.svelte";
+  import LLMModal from "./components/addColumn/LLMModal.svelte";
   import {
     Select,
     Popover,
@@ -27,6 +28,7 @@
   import {
     AdjustmentsHorizontalOutline,
     FilePlusSolid,
+    CirclePlusSolid,
   } from "flowbite-svelte-icons";
   import { formatNumber } from "./shared/format";
 
@@ -36,7 +38,8 @@
   let datasetInfo: DatasetInfo;
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
-  let showAddDataModel = false;
+  let showAddDataModal = false;
+  let showAddColModal = false;
   let datasetColSummaries: ColumnSummary[];
   let dataPromise: Promise<any> = populateDataTables();
 
@@ -103,11 +106,21 @@
       .map((col) => col.name)}
   />
 
+  <CirclePlusSolid
+    id="addColIcon"
+    size="md"
+    class="mx-1 self-center text-white hover:text-primary-700"
+    on:click={() => (showAddColModal = true)}
+  />
+  <Tooltip class="z-10" triggeredBy="#addColIcon" type="light"
+    >Extract new column</Tooltip
+  >
+
   <FilePlusSolid
     id="addDatasetIcon"
     size="md"
     class="mx-1 self-center text-white hover:text-primary-700"
-    on:click={() => (showAddDataModel = true)}
+    on:click={() => (showAddDataModal = true)}
   />
   <Tooltip class="z-10" triggeredBy="#addDatasetIcon" type="light"
     >Add new dataset</Tooltip
@@ -163,11 +176,13 @@
   </Popover>
 
   <UploadDataModal
-    bind:panelOpen={showAddDataModel}
+    bind:panelOpen={showAddDataModal}
     finishedUploadHandler={(name) => {
       dataPromise = populateDataTables(name);
     }}
   />
+
+  <LLMModal bind:panelOpen={showAddColModal} {datasetInfo} />
 </div>
 
 {#await dataPromise}

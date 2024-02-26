@@ -85,3 +85,34 @@ class DatasetTokenizeResponse(BaseModel):
 class VectorSearchResponse(BaseModel):
     success: bool
     result: List[Dict[str, Any]]
+
+
+class LLMResponse(BaseModel):
+    success: bool
+    result: Union[List, Dict]
+
+
+class TaskFormat(BaseModel):
+    name: str
+    type: Literal["number", "string", "bool"]
+    num_replies: Literal["single", "multiple"]
+
+
+class LLMTransformRequest(BaseModel):
+    userPrompt: str
+    taskFormat: TaskFormat
+    columnData: List[str]
+    exampleData: Optional[List[str]] = None
+    exampleResponse: Optional[List[Dict[str, Any]]] = (
+        None  # list of strings, numbers, or bools
+    )
+
+
+class LLMTransformCommit(BaseModel):
+    userPrompt: str
+    taskFormat: TaskFormat
+    columnName: str
+    tableName: str
+    newColumnName: str
+    exampleData: List[str]
+    exampleResponse: List[Dict[str, Any]]

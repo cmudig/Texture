@@ -11,6 +11,9 @@ import type { DuckQueryData } from "../models/DuckQueryData";
 import type { ErrorResponse } from "../models/ErrorResponse";
 import type { ExecResponse } from "../models/ExecResponse";
 import type { JsonResponse } from "../models/JsonResponse";
+import type { LLMResponse } from "../models/LLMResponse";
+import type { LLMTransformCommit } from "../models/LLMTransformCommit";
+import type { LLMTransformRequest } from "../models/LLMTransformRequest";
 import type { VectorSearchResponse } from "../models/VectorSearchResponse";
 
 import type { CancelablePromise } from "../core/CancelablePromise";
@@ -198,6 +201,67 @@ export class DefaultService {
         datasetName: datasetName,
         queryString: queryString,
       },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Get Llm Response Format
+   * @param userPrompt
+   * @returns LLMResponse Successful Response
+   * @throws ApiError
+   */
+  public getLlmResponseFormat(
+    userPrompt: string,
+  ): CancelablePromise<LLMResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/fetch_llm_response_format",
+      query: {
+        userPrompt: userPrompt,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Get Llm Transform Result
+   * @param requestBody
+   * @returns LLMResponse Successful Response
+   * @throws ApiError
+   */
+  public getLlmTransformResult(
+    requestBody: LLMTransformRequest,
+  ): CancelablePromise<LLMResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/fetch_llm_transform_result",
+      body: requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Commit Llm Transform Result
+   * @param requestBody
+   * @returns LLMResponse Successful Response
+   * @throws ApiError
+   */
+  public commitLlmTransformResult(
+    requestBody: LLMTransformCommit,
+  ): CancelablePromise<LLMResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/commit_llm_transform_result",
+      body: requestBody,
+      mediaType: "application/json",
       errors: {
         422: `Validation Error`,
       },

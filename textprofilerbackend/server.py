@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from typing import Dict, Literal
 
+
 from textprofilerbackend.database import init_db
 from textprofilerbackend.models import (
     DatasetInfo,
@@ -13,9 +14,15 @@ from textprofilerbackend.models import (
     DatasetVerifyResponse,
     DatasetTokenizeResponse,
     VectorSearchResponse,
+    LLMResponse,
+    LLMTransformRequest,
+    LLMTransformCommit,
+    Column,
 )
 from textprofilerbackend.process_data import process_new_file
 from textprofilerbackend.transform import word_tokenize
+from textprofilerbackend.llm.client import LLMClient
+from textprofilerbackend.utils import process_results, get_type_from_response
 
 from io import BytesIO
 import pandas as pd
@@ -43,6 +50,7 @@ def get_server() -> FastAPI:
     )
 
     duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
+    llm_client = LLMClient()
 
     # TODO this is prob need to use actual cache here rather than just in memory
     datasetUploadCache = {}
@@ -163,6 +171,59 @@ def get_server() -> FastAPI:
         return VectorSearchResponse(
             success=True, result=result_df.to_dict(orient="records")
         )
+
+    @api_app.post("/fetch_llm_response_format", response_model=LLMResponse)
+    def get_llm_response_format(userPrompt: str):
+        task_format = llm_client.get_response_format(userPrompt)
+        return LLMResponse(success=True, result=task_format)
+
+    @api_app.post("/fetch_llm_transform_result", response_model=LLMResponse)
+    def get_llm_transform_result(request: LLMTransformRequest):
+        results = llm_client.get_transformations(
+            request.userPrompt,
+            request.taskFormat,
+            request.columnData,
+            request.exampleData,
+            request.exampleResponse,
+        )
+        print("[get_llm_transform_result] has results: ", results)
+        return LLMResponse(success=True, result=results)
+
+    @api_app.post("/commit_llm_transform_result", response_model=LLMResponse)
+    def commit_llm_transform_result(request: LLMTransformCommit):
+
+        print("Request is: ", request)
+
+        data = duckdb_conn.connection.execute(
+            f'SELECT "{request.columnName}" from "{request.tableName}"'
+        ).df()[request.columnName]
+
+        print("Data is: ", data.head())
+
+        # get results and turn into flat array
+        results = llm_client.get_transformations(
+            request.userPrompt,
+            request.taskFormat,
+            data,
+            request.exampleData,
+            request.exampleResponse,
+        )
+
+        print("RAW RESULTS ARE: ", results)
+
+        processed_results = process_results(results, request.newColumnName)
+
+        print("RESULTS TO COMMIT ARE: ", processed_results)
+
+        # NOTE: assuming that this is unique col name
+        new_col_name = "MODEL_" + request.newColumnName
+        duckdb_conn.add_column(request.tableName, new_col_name, processed_results)
+        colType = get_type_from_response(request.taskFormat.type)
+        datasetMetadataCache[request.tableName].column_info.append(
+            Column(name=new_col_name, type=colType)
+        )
+
+        return LLMResponse(success=True, result=[])
 
     # @api_app.get("/example_arrow")
     # async def example_arrow():
