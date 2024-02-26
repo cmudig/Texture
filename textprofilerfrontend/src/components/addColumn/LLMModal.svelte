@@ -9,18 +9,9 @@
     Input,
   } from "flowbite-svelte";
   import type { DatasetInfo, TaskFormat } from "../../backendapi";
-  import {
-    CheckSolid,
-    TrashBinOutline,
-    RocketSolid,
-  } from "flowbite-svelte-icons";
-  import TextPlaceholder from "../utils/TextPlaceholder.svelte";
-
-  enum LLMQueryStatus {
-    NOT_STARTED = 0,
-    PENDING = 1,
-    COMPLETED = 2,
-  }
+  import { CheckSolid, RocketSolid } from "flowbite-svelte-icons";
+  import TransformPreview from "./TransformPreview.svelte";
+  import { LLMQueryStatus } from "../../shared/types";
 
   const INSTRUCTION = `Describe how you want to transform the column data in a few sentences with as much details as possible.
 For example, "Extract 3 - 5 keywords per article"`;
@@ -30,19 +21,30 @@ For example, "Extract 3 - 5 keywords per article"`;
   export let datasetInfo: DatasetInfo;
   $: textCols = datasetInfo?.column_info.filter((col) => col.type === "text");
   $: allColNames = datasetInfo?.column_info.map((col) => col.name);
-  $: idCol = datasetInfo.joinDatasetInfo?.joinKey;
+  $: idColName = datasetInfo?.joinDatasetInfo?.joinKey;
 
   // locals
-  let example_idxs = [0, 1, 2];
   let targetColName: string;
-  let responseFormat: TaskFormat;
-  let previewResult;
-  let columnData: any[];
-  let schemaResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
-  let sampleResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
-  let finalResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
   // let userPrompt: string;
   let userPrompt: string = "Does this article mention a user study?";
+  // step 1 for schema
+  let responseFormat: TaskFormat;
+  let schemaResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
+
+  // step 2 for editable examples
+  let example_idxs = [0, 1, 2];
+  let columnExampleData: any[];
+  let exampleResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
+  let exampleResult: any[];
+
+  // step 3 for transform preview
+  let preview_idxs = [3, 4, 5, 6, 7];
+  let columnPreviewData: any[];
+  let finalPreviewStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
+  let finalPreview: any[];
+
+  // step 4 apply to entire column
+  let commitResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
 
   async function init(_textCols) {
     targetColName = _textCols?.[0].name;
@@ -52,13 +54,17 @@ For example, "Extract 3 - 5 keywords per article"`;
   function handleModalClose() {}
 
   function fetchColData() {
-    // console.log("Getting column data for column: ", targetColName);
-    if (targetColName && idCol) {
+    if (targetColName && idColName) {
       databaseConnection
-        .getValues(datasetInfo.name, idCol, targetColName, example_idxs)
+        .getValues(datasetInfo.name, idColName, targetColName, example_idxs)
         .then((r) => {
-          columnData = r;
-          // console.log("column data is: ", columnData);
+          columnExampleData = r;
+        });
+
+      databaseConnection
+        .getValues(datasetInfo.name, idColName, targetColName, preview_idxs)
+        .then((r) => {
+          columnPreviewData = r;
         });
     }
   }
@@ -80,57 +86,84 @@ For example, "Extract 3 - 5 keywords per article"`;
   }
 
   async function submitInitialTransformation() {
-    if (columnData && responseFormat) {
+    if (columnExampleData && responseFormat) {
+      exampleResultStatus = LLMQueryStatus.PENDING;
       databaseConnection.api
         .getLlmTransformResult({
           userPrompt,
           taskFormat: responseFormat,
-          columnData: columnData.map((cd) => cd[targetColName]),
+          columnData: columnExampleData.map((cd) => cd[targetColName]),
         })
         .then((r) => {
           let parsedResult = r.result;
-          previewResult = parsedResult.map(
+          exampleResult = parsedResult.map(
             (item) => item[responseFormat.name] ?? "",
           );
-          console.log("preview result is: ", previewResult);
-          sampleResultStatus = LLMQueryStatus.COMPLETED;
+          console.log("exampleResult is: ", exampleResult);
+          exampleResultStatus = LLMQueryStatus.COMPLETED;
         });
     } else {
-      console.error("No column data to transform!");
+      console.error("Missing columnExampleData or responseFormat!");
+    }
+  }
+
+  async function previewTransformation() {
+    if (columnPreviewData && responseFormat) {
+      finalPreviewStatus = LLMQueryStatus.PENDING;
+      databaseConnection.api
+        .getLlmTransformResult({
+          userPrompt,
+          taskFormat: responseFormat,
+          columnData: columnPreviewData.map((cd) => cd[targetColName]),
+          exampleData: columnExampleData.map((cd) => cd[targetColName]),
+          exampleResponse: exampleResult.map((item) => ({
+            [responseFormat.name]: item,
+          })),
+        })
+        .then((r) => {
+          let parsedResult = r.result;
+          finalPreview = parsedResult.map(
+            (item) => item[responseFormat.name] ?? "",
+          );
+          console.log("previewResult is: ", finalPreview);
+          finalPreviewStatus = LLMQueryStatus.COMPLETED;
+        });
+    } else {
+      console.error("Missing columnPreviewData or responseFormat!");
     }
   }
 
   async function applyToEntireColumn() {
     console.log("Applying to entire column");
 
-    // FUTURE: use curated dataset examples
-    // const data = {
-    //   exampleData: columnData.map((cd) => cd[targetColName]),
-    //   exampleResponse: previewResult,
-    // };
-    // console.log(data);
+    const data = {
+      exampleData: columnExampleData.map((cd) => cd[targetColName]),
+      exampleResponse: exampleResult,
+    };
+    console.log(data);
 
-    finalResultStatus = LLMQueryStatus.PENDING;
-    databaseConnection.api
-      .commitLlmTransformResult({
-        userPrompt,
-        taskFormat: responseFormat,
-        columnName: targetColName,
-        tableName: datasetInfo.name,
-        newColumnName: responseFormat.name,
-      })
-      .then((r) => {
-        finalResultStatus = LLMQueryStatus.COMPLETED;
-        console.log("commit result finished with: ", r);
-      });
+    // finalResultStatus = LLMQueryStatus.PENDING;
+    // databaseConnection.api
+    //   .commitLlmTransformResult({
+    //     userPrompt,
+    //     taskFormat: responseFormat,
+    //     columnName: targetColName,
+    //     tableName: datasetInfo.name,
+    //     newColumnName: responseFormat.name,
+    //   })
+    //   .then((r) => {
+    //     commitResultStatus = LLMQueryStatus.COMPLETED;
+    //     console.log("commit result finished with: ", r);
+    //   });
+    commitResultStatus = LLMQueryStatus.COMPLETED;
   }
 
   function deleteResult(index) {
-    columnData.splice(index, 1);
-    previewResult.splice(index, 1);
+    columnExampleData.splice(index, 1);
+    exampleResult.splice(index, 1);
 
-    columnData = columnData; // trigger reactivity
-    previewResult = previewResult; // trigger reactivity
+    columnExampleData = columnExampleData; // trigger reactivity
+    exampleResult = exampleResult; // trigger reactivity
   }
 
   $: initPromise = init(textCols);
@@ -243,17 +276,15 @@ For example, "Extract 3 - 5 keywords per article"`;
 
           <Button
             class="w-64 ml-auto"
-            on:click={() => {
-              submitInitialTransformation();
-            }}
-            disabled={!userPrompt || namingErrorExists}
+            on:click={submitInitialTransformation}
+            disabled={!userPrompt || namingErrorExists || !responseFormat}
           >
-            {#if sampleResultStatus === LLMQueryStatus.PENDING}
+            {#if exampleResultStatus === LLMQueryStatus.PENDING}
               <Spinner size="4" class="mr-2" />
             {:else}
               <CheckSolid size="sm" class="mr-2" />
             {/if}
-            Generate example responses
+            Get example responses
           </Button>
         </div>
         {#if namingErrorExists}
@@ -262,74 +293,55 @@ For example, "Extract 3 - 5 keywords per article"`;
           </div>
         {/if}
 
-        {#if sampleResultStatus !== LLMQueryStatus.NOT_STARTED && columnData}
+        {#if exampleResultStatus !== LLMQueryStatus.NOT_STARTED && columnExampleData}
           <!-- Sample response table -->
           <div class="text-black text-lg font-semibold">Curate Examples</div>
-          <div>
-            <div class="flex font-semibold">
-              <div
-                class="w-8 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
-              >
-                {idCol}
-              </div>
-              <div
-                class="w-1/2 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
-              >
-                {targetColName}
-              </div>
-              <div
-                class="grow whitespace-normal break-words p-2 border-l border-y border-gray-200 text-black bg-gray-50"
-              >
-                {#if responseFormat}
-                  {`${responseFormat.name} (${responseFormat?.type}${responseFormat.num_replies === "single" ? "" : "[]"})`}
-                {:else}
-                  <Spinner />
-                {/if}
-              </div>
-              <div class="w-8 border-l border-gray-200" />
-            </div>
 
-            {#each columnData as cd, index}
-              <div class="flex">
-                <div
-                  class="w-8 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
-                >
-                  {idCol ? cd[idCol] : ""}
-                </div>
-                <div
-                  class="w-1/2 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
-                >
-                  {cd[targetColName]}
-                </div>
-                <div
-                  class="grow whitespace-normal break-words border-l border-b border-gray-200 bg-green-50 text-black align-top p-2 overflow-auto max-h-32"
-                >
-                  {#if sampleResultStatus === LLMQueryStatus.COMPLETED}
-                    <Textarea
-                      rows="3"
-                      bind:value={previewResult[index]}
-                      class="bg-white/50"
-                    />
-                  {:else}
-                    <TextPlaceholder />
-                  {/if}
-                </div>
+          <TransformPreview
+            {idColName}
+            {targetColName}
+            {responseFormat}
+            columnData={columnExampleData}
+            bind:resultData={exampleResult}
+            queryStatus={exampleResultStatus}
+            {deleteResult}
+          />
 
-                <div class="w-8 border-l border-gray-200">
-                  <button
-                    class="hover:bg-gray-100 text-gray-500 p-1 rounded m-1"
-                    on:click={() => deleteResult(index)}
-                  >
-                    <TrashBinOutline size="sm" />
-                  </button>
-                </div>
-              </div>
-            {/each}
-          </div>
           <div class="flex gap-2 items-center">
-            {#if finalResultStatus === LLMQueryStatus.PENDING}
+            <Button
+              class="w-64 ml-auto"
+              on:click={previewTransformation}
+              disabled={!userPrompt}
+            >
+              {#if finalPreviewStatus === LLMQueryStatus.PENDING}
+                <Spinner size="4" class="mr-2" />
+              {:else}
+                <CheckSolid size="sm" class="mr-2" />
+              {/if}
+              Preview Transform
+            </Button>
+          </div>
+        {/if}
+
+        {#if finalPreviewStatus !== LLMQueryStatus.NOT_STARTED && columnPreviewData}
+          <div class="text-black text-lg font-semibold">
+            Preview transformation
+          </div>
+
+          <TransformPreview
+            {idColName}
+            {targetColName}
+            {responseFormat}
+            columnData={columnPreviewData}
+            bind:resultData={finalPreview}
+            queryStatus={finalPreviewStatus}
+            allowEdits={false}
+          />
+
+          <div class="flex gap-2 items-center">
+            {#if commitResultStatus === LLMQueryStatus.PENDING}
               <Spinner />
-            {:else if finalResultStatus === LLMQueryStatus.COMPLETED}
+            {:else if commitResultStatus === LLMQueryStatus.COMPLETED}
               <div class="text-green-500">Completed query!</div>
             {/if}
 
@@ -344,13 +356,6 @@ For example, "Extract 3 - 5 keywords per article"`;
             </Button>
           </div>
         {/if}
-
-        <div>
-          <div class="text-black text-lg font-semibold">
-            See sample transformations
-          </div>
-          <div>TODO table here</div>
-        </div>
       </div>
     {/if}
   {/await}

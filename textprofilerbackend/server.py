@@ -180,9 +180,19 @@ def get_server() -> FastAPI:
     @api_app.post("/fetch_llm_transform_result", response_model=LLMResponse)
     def get_llm_transform_result(request: LLMTransformRequest):
 
-        results = llm_client.get_transformations(
-            request.userPrompt, request.taskFormat, request.columnData
+        print(
+            "get_llm_transform_result with request example responses? ",
+            request.exampleResponse,
         )
+
+        results = llm_client.get_transformations(
+            request.userPrompt,
+            request.taskFormat,
+            request.columnData,
+            request.exampleData,
+            request.exampleResponse,
+        )
+        print("[get_llm_transform_result] has results: ", results)
         return LLMResponse(success=True, result=results)
 
     @api_app.post("/commit_llm_transform_result", response_model=LLMResponse)

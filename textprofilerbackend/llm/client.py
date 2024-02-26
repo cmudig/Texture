@@ -134,6 +134,8 @@ def get_prompt_w_examples(
 """
     for d, r in zip(example_data, example_responses):
         prompt += f"- Text: \n{d}\n- Response:\n{json.dumps(r)}\n-----\n"
+
+    print("\n\n[get_prompt_w_examples] the prompt is:::::\n\n", prompt)
     return prompt
 
 
@@ -305,8 +307,8 @@ class LLMClient:
             user_task_description (str): The description of the user's task.
             response_format: TaskFormat
             data (list): The input data for the transformations.
-            example_data (list, optional): The example data for the transformations. Defaults to None.
-            example_response (list, optional): The example response for the transformations. Defaults to None.
+            example_data (list of strings, optional): The example data for the transformations
+            example_response (list, optional): The example response for the transformations. Expects data in dict with similar format to Task Format of {"<col_name": <value> }
 
         Returns:
             list: The parsed results of the transformations.
@@ -321,6 +323,8 @@ class LLMClient:
 
         if example_data and example_responses:
             print("Running example based transformations...")
+            # print("Example data: ", example_data)
+            # print("example_responses: ", example_responses)
             system_prompt = get_prompt_w_examples(
                 user_task_description,
                 formatted_response_format,

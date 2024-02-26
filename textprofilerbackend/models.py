@@ -102,6 +102,8 @@ class LLMTransformRequest(BaseModel):
     userPrompt: str
     taskFormat: TaskFormat
     columnData: List[str]
+    exampleData: Optional[List[str]] = None
+    exampleResponse: Optional[List] = None  # list of strings, numbers, or bools
 
 
 class LLMTransformCommit(BaseModel):

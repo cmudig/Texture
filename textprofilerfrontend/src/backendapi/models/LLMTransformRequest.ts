@@ -9,4 +9,6 @@ export type LLMTransformRequest = {
   userPrompt: string;
   taskFormat: TaskFormat;
   columnData: Array<string>;
+  exampleData?: Array<string> | null;
+  exampleResponse?: Array<any> | null;
 };

@@ -242,7 +242,7 @@ export class DatabaseConnection {
     let q = vg.Query.from(tableName)
       .select([idxColName, colName])
       .where(vg.sql`${idxColName} IN (${indices})`);
-    console.log("query is: ", q.toString());
+    // console.log("query is: ", q.toString());
     let r = await vg.coordinator().query(q, { type: "json" });
 
     return r;
