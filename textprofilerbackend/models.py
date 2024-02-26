@@ -103,7 +103,9 @@ class LLMTransformRequest(BaseModel):
     taskFormat: TaskFormat
     columnData: List[str]
     exampleData: Optional[List[str]] = None
-    exampleResponse: Optional[List] = None  # list of strings, numbers, or bools
+    exampleResponse: Optional[List[Dict[str, Any]]] = (
+        None  # list of strings, numbers, or bools
+    )
 
 
 class LLMTransformCommit(BaseModel):
@@ -112,3 +114,5 @@ class LLMTransformCommit(BaseModel):
     columnName: str
     tableName: str
     newColumnName: str
+    exampleData: List[str]
+    exampleResponse: List[Dict[str, Any]]

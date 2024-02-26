@@ -10,5 +10,5 @@ export type LLMTransformRequest = {
   taskFormat: TaskFormat;
   columnData: Array<string>;
   exampleData?: Array<string> | null;
-  exampleResponse?: Array<any> | null;
+  exampleResponse?: Array<Record<string, any>> | null;
 };

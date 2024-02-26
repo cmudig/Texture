@@ -22,7 +22,7 @@ from textprofilerbackend.models import (
 from textprofilerbackend.process_data import process_new_file
 from textprofilerbackend.transform import word_tokenize
 from textprofilerbackend.llm.client import LLMClient
-from textprofilerbackend.utils import process_results
+from textprofilerbackend.utils import process_results, get_type_from_response
 
 from io import BytesIO
 import pandas as pd
@@ -179,12 +179,6 @@ def get_server() -> FastAPI:
 
     @api_app.post("/fetch_llm_transform_result", response_model=LLMResponse)
     def get_llm_transform_result(request: LLMTransformRequest):
-
-        print(
-            "get_llm_transform_result with request example responses? ",
-            request.exampleResponse,
-        )
-
         results = llm_client.get_transformations(
             request.userPrompt,
             request.taskFormat,
@@ -208,7 +202,11 @@ def get_server() -> FastAPI:
 
         # get results and turn into flat array
         results = llm_client.get_transformations(
-            request.userPrompt, request.taskFormat, data
+            request.userPrompt,
+            request.taskFormat,
+            data,
+            request.exampleData,
+            request.exampleResponse,
         )
 
         print("RAW RESULTS ARE: ", results)
@@ -217,14 +215,12 @@ def get_server() -> FastAPI:
 
         print("RESULTS TO COMMIT ARE: ", processed_results)
 
-        # add new col to tables and metadata store
-        # TODO dedup column name before adding
+        # NOTE: assuming that this is unique col name
         new_col_name = "MODEL_" + request.newColumnName
         duckdb_conn.add_column(request.tableName, new_col_name, processed_results)
+        colType = get_type_from_response(request.taskFormat.type)
         datasetMetadataCache[request.tableName].column_info.append(
-            Column(
-                name=new_col_name, type="categorical"
-            )  # TODO: infer type from LLM response
+            Column(name=new_col_name, type=colType)
         )
 
         return LLMResponse(success=True, result=[])

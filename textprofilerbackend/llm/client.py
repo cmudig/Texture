@@ -323,8 +323,6 @@ class LLMClient:
 
         if example_data and example_responses:
             print("Running example based transformations...")
-            # print("Example data: ", example_data)
-            # print("example_responses: ", example_responses)
             system_prompt = get_prompt_w_examples(
                 user_task_description,
                 formatted_response_format,
@@ -337,7 +335,6 @@ class LLMClient:
 
         else:
             print("Running generic transformations...")
-            # no examples so run generic prompt
             system_prompt = PROMPT_GET_RESULT_NO_EXAMPLE
             raw_results = asyncio.run(
                 self._run_transform_generic_parallel(

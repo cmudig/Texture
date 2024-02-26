@@ -11,4 +11,6 @@ export type LLMTransformCommit = {
   columnName: string;
   tableName: string;
   newColumnName: string;
+  exampleData: Array<string>;
+  exampleResponse: Array<Record<string, any>>;
 };

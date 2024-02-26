@@ -25,8 +25,8 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   // locals
   let targetColName: string;
-  // let userPrompt: string;
-  let userPrompt: string = "Does this article mention a user study?";
+  let userPrompt: string;
+  // let userPrompt: string = "Does this article mention a user study?";
   // step 1 for schema
   let responseFormat: TaskFormat;
   let schemaResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
@@ -72,7 +72,6 @@ For example, "Extract 3 - 5 keywords per article"`;
   let schemaEditTimer;
   async function getSchema() {
     schemaResultStatus = LLMQueryStatus.PENDING;
-    console.log("Getting schema...");
 
     // TODO this maybe doesnt need to be LLM call, but kinda fun
     if (userPrompt) {
@@ -99,7 +98,6 @@ For example, "Extract 3 - 5 keywords per article"`;
           exampleResult = parsedResult.map(
             (item) => item[responseFormat.name] ?? "",
           );
-          console.log("exampleResult is: ", exampleResult);
           exampleResultStatus = LLMQueryStatus.COMPLETED;
         });
     } else {
@@ -125,7 +123,6 @@ For example, "Extract 3 - 5 keywords per article"`;
           finalPreview = parsedResult.map(
             (item) => item[responseFormat.name] ?? "",
           );
-          console.log("previewResult is: ", finalPreview);
           finalPreviewStatus = LLMQueryStatus.COMPLETED;
         });
     } else {
@@ -142,20 +139,23 @@ For example, "Extract 3 - 5 keywords per article"`;
     };
     console.log(data);
 
-    // finalResultStatus = LLMQueryStatus.PENDING;
-    // databaseConnection.api
-    //   .commitLlmTransformResult({
-    //     userPrompt,
-    //     taskFormat: responseFormat,
-    //     columnName: targetColName,
-    //     tableName: datasetInfo.name,
-    //     newColumnName: responseFormat.name,
-    //   })
-    //   .then((r) => {
-    //     commitResultStatus = LLMQueryStatus.COMPLETED;
-    //     console.log("commit result finished with: ", r);
-    //   });
-    commitResultStatus = LLMQueryStatus.COMPLETED;
+    commitResultStatus = LLMQueryStatus.PENDING;
+    databaseConnection.api
+      .commitLlmTransformResult({
+        userPrompt,
+        taskFormat: responseFormat,
+        columnName: targetColName,
+        tableName: datasetInfo.name,
+        newColumnName: responseFormat.name,
+        exampleData: columnExampleData.map((cd) => cd[targetColName]),
+        exampleResponse: exampleResult.map((item) => ({
+          [responseFormat.name]: item,
+        })),
+      })
+      .then((r) => {
+        commitResultStatus = LLMQueryStatus.COMPLETED;
+        console.log("commit result finished with: ", r);
+      });
   }
 
   function deleteResult(index) {
