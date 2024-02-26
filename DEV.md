@@ -112,3 +112,4 @@ npm run dev
 # Notes
 
 - Right now manually linking mosaic (all packages) in `package.json` but can only do one install later
+- IMPORTANT: need to have an envionment vaiable `OPENAI_API_KEY` set to use the openai api in the python environment
