@@ -17,6 +17,7 @@
   const FUNCTIONS = { contains, prefix, suffix, regexp: regexp_matches };
 
   export let columnNames: string[] | undefined;
+  export let tableName: string;
   export let type = "contains";
   let currentQuery: string | undefined;
   let uuid = getUUID();
@@ -61,6 +62,7 @@
         schema: { type },
         value: cleanedQuery,
         predicate: pred,
+        clients: new Set().add({ source: { table: tableName } }),
       };
 
       $filters.brush.update(updateInfo);

@@ -1,6 +1,5 @@
 import * as vg from "@uwdata/vgplot";
 import type { ColumnSummary } from "../shared/types";
-import type { JoinInfo } from "../backendapi";
 // @ts-ignore
 import { tableFromIPC } from "apache-arrow";
 
@@ -12,6 +11,9 @@ import type {
   DuckQueryData,
   DatasetInfo,
 } from "../backendapi";
+
+import { currentWordViewName } from "../stores";
+import { get } from "svelte/store";
 
 type DuckQueryResult = ExecResponse | JsonResponse | ErrorResponse;
 
@@ -159,24 +161,13 @@ export class DatabaseConnection {
 
   // custom queries: TODO in futre put these under api as well somehow? or in new api method or something
 
-  async getCount(
-    datasetName: string,
-    joinDsInfo?: JoinInfo,
-    selection?: any,
-  ): Promise<number> {
-    let fromClause = datasetName;
-
-    if (joinDsInfo) {
-      fromClause = vg.fromJoinDistinct({
-        table: datasetName,
-        rightTable: joinDsInfo.joinDatasetName,
-        joinKey: joinDsInfo.joinKey,
-      });
-    }
-
-    let q = vg.Query.from(fromClause).select({ count: vg.count() });
+  async getCount(datasetName: string, selection?: any): Promise<number> {
+    // any time applying where from predicate need to nename to source
+    let q = vg.Query.from({ source: datasetName }).select({
+      count: vg.count(),
+    });
     if (selection) {
-      q = q.where(selection.predicate());
+      q = q.where(selection.predicate({ from: datasetName }));
     }
 
     let r = await vg.coordinator().query(q, { type: "json" });
@@ -194,14 +185,6 @@ export class DatabaseConnection {
   async getDocsByID(dsInfo: DatasetInfo, ids: any[]): Promise<any[]> {
     let fromClause = dsInfo.name;
 
-    if (dsInfo.joinDatasetInfo) {
-      fromClause = vg.fromJoinDistinct({
-        table: dsInfo.name,
-        rightTable: dsInfo.joinDatasetInfo.joinDatasetName,
-        joinKey: dsInfo.joinDatasetInfo.joinKey,
-      });
-    }
-
     let selectQString = vg.Query.from(fromClause).select("*").toString();
     let numericIds = ids.map((id) => Number(id));
 
@@ -216,17 +199,17 @@ export class DatabaseConnection {
   async getSpansPerDoc(
     datasetInfo: DatasetInfo,
     id: number,
-    mosaicSelection,
+    mosaicSelection: any, // vg.selection to get the predicates from
   ): Promise<any[]> {
-    let baseTable = vg.column(datasetInfo.name);
-    let joinTable = vg.column(datasetInfo.joinDatasetInfo?.joinDatasetName);
     let joinKey = vg.column(datasetInfo.joinDatasetInfo?.joinKey);
-    let joinColumn = vg.column(datasetInfo.joinDatasetInfo?.joinColumn.name);
 
-    // join tables, apply filters, and get words with span for a given document id
-    let q = vg.sql`SELECT ${joinTable}.${joinKey}, "span_start", "span_end", ${joinColumn} FROM ${baseTable} JOIN ${joinTable} ON ${baseTable}.${joinKey} = ${joinTable}.${joinKey} WHERE ${mosaicSelection.join(
-      " AND ",
-    )} AND ${joinTable}.${joinKey} = ${id}`;
+    const predicates = mosaicSelection.predicate({
+      from: get(currentWordViewName),
+    });
+
+    let q = vg.Query.select("*")
+      .from({ source: datasetInfo.joinDatasetInfo?.joinDatasetName })
+      .where([...predicates, vg.sql`"source".${joinKey} = ${id}`]);
 
     let r = await vg.coordinator().query(q, { type: "json" });
 

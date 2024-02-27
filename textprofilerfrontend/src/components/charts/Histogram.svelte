@@ -2,13 +2,11 @@
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
   import { filters } from "../../stores";
-  import type { JoinInfo } from "../../backendapi";
   import { getDatasetName } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
   export let columnName: string;
   export let mainDatasetName: string;
-  export let joinDatasetInfo: JoinInfo | undefined = undefined;
   export let showBackground = true;
   export let plotNulls = false;
 
@@ -19,19 +17,10 @@
     mainDsName: string,
     cName: string,
     pltNullsFlag: boolean,
-    joinDsInfo?: JoinInfo,
   ) {
     let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
 
     let fromClause: any = datasetName;
-
-    if (joinDsInfo) {
-      fromClause = vg.fromJoinDistinct({
-        table: datasetName,
-        rightTable: joinDsInfo.joinDatasetName,
-        joinKey: joinDsInfo.joinKey,
-      });
-    }
 
     if (showBackground) {
       plotWrapper = getPlot(
@@ -74,9 +63,7 @@
   }
 
   // This re-renders unnecessarily but is required or else will not re-render on $brush updates
-  afterUpdate(() =>
-    renderChart(mainDatasetName, columnName, plotNulls, joinDatasetInfo),
-  );
+  afterUpdate(() => renderChart(mainDatasetName, columnName, plotNulls));
 
   onDestroy(() => {
     if (plotWrapper) {

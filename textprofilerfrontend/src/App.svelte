@@ -104,6 +104,7 @@
     columnNames={datasetInfo?.column_info
       .filter((col) => col.type === "text")
       .map((col) => col.name)}
+    tableName={datasetInfo?.name}
   />
 
   <CirclePlusSolid

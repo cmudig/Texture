@@ -24,7 +24,6 @@
     <div class="ml-4 mt-2" class:hidden={!active}>
       <ScatterProjection
         mainDatasetName={$filters.datasetName}
-        joinDatasetInfo={$filters.joinDatasetInfo}
         columnName="projection_xy"
       />
     </div>

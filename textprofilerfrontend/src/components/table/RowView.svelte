@@ -15,7 +15,7 @@
   export let metadata: Array<[string, unknown]>;
   export let highlight = false;
   export let datasetInfo: DatasetInfo | undefined = undefined;
-  export let getFilters: (() => any) | undefined = undefined;
+  export let selection: any = undefined; // vgplot.Selection
 
   let toggle = false;
 
@@ -23,16 +23,15 @@
     id: number,
     textCols: string[],
     selectionMap: SelectionMap,
-    _getFilters?: () => any,
+    _selection?: any,
     datasetInfo?: DatasetInfo,
     joinInfo?: JoinInfo,
   ): Promise<undefined | Record<string, unknown[]>> {
-    if (!datasetInfo || !_getFilters || !Object.keys(selectionMap).length) {
+    if (!datasetInfo || !selection || !Object.keys(selectionMap).length) {
       return undefined;
     }
 
     let spanMap = {};
-    const filters = _getFilters();
 
     for (let textCol of textCols) {
       if (
@@ -42,7 +41,7 @@
         let spans = await databaseConnection.getSpansPerDoc(
           datasetInfo,
           id,
-          filters,
+          _selection,
         );
         spanMap[textCol] = spans;
       }
@@ -60,7 +59,7 @@
     id,
     textData.map((d) => d[0]),
     $selectionDisplay,
-    getFilters,
+    selection,
     datasetInfo,
     $filters.joinDatasetInfo,
   );

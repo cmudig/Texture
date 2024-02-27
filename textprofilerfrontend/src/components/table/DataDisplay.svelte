@@ -20,19 +20,8 @@
   let previousClient: TableClient;
   let ready = false;
 
-  function createClient(
-    _joinDatasetInfo,
-    _mainDatasetName,
-    _currentColToggleStates,
-    filter,
-  ) {
-    let fromClause = _joinDatasetInfo
-      ? vg.fromJoinDistinct({
-          table: _mainDatasetName,
-          rightTable: _joinDatasetInfo.joinDatasetName,
-          joinKey: _joinDatasetInfo.joinKey,
-        })
-      : _mainDatasetName;
+  function createClient(_mainDatasetName, _currentColToggleStates, filter) {
+    let fromClause = _mainDatasetName;
 
     // only get columns with toggle on; remove duplicate pk
     let plotcols = Object.keys(_currentColToggleStates).filter(
@@ -62,7 +51,6 @@
 
   $: {
     myTableClient = createClient(
-      datasetInfo.joinDatasetInfo,
       datasetInfo.name,
       currentColToggleStates,
       $filters.brush,
@@ -135,9 +123,7 @@
                     k !== datasetInfo.primary_key.name,
                 )}
                 {datasetInfo}
-                getFilters={() => {
-                  return myTableClient.filterBy?.predicate(myTableClient);
-                }}
+                selection={myTableClient.filterBy}
               >
                 <div
                   slot="optionButtons"

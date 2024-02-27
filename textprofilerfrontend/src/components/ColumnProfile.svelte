@@ -5,6 +5,7 @@
   import DataTypeIcon from "./DataTypeIcon.svelte";
   import Histogram from "./charts/Histogram.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";
+  import CatChartSepTable from "./charts/CatChartSepTable.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
   import { filters, showBackgroundDist } from "../stores";
@@ -46,15 +47,11 @@
       {#if colType === "text" && $filters.joinDatasetInfo?.joinColumn.associated_text_col_name === displayCol.name}
         <h3 class="italic">{$filters.joinDatasetInfo.joinColumn.name}</h3>
 
-        <CategoricalChart
-          mainDatasetName={$filters.joinDatasetInfo.joinDatasetName}
-          joinDatasetInfo={{
-            joinDatasetName: $filters.datasetName,
-            joinKey: $filters.joinDatasetInfo.joinKey,
-            joinColumn: undefined,
-          }}
+        <CatChartSepTable
           columnName={$filters.joinDatasetInfo.joinColumn.name}
-          showBackground={false}
+          parentTableName={$filters.datasetName}
+          plotTableName={$filters.joinDatasetInfo.joinDatasetName}
+          joinKey={$filters.joinDatasetInfo.joinKey}
           limit={20}
           excludeList={$stopwords}
         />
@@ -69,21 +66,18 @@
           {#if col.type === "number"}
             <Histogram
               mainDatasetName={$filters.datasetName}
-              joinDatasetInfo={$filters.joinDatasetInfo}
               showBackground={$showBackgroundDist}
               columnName={col.name}
             />
           {:else if col.type === "categorical"}
             <CategoricalChart
               mainDatasetName={$filters.datasetName}
-              joinDatasetInfo={$filters.joinDatasetInfo}
               showBackground={$showBackgroundDist}
               columnName={col.name}
             />
           {:else if col.type === "date"}
             <DateChart
               mainDatasetName={$filters.datasetName}
-              joinDatasetInfo={$filters.joinDatasetInfo}
               columnName={col.name}
             />
           {:else}

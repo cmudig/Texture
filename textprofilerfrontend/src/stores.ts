@@ -21,6 +21,7 @@ export const databaseConnection = new DatabaseConnection(backendService);
 
 // ~~~~~~~~~~~~~~~ App wide stores ~~~~~~~~~~~~~~~
 export const compareSimilarID: Writable<number | undefined> = writable();
+export const currentWordViewName: Writable<string> = writable();
 
 export const filters: Writable<FilterWrapper> = writable({
   brush: undefined, // vg.Selection crossfilter
@@ -63,18 +64,13 @@ export const filteredCount: Readable<number | undefined> = derived(
       $filters.brush.addEventListener("value", async () => {
         let v = await databaseConnection.getCount(
           $filters.datasetName,
-          $filters.joinDatasetInfo,
           $filters.brush,
         );
         set(v);
       });
       // event listener not triggered on initial set so call manually
       let v = databaseConnection
-        .getCount(
-          $filters.datasetName,
-          $filters.joinDatasetInfo,
-          $filters.brush,
-        )
+        .getCount($filters.datasetName, $filters.brush)
         .then((v) => set(v));
     } else {
       set(undefined);

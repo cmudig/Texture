@@ -2,13 +2,11 @@
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
   import { filters, clearColumnSelections } from "../../stores";
-  import type { JoinInfo } from "../../backendapi";
   import { getDatasetName, getUUID } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
   export let columnName: string;
   export let mainDatasetName: string;
-  export let joinDatasetInfo: JoinInfo | undefined = undefined;
   export let plotNulls = true;
 
   let el: HTMLElement;
@@ -44,18 +42,9 @@
     cName: string,
     pltNullsFlag: boolean,
     selection: any,
-    joinDsInfo?: JoinInfo,
   ) {
     let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
     let fromClause: any = datasetName;
-
-    if (joinDsInfo) {
-      fromClause = vg.fromJoinDistinct({
-        table: datasetName,
-        rightTable: joinDsInfo.joinDatasetName,
-        joinKey: joinDsInfo.joinKey,
-      });
-    }
 
     plotWrapper = getPlot(
       vg.dot(vg.from(fromClause), {
@@ -84,13 +73,7 @@
   }
 
   afterUpdate(() => {
-    renderChart(
-      mainDatasetName,
-      columnName,
-      plotNulls,
-      thisSelection,
-      joinDatasetInfo,
-    );
+    renderChart(mainDatasetName, columnName, plotNulls, thisSelection);
   });
 
   onDestroy(() => {

@@ -89,6 +89,11 @@ export class TableClient extends vg.MosaicClient {
    * Return a query to coordinator specifying the data needed by this client.
    */
   query(filter = []) {
+    // console.log(
+    //   "Filters in tableClient::",
+    //   filter.map((f: any) => f.toString()),
+    // );
+
     // if not explicitly requested, reset offset because data will change
     if (!this.pending) {
       this.offset = 0;
@@ -99,12 +104,13 @@ export class TableClient extends vg.MosaicClient {
     let schema = get(this.schema);
     let sortDesc = get(this.sortDesc);
 
-    let q = vg.Query.from(from)
+    let q = vg.Query.from({ source: from })
       .select(schema.map((s) => s.column))
       .where(filter)
       .orderby(sortColumn ? (sortDesc ? desc(sortColumn) : sortColumn) : [])
       .limit(limit)
       .offset(offset);
+
     return q;
   }
 

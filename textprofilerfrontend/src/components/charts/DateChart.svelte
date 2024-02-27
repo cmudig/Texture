@@ -2,31 +2,17 @@
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
   import { filters } from "../../stores";
-  import type { JoinInfo } from "../../backendapi";
   import { getPlot } from "./chartUtils";
 
   export let columnName: string;
   export let mainDatasetName: string;
-  export let joinDatasetInfo: JoinInfo | undefined = undefined;
 
   let el: HTMLElement;
   let plotWrapper;
 
   // FUTURE: if vg.bin() works for dates might be nice here so less crowded line...
-  function renderChart(
-    datasetName: string,
-    cName: string,
-    joinDsInfo?: JoinInfo,
-  ) {
+  function renderChart(datasetName: string, cName: string) {
     let fromClause: any = datasetName;
-
-    if (joinDsInfo) {
-      fromClause = vg.fromJoinDistinct({
-        table: datasetName,
-        rightTable: joinDsInfo.joinDatasetName,
-        joinKey: joinDsInfo.joinKey,
-      });
-    }
 
     plotWrapper = getPlot(
       vg.lineY(vg.from(fromClause, { filterBy: $filters.brush }), {
@@ -45,7 +31,7 @@
     el.replaceChildren(plotWrapper.element);
   }
 
-  afterUpdate(() => renderChart(mainDatasetName, columnName, joinDatasetInfo));
+  afterUpdate(() => renderChart(mainDatasetName, columnName));
 
   onDestroy(() => {
     if (plotWrapper) {
