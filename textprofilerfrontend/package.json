@@ -41,6 +41,7 @@
     "@uwdata/mosaic-duckdb": "file:../../mosaic/packages/duckdb",
     "@uwdata/mosaic-inputs": "file:../../mosaic/packages/inputs",
     "@uwdata/mosaic-sql": "file:../../mosaic/packages/sql",
+    "@uwdata/mosaic-plot": "file:../../mosaic/packages/plot",
     "@uwdata/vgplot": "file:../../mosaic/packages/vgplot",
     "apache-arrow": "^14.0.1",
     "arquero": "^5.2.0",
