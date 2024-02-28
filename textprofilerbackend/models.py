@@ -7,20 +7,15 @@ DataType = Literal["text", "number", "date", "categorical"]
 class Column(BaseModel):
     name: str
     type: DataType
-    associated_text_col_name: Optional[str] = None
-
-
-class JoinInfo(BaseModel):
-    joinDatasetName: str
-    joinKey: str
-    joinColumn: Column
+    derived_from: Optional[str] = None
+    # for join datasets, if None assumed to be in main table
+    table_name: Optional[str] = None
 
 
 class DatasetInfo(BaseModel):
     name: str
-    column_info: List[Column]
+    columns: List[Column]
     origin: Literal["example", "uploaded"]
-    joinDatasetInfo: Optional[JoinInfo] = None
     primary_key: Column
 
 

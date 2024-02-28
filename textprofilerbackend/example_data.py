@@ -3,17 +3,15 @@ from textprofilerbackend.models import DatasetInfo
 dataset_vis_papers = DatasetInfo(
     name="vis_papers",
     primary_key={"name": "id", "type": "number"},
-    joinDatasetInfo={
-        "joinDatasetName": "vis_papers_words",
-        "joinKey": "id",
-        "joinColumn": {
-            "name": "word",
-            "type": "text",
-            "associated_text_col_name": "Abstract",
-        },
-    },
     origin="example",
-    column_info=[
+    columns=[
+        # join tables
+        {
+            "name": "word",
+            "type": "categorical",
+            "table_name": "vis_papers_words",
+        },
+        # columns in main table
         {
             "name": "id",
             "type": "number",
@@ -41,27 +39,27 @@ dataset_vis_papers = DatasetInfo(
         {
             "name": "Abstract_text_length",
             "type": "number",
-            "associated_text_col_name": "Abstract",
+            "derived_from": "Abstract",
         },
         {
             "name": "MODEL_num_participants",
             "type": "number",
-            # "associated_text_col_name": "Abstract",
+            # "derived_from": "Abstract",
         },
         {
             "name": "MODEL_keywords",
             "type": "categorical",
-            # "associated_text_col_name": "Abstract",
+            # "derived_from": "Abstract",
         },
         {
             "name": "MODEL_summary",
             "type": "text",
-            # "associated_text_col_name": "Abstract",
+            # "derived_from": "Abstract",
         },
         {
             "name": "MODEL_has_user_study",
             "type": "categorical",
-            # "associated_text_col_name": "Abstract",
+            # "derived_from": "Abstract",
         },
         # {
         #     "name": "DOI",
@@ -119,27 +117,27 @@ dataset_vis_papers = DatasetInfo(
         # {
         #     "name": "Abstract_num_words",
         #     "type": "number",
-        #     "associated_text_col_name": "Abstract",
+        #     "derived_from": "Abstract",
         # },
         # {
         #     "name": "Abstract_max_word_length",
         #     "type": "number",
-        #     "associated_text_col_name": "Abstract",
+        #     "derived_from": "Abstract",
         # },
         # {
         #     "name": "Abstract_avg_word_length",
         #     "type": "number",
-        #     "associated_text_col_name": "Abstract",
+        #     "derived_from": "Abstract",
         # },
         # {
         #     "name": "Abstract_perc_special_chars",
         #     "type": "number",
-        #     "associated_text_col_name": "Abstract",
+        #     "derived_from": "Abstract",
         # },
     ],
 )
 
 
-EXAMPLE_DATASETS = [
-    dataset_vis_papers,
-]
+EXAMPLE_DATASETS = {
+    "vis_papers": dataset_vis_papers,
+}
