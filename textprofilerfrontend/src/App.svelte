@@ -80,11 +80,12 @@
   }
 </script>
 
-<div class="flex flex-row gap-2 bg-gradient-to-r from-blue-100 to-blue-700 p-5">
-  <span
-    class="self-center whitespace-nowrap text-2xl font-semibold text-blue-900"
-    >Text Profiler</span
-  >
+<div
+  class="flex flex-row gap-2 bg-gradient-to-r to-40% from-[#325C7F] to-[#4682b4] p-4"
+>
+  <span class="self-center whitespace-nowrap text-2xl text-white">
+    Text<span class="font-light ml-1"> Profiler</span>
+  </span>
   <div class="grow" />
 
   <Search

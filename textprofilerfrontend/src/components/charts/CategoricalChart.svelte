@@ -87,10 +87,13 @@
           text: vg.count(),
           dx: 5,
           textAnchor: "start",
+          textOverflow: "ellipsis",
+          lineWidth: 3,
         }),
         vg.yLabel(null),
         vg.marginLeft(80),
         vg.width(400),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7 }),
       );
     } else {
       plotWrapper = getPlot(
@@ -112,10 +115,13 @@
           text: vg.count(),
           dx: 5,
           textAnchor: "start",
+          textOverflow: "ellipsis",
+          lineWidth: 3,
         }),
         vg.yLabel(null),
         vg.marginLeft(80),
         vg.width(400),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7 }),
       );
     }
 

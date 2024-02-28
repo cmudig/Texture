@@ -50,14 +50,14 @@
       vg.dot(vg.from(fromClause), {
         x: "umap_x",
         y: "umap_y",
-        r: 1,
+        r: 1.5,
         fill: "#ccc",
         fillOpacity: 0.4,
       }),
       vg.dot(vg.from(fromClause, { filterBy: $mosaicSelection }), {
         x: "umap_x",
         y: "umap_y",
-        r: 1,
+        r: 1.5,
         fill: "steelblue",
       }),
       vg.xAxis(null),
