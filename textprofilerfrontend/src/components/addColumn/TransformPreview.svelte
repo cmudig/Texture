@@ -16,14 +16,14 @@
 </script>
 
 <div>
-  <div class="flex font-semibold">
+  <div class="flex w-full font-semibold">
     <div
-      class="w-8 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
+      class="w-8 shrink-0 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
     >
       {idColName ?? ""}
     </div>
     <div
-      class="w-1/2 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
+      class="w-1/2 shrink-0 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
     >
       {targetColName}
     </div>
@@ -36,18 +36,18 @@
         <Spinner />
       {/if}
     </div>
-    <div class="w-8 border-l border-gray-200" />
+    <div class="w-8 shrink-0 border-l border-gray-200" />
   </div>
 
   {#each columnData as cd, index}
-    <div class="flex">
+    <div class="flex w-full">
       <div
-        class="w-8 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
+        class="w-8 shrink-0 whitespace-normal break-words align-top p-2 overflow-auto border-b border-l border-gray-200"
       >
         {idColName ? cd[idColName] : ""}
       </div>
       <div
-        class="w-1/2 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
+        class="w-1/2 shrink-0 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
       >
         {cd[targetColName]}
       </div>
@@ -71,7 +71,7 @@
         {/if}
       </div>
 
-      <div class="w-8 border-l border-gray-200">
+      <div class="w-8 shrink-0 border-l border-gray-200">
         {#if deleteResult}
           <button
             class="hover:bg-gray-100 text-gray-500 p-1 rounded m-1"
