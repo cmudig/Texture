@@ -196,10 +196,10 @@
   </div>
 
   <div class="flex flex-row">
-    <div class="h-screen w-1/3 overflow-scroll">
+    <div class="h-screen w-[450px] shrink-0 overflow-scroll">
       <Sidebar {datasetColSummaries} />
     </div>
-    <div class="h-screen w-2/3 overflow-scroll border-l-2 border-slate-50">
+    <div class="h-screen grow overflow-scroll border-l-2 border-slate-50">
       {#if $compareSimilarID !== undefined}
         <SimilarView
           similarDocID={$compareSimilarID}
