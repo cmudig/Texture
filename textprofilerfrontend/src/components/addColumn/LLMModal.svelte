@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { databaseConnection } from "../../stores";
+  import { databaseConnection, datasetInfo } from "../../stores";
   import {
     Modal,
     Spinner,
@@ -8,7 +8,7 @@
     Button,
     Input,
   } from "flowbite-svelte";
-  import type { DatasetInfo, TaskFormat } from "../../backendapi";
+  import type { TaskFormat } from "../../backendapi";
   import { CheckSolid, RocketSolid } from "flowbite-svelte-icons";
   import TransformPreview from "./TransformPreview.svelte";
   import { LLMQueryStatus } from "../../shared/types";
@@ -18,10 +18,9 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   // props
   export let panelOpen: boolean;
-  export let datasetInfo: DatasetInfo;
-  $: textCols = datasetInfo?.column_info.filter((col) => col.type === "text");
-  $: allColNames = datasetInfo?.column_info.map((col) => col.name);
-  $: idColName = datasetInfo?.joinDatasetInfo?.joinKey;
+  $: textCols = $datasetInfo?.columns.filter((col) => col.type === "text");
+  $: allColNames = $datasetInfo?.columns.map((col) => col.name);
+  $: idColName = $datasetInfo?.primary_key.name;
 
   // locals
   let targetColName: string;
@@ -56,13 +55,13 @@ For example, "Extract 3 - 5 keywords per article"`;
   function fetchColData() {
     if (targetColName && idColName) {
       databaseConnection
-        .getValues(datasetInfo.name, idColName, targetColName, example_idxs)
+        .getValues($datasetInfo.name, idColName, targetColName, example_idxs)
         .then((r) => {
           columnExampleData = r;
         });
 
       databaseConnection
-        .getValues(datasetInfo.name, idColName, targetColName, preview_idxs)
+        .getValues($datasetInfo.name, idColName, targetColName, preview_idxs)
         .then((r) => {
           columnPreviewData = r;
         });
@@ -73,7 +72,7 @@ For example, "Extract 3 - 5 keywords per article"`;
   async function getSchema() {
     schemaResultStatus = LLMQueryStatus.PENDING;
 
-    // TODO this maybe doesnt need to be LLM call, but kinda fun
+    // NOTE: this maybe doesnt need to be LLM call, but kinda fun
     if (userPrompt) {
       let _responseFormat =
         await databaseConnection.api.getLlmResponseFormat(userPrompt);
@@ -145,7 +144,7 @@ For example, "Extract 3 - 5 keywords per article"`;
         userPrompt,
         taskFormat: responseFormat,
         columnName: targetColName,
-        tableName: datasetInfo.name,
+        tableName: $datasetInfo.name,
         newColumnName: responseFormat.name,
         exampleData: columnExampleData.map((cd) => cd[targetColName]),
         exampleResponse: exampleResult.map((item) => ({

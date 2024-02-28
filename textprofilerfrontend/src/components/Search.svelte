@@ -2,7 +2,7 @@
   import { onDestroy } from "svelte";
   import { Input } from "flowbite-svelte";
   import { SearchOutline } from "flowbite-svelte-icons";
-  import { filters, clearColumnSelections } from "../stores";
+  import { mosaicSelection, clearColumnSelections } from "../stores";
   import { isSelection } from "@uwdata/mosaic-core";
   import {
     regexp_matches,
@@ -17,6 +17,7 @@
   const FUNCTIONS = { contains, prefix, suffix, regexp: regexp_matches };
 
   export let columnNames: string[] | undefined;
+  export let tableName: string;
   export let type = "contains";
   let currentQuery: string | undefined;
   let uuid = getUUID();
@@ -39,7 +40,7 @@
   }
 
   function publishUpdate() {
-    if (isSelection($filters.brush) && columnNames?.length) {
+    if (isSelection($mosaicSelection) && columnNames?.length) {
       // adds predicates to provided selection; if a cross filter then these will be OR'd
 
       let pred = null;
@@ -61,9 +62,10 @@
         schema: { type },
         value: cleanedQuery,
         predicate: pred,
+        clients: new Set().add({ source: { table: tableName } }),
       };
 
-      $filters.brush.update(updateInfo);
+      $mosaicSelection.update(updateInfo);
     }
   }
 

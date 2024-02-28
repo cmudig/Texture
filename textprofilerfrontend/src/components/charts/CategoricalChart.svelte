@@ -1,14 +1,12 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { filters, clearColumnSelections } from "../../stores";
-  import type { JoinInfo } from "../../backendapi";
+  import { mosaicSelection, clearColumnSelections } from "../../stores";
   import { getDatasetName, getUUID } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
   export let columnName: string;
   export let mainDatasetName: string;
-  export let joinDatasetInfo: JoinInfo | undefined = undefined;
   export let showBackground = true;
   export let plotNulls = true;
   export let limit = 10;
@@ -46,7 +44,6 @@
     cName: string,
     pltNullsFlag: boolean,
     selection: any,
-    joinDsInfo?: JoinInfo,
     _excludeList?: string[],
   ) {
     let datasetName = await getDatasetName(
@@ -56,14 +53,6 @@
       _excludeList,
     );
     let fromClause: any = datasetName;
-
-    if (joinDsInfo) {
-      fromClause = vg.fromJoinDistinct({
-        table: datasetName,
-        rightTable: joinDsInfo.joinDatasetName,
-        joinKey: joinDsInfo.joinKey,
-      });
-    }
 
     if (showBackground) {
       plotWrapper = getPlot(
@@ -80,7 +69,7 @@
           fillOpacity: 0.4,
           sort: { y: "-x", limit },
         }),
-        vg.barX(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -89,8 +78,8 @@
         }),
         vg.highlight({ by: selection }),
         vg.toggleY({ as: selection }),
-        vg.toggleY({ as: $filters.brush }),
-        vg.text(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.toggleY({ as: $mosaicSelection }),
+        vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -105,7 +94,7 @@
       );
     } else {
       plotWrapper = getPlot(
-        vg.barX(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -114,8 +103,8 @@
         }),
         vg.highlight({ by: selection }),
         vg.toggleY({ as: selection }),
-        vg.toggleY({ as: $filters.brush }),
-        vg.text(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.toggleY({ as: $mosaicSelection }),
+        vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -139,7 +128,6 @@
       columnName,
       plotNulls,
       thisSelection,
-      joinDatasetInfo,
       excludeList,
     );
   });

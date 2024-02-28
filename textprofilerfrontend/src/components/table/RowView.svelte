@@ -4,8 +4,11 @@
   import { type SelectionMap } from "../../shared/types";
   import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
   import SubstringHighlight from "./SubstringHighlight.svelte";
-  import type { JoinInfo } from "../../backendapi";
-  import { filters, selectionDisplay, databaseConnection } from "../../stores";
+  import {
+    datasetInfo,
+    selectionDisplay,
+    databaseConnection,
+  } from "../../stores";
   import type { DatasetInfo } from "../../backendapi";
   import { Spinner } from "flowbite-svelte";
   import { shouldHighlight } from "../../shared/utils";
@@ -14,8 +17,7 @@
   export let textData: Array<[string, unknown]>;
   export let metadata: Array<[string, unknown]>;
   export let highlight = false;
-  export let datasetInfo: DatasetInfo | undefined = undefined;
-  export let getFilters: (() => any) | undefined = undefined;
+  export let selection: any = undefined; // vgplot.Selection
 
   let toggle = false;
 
@@ -23,27 +25,36 @@
     id: number,
     textCols: string[],
     selectionMap: SelectionMap,
-    _getFilters?: () => any,
-    datasetInfo?: DatasetInfo,
-    joinInfo?: JoinInfo,
+    datasetInfo: DatasetInfo,
+    _selection?: any,
   ): Promise<undefined | Record<string, unknown[]>> {
-    if (!datasetInfo || !_getFilters || !Object.keys(selectionMap).length) {
+    if (!datasetInfo || !selection || !Object.keys(selectionMap).length) {
       return undefined;
     }
 
     let spanMap = {};
-    const filters = _getFilters();
 
     for (let textCol of textCols) {
+      let derivedCol = datasetInfo.columns.find(
+        (col) =>
+          col.derived_from === textCol &&
+          col.table_name &&
+          col.table_name !== datasetInfo.name,
+      );
+
       if (
-        joinInfo?.joinColumn.associated_text_col_name === textCol &&
-        joinInfo?.joinColumn.name in selectionMap
+        derivedCol &&
+        derivedCol.table_name &&
+        derivedCol.name in selectionMap
       ) {
         let spans = await databaseConnection.getSpansPerDoc(
-          datasetInfo,
+          derivedCol.table_name,
+          derivedCol.name,
+          datasetInfo.primary_key.name,
           id,
-          filters,
+          _selection,
         );
+
         spanMap[textCol] = spans;
       }
     }
@@ -60,9 +71,8 @@
     id,
     textData.map((d) => d[0]),
     $selectionDisplay,
-    getFilters,
-    datasetInfo,
-    $filters.joinDatasetInfo,
+    $datasetInfo,
+    selection,
   );
 </script>
 
@@ -135,7 +145,7 @@
     {#if metadata.length}
       <div class="bg-gray-50 w-80 shrink-0 h-full">
         {#each metadata as [itemKey, itemValue] (itemKey)}
-          {@const itemType = datasetInfo?.column_info.find(
+          {@const itemType = $datasetInfo?.columns.find(
             (col) => col.name === itemKey,
           )?.type}
           <div class="flex border-b border-gray-200 px-2">

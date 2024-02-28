@@ -1,0 +1,170 @@
+from textprofilerbackend.models import DatasetInfo
+
+dataset_vis_papers = DatasetInfo(
+    name="vis_papers",
+    primary_key={"name": "id", "type": "number"},
+    origin="example",
+    columns=[
+        # join tables
+        {
+            "name": "word",
+            "type": "categorical",
+            "table_name": "vis_papers_words",
+            "derived_from": "Abstract",
+        },
+        {
+            "name": "author",
+            "type": "categorical",
+            "table_name": "vis_papers_authors",
+            "derived_from": "AuthorNames-Deduped",
+        },
+        {
+            "name": "keyword",
+            "type": "categorical",
+            "table_name": "vis_papers_keywords",
+            "derived_from": "AuthorKeywords",
+        },
+        # columns in main table
+        {
+            "name": "id",
+            "type": "number",
+        },
+        {
+            "name": "Abstract",
+            "type": "text",
+        },
+        {
+            "name": "Title",
+            "type": "categorical",
+        },
+        {
+            "name": "Conference",
+            "type": "categorical",
+        },
+        # {
+        #     "name": "AuthorNames-Deduped",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "AuthorKeywords",
+        #     "type": "categorical",
+        # },
+        {
+            "name": "Abstract_text_length",
+            "type": "number",
+            "derived_from": "Abstract",
+        },
+        {
+            "name": "MODEL_num_participants",
+            "type": "number",
+            "derived_from": "Abstract",
+        },
+        {
+            "name": "MODEL_keywords",
+            "type": "categorical",
+            "derived_from": "Abstract",
+        },
+        {
+            "name": "MODEL_summary",
+            "type": "text",
+            "derived_from": "Abstract",
+        },
+        {
+            "name": "MODEL_has_user_study",
+            "type": "categorical",
+            "derived_from": "Abstract",
+        },
+        # {
+        #     "name": "DOI",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "Link",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "FirstPage",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "LastPage",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "AuthorNames",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "AuthorAffiliation",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "InternalReferences",
+        #     "type": "categorical",
+        # },
+        #
+        # {
+        #     "name": "Year",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "PaperType",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "AminerCitationCount",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "CitationCount_CrossRef",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "PubsCited_CrossRef",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "Award",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "Abstract_num_words",
+        #     "type": "number",
+        #     "derived_from": "Abstract",
+        # },
+        # {
+        #     "name": "Abstract_max_word_length",
+        #     "type": "number",
+        #     "derived_from": "Abstract",
+        # },
+        # {
+        #     "name": "Abstract_avg_word_length",
+        #     "type": "number",
+        #     "derived_from": "Abstract",
+        # },
+        # {
+        #     "name": "Abstract_perc_special_chars",
+        #     "type": "number",
+        #     "derived_from": "Abstract",
+        # },
+    ],
+)
+
+
+EXAMPLE_DATASET_INFO = {
+    "vis_papers": dataset_vis_papers,
+}
+
+EXAMPLE_DATA_PATHS = {
+    "vis_papers": {
+        "datasets": {
+            "vis_papers": "raw_data/vis_papers_sample/vis_papers.parquet",
+            "vis_papers_words": "raw_data/vis_papers_sample/vis_papers_words_span.parquet",
+            "vis_papers_authors": "raw_data/vis_papers_sample/vis_papers_authors_span.parquet",
+            "vis_papers_keywords": "raw_data/vis_papers_sample/vis_papers_keywords_span.parquet",
+        },
+        "embeddings": {
+            "vis_papers": "raw_data/vis_papers_sample/vis_papers_embeddings.pt"
+        },
+    }
+}

@@ -6,7 +6,8 @@
 export type Column = {
   name: string;
   type: Column.type;
-  associated_text_col_name?: string | null;
+  derived_from?: string | null;
+  table_name?: string | null;
 };
 
 export namespace Column {

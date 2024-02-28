@@ -69,3 +69,7 @@ export function shouldHighlight(
   }
   return false;
 }
+
+export function getCacheKey({ table, col }): string {
+  return `${table}_${col}`;
+}

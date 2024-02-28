@@ -5,8 +5,12 @@ import {
   derived,
   get,
 } from "svelte/store";
-import type { FilterWrapper, SelectionMap } from "./shared/types";
-import { TextProfileClient, DefaultService } from "./backendapi";
+import type { SelectionMap } from "./shared/types";
+import {
+  TextProfileClient,
+  DefaultService,
+  type DatasetInfo,
+} from "./backendapi";
 import { DatabaseConnection } from "./database/db";
 
 // ~~~~~~~~~~~~~~~  Database init ~~~~~~~~~~~~~~~
@@ -21,15 +25,10 @@ export const databaseConnection = new DatabaseConnection(backendService);
 
 // ~~~~~~~~~~~~~~~ App wide stores ~~~~~~~~~~~~~~~
 export const compareSimilarID: Writable<number | undefined> = writable();
-
-export const filters: Writable<FilterWrapper> = writable({
-  brush: undefined, // vg.Selection crossfilter
-  datasetName: "",
-  joinDatasetName: undefined,
-});
-
+export const derivedViewNames: Writable<Map<any, string>> = writable(new Map());
+export const mosaicSelection: Writable<any> = writable(); // vg.Selection crossfilter
+export const datasetInfo: Writable<DatasetInfo> = writable();
 export const showBackgroundDist: Writable<boolean> = writable(true);
-
 export const clearColumnSelections: Writable<
   {
     clearFunc: () => void;
@@ -39,15 +38,15 @@ export const clearColumnSelections: Writable<
 > = writable([]);
 
 export const selectionDisplay = derived(
-  filters,
-  ($filters, set) => {
-    if ($filters.brush) {
-      $filters.brush.addEventListener("value", () => {
-        let v = updateSelectionMap($filters.brush);
+  mosaicSelection,
+  ($mosaicSelection, set) => {
+    if ($mosaicSelection) {
+      $mosaicSelection.addEventListener("value", () => {
+        let v = updateSelectionMap($mosaicSelection);
         set(v);
       });
       // event listener not triggered on initial set so call manually
-      let v = updateSelectionMap($filters.brush);
+      let v = updateSelectionMap($mosaicSelection);
       set(v);
     } else {
       set({});
@@ -57,24 +56,19 @@ export const selectionDisplay = derived(
 );
 
 export const filteredCount: Readable<number | undefined> = derived(
-  filters,
-  ($filters, set) => {
-    if ($filters.brush && $filters.datasetName) {
-      $filters.brush.addEventListener("value", async () => {
+  [mosaicSelection, datasetInfo],
+  ([$mosaicSelection, $datasetInfo], set) => {
+    if ($mosaicSelection && $datasetInfo) {
+      $mosaicSelection.addEventListener("value", async () => {
         let v = await databaseConnection.getCount(
-          $filters.datasetName,
-          $filters.joinDatasetInfo,
-          $filters.brush,
+          $datasetInfo.name,
+          $mosaicSelection,
         );
         set(v);
       });
       // event listener not triggered on initial set so call manually
       let v = databaseConnection
-        .getCount(
-          $filters.datasetName,
-          $filters.joinDatasetInfo,
-          $filters.brush,
-        )
+        .getCount($datasetInfo.name, $mosaicSelection)
         .then((v) => set(v));
     } else {
       set(undefined);
@@ -117,7 +111,7 @@ function updateSelectionMap(mosaicSelection: any): SelectionMap {
 }
 
 export function deleteFilters(col: string) {
-  const brush = get(filters).brush;
+  const brush = get(mosaicSelection);
   const colSelections = get(clearColumnSelections);
 
   let contains = brush.clauses.filter((clause) =>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { filters } from "../stores";
+  import { datasetInfo } from "../stores";
   import ScatterProjection from "./charts/ScatterProjection.svelte";
 
   let active = true;
@@ -23,8 +23,7 @@
   <div class="w-full">
     <div class="ml-4 mt-2" class:hidden={!active}>
       <ScatterProjection
-        mainDatasetName={$filters.datasetName}
-        joinDatasetInfo={$filters.joinDatasetInfo}
+        mainDatasetName={$datasetInfo.name}
         columnName="projection_xy"
       />
     </div>

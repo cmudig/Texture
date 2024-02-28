@@ -4,13 +4,11 @@
 /* eslint-disable */
 
 import type { Column } from "./Column";
-import type { JoinInfo } from "./JoinInfo";
 
 export type DatasetInfo = {
   name: string;
-  column_info: Array<Column>;
+  columns: Array<Column>;
   origin: DatasetInfo.origin;
-  joinDatasetInfo?: JoinInfo;
   primary_key: Column;
 };
 
