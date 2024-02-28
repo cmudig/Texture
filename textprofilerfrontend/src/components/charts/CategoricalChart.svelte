@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { filters, clearColumnSelections } from "../../stores";
+  import { mosaicSelection, clearColumnSelections } from "../../stores";
   import { getDatasetName, getUUID } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
@@ -69,7 +69,7 @@
           fillOpacity: 0.4,
           sort: { y: "-x", limit },
         }),
-        vg.barX(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -78,8 +78,8 @@
         }),
         vg.highlight({ by: selection }),
         vg.toggleY({ as: selection }),
-        vg.toggleY({ as: $filters.brush }),
-        vg.text(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.toggleY({ as: $mosaicSelection }),
+        vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -94,7 +94,7 @@
       );
     } else {
       plotWrapper = getPlot(
-        vg.barX(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -103,8 +103,8 @@
         }),
         vg.highlight({ by: selection }),
         vg.toggleY({ as: selection }),
-        vg.toggleY({ as: $filters.brush }),
-        vg.text(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.toggleY({ as: $mosaicSelection }),
+        vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,

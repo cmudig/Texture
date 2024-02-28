@@ -1,6 +1,5 @@
 import * as vg from "@uwdata/vgplot";
-import { Plot, Toggle } from "@uwdata/mosaic-plot";
-import { and, or, isNotDistinct, literal, relation } from "@uwdata/mosaic-sql";
+import { Plot } from "@uwdata/mosaic-plot";
 
 /**
  * Use instead of vg.plot to get the plot back instead of the element

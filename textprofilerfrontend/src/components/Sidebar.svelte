@@ -1,10 +1,9 @@
 <script lang="ts">
   import type { ColumnSummary } from "../shared/types";
-  import type { DatasetInfo } from "../backendapi/models/DatasetInfo";
   import ColumnProfile from "./ColumnProfile.svelte";
   import ProjectionOverview from "./ProjectionOverview.svelte";
+  import { datasetInfo } from "../stores";
 
-  export let datasetInfo: DatasetInfo;
   export let datasetColSummaries: ColumnSummary[];
 
   // probably better to turn datasetColSummaries into a Map then index rather than find cuz that slow
@@ -13,21 +12,21 @@
 <div>
   <ProjectionOverview />
 
-  {#each datasetInfo.column_info as col}
+  {#each $datasetInfo.columns as col}
     {#if col.type == "text"}
       <ColumnProfile
         displayCol={col}
         colType="text"
-        plotCols={datasetInfo.column_info.filter(
-          (c) => c.associated_text_col_name === col.name,
+        plotCols={$datasetInfo.columns.filter(
+          (c) => c.derived_from === col.name,
         )}
         colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
       />
-    {:else if col.associated_text_col_name == null}
+    {:else if col.derived_from == null}
       <!-- only plot metadata without associated text column so those already plotted -->
       <ColumnProfile
         displayCol={col}
-        plotCols={datasetInfo.column_info.filter((c) => c.name === col.name)}
+        plotCols={$datasetInfo.columns.filter((c) => c.name === col.name)}
         colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
       />
     {/if}

@@ -4,8 +4,11 @@
   import { type SelectionMap } from "../../shared/types";
   import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
   import SubstringHighlight from "./SubstringHighlight.svelte";
-  import type { JoinInfo } from "../../backendapi";
-  import { filters, selectionDisplay, databaseConnection } from "../../stores";
+  import {
+    datasetInfo,
+    selectionDisplay,
+    databaseConnection,
+  } from "../../stores";
   import type { DatasetInfo } from "../../backendapi";
   import { Spinner } from "flowbite-svelte";
   import { shouldHighlight } from "../../shared/utils";
@@ -14,7 +17,6 @@
   export let textData: Array<[string, unknown]>;
   export let metadata: Array<[string, unknown]>;
   export let highlight = false;
-  export let datasetInfo: DatasetInfo | undefined = undefined;
   export let selection: any = undefined; // vgplot.Selection
 
   let toggle = false;
@@ -25,7 +27,6 @@
     selectionMap: SelectionMap,
     _selection?: any,
     datasetInfo?: DatasetInfo,
-    joinInfo?: JoinInfo,
   ): Promise<undefined | Record<string, unknown[]>> {
     if (!datasetInfo || !selection || !Object.keys(selectionMap).length) {
       return undefined;
@@ -34,6 +35,8 @@
     let spanMap = {};
 
     for (let textCol of textCols) {
+      // TODO FIGURE OUT SOME WAY TO QUERY RIGHT TABLE?
+
       if (
         joinInfo?.joinColumn.associated_text_col_name === textCol &&
         joinInfo?.joinColumn.name in selectionMap
@@ -60,8 +63,7 @@
     textData.map((d) => d[0]),
     $selectionDisplay,
     selection,
-    datasetInfo,
-    $filters.joinDatasetInfo,
+    $datasetInfo,
   );
 </script>
 
@@ -134,7 +136,7 @@
     {#if metadata.length}
       <div class="bg-gray-50 w-80 shrink-0 h-full">
         {#each metadata as [itemKey, itemValue] (itemKey)}
-          {@const itemType = datasetInfo?.column_info.find(
+          {@const itemType = $datasetInfo?.columns.find(
             (col) => col.name === itemKey,
           )?.type}
           <div class="flex border-b border-gray-200 px-2">

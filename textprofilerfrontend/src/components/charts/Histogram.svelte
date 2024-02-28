@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { filters } from "../../stores";
+  import { mosaicSelection } from "../../stores";
   import { getDatasetName } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
@@ -31,13 +31,13 @@
           fillOpacity: 0.4,
           inset: 0.5,
         }),
-        vg.rectY(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.rectY(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.bin(columnName),
           y: vg.count(),
           fill: "steelblue",
           inset: 0.5,
         }),
-        vg.intervalX({ as: $filters.brush }),
+        vg.intervalX({ as: $mosaicSelection }),
         vg.xDomain(vg.Fixed),
         vg.marginLeft(55),
         vg.width(400),
@@ -45,13 +45,13 @@
       );
     } else {
       plotWrapper = getPlot(
-        vg.rectY(vg.from(fromClause, { filterBy: $filters.brush }), {
+        vg.rectY(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.bin(columnName),
           y: vg.count(),
           fill: "steelblue",
           inset: 0.5,
         }),
-        vg.intervalX({ as: $filters.brush }),
+        vg.intervalX({ as: $mosaicSelection }),
         vg.xDomain(vg.Fixed),
         vg.marginLeft(55),
         vg.width(400),

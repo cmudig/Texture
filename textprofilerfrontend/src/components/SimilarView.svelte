@@ -2,12 +2,11 @@
   import { CloseButton } from "flowbite-svelte";
   import RowView from "./table/RowView.svelte";
   import type { DatasetInfo } from "../backendapi";
-  import { databaseConnection } from "../stores";
+  import { databaseConnection, datasetInfo } from "../stores";
   import { formatNumber } from "../shared/format";
   import TablePlaceholder from "./utils/TablePlaceholder.svelte";
 
   export let similarDocID: number;
-  export let datasetInfo: DatasetInfo;
   export let clearFunc: () => void;
 
   async function getData(_datasetInfo: DatasetInfo, _id: number) {
@@ -56,7 +55,7 @@
     distance?: number,
   ) {
     const rowArr = Object.entries(record);
-    const colTypeMap = datasetInfo.column_info.reduce((acc, col) => {
+    const colTypeMap = $datasetInfo.columns.reduce((acc, col) => {
       acc[col.name] = col.type;
       return acc;
     }, {});
@@ -67,12 +66,12 @@
       textData: rowArr.filter(([k, v]) => colTypeMap[k] === "text"),
       metadata: rowArr.filter(
         ([k, v]) =>
-          colTypeMap[k] !== "text" && k !== datasetInfo.primary_key.name,
+          colTypeMap[k] !== "text" && k !== $datasetInfo.primary_key.name,
       ),
     };
   }
 
-  $: dataPromise = getData(datasetInfo, similarDocID);
+  $: dataPromise = getData($datasetInfo, similarDocID);
 </script>
 
 <div class="max-h-screen overflow-auto bg-gray-100 h-full">

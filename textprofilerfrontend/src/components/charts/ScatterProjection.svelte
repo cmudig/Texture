@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { filters, clearColumnSelections } from "../../stores";
+  import { mosaicSelection, clearColumnSelections } from "../../stores";
   import { getDatasetName, getUUID } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
@@ -54,7 +54,7 @@
         fill: "#ccc",
         fillOpacity: 0.4,
       }),
-      vg.dot(vg.from(fromClause, { filterBy: $filters.brush }), {
+      vg.dot(vg.from(fromClause, { filterBy: $mosaicSelection }), {
         x: "umap_x",
         y: "umap_y",
         r: 1,
@@ -64,7 +64,7 @@
       vg.yAxis(null),
       vg.highlight({ by: selection, opacity: 0.1 }),
       vg.intervalXY({ as: selection }),
-      vg.intervalXY({ as: $filters.brush }),
+      vg.intervalXY({ as: $mosaicSelection }),
       vg.width(400),
       vg.height(280),
     );

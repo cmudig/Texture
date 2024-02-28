@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { filters } from "../../stores";
+  import { mosaicSelection } from "../../stores";
   import { getPlot } from "./chartUtils";
 
   export let columnName: string;
@@ -15,13 +15,13 @@
     let fromClause: any = datasetName;
 
     plotWrapper = getPlot(
-      vg.lineY(vg.from(fromClause, { filterBy: $filters.brush }), {
+      vg.lineY(vg.from(fromClause, { filterBy: $mosaicSelection }), {
         x: cName,
         y: vg.count(),
         stroke: "steelblue",
         curve: "monotone-x",
       }),
-      vg.intervalX({ as: $filters.brush }),
+      vg.intervalX({ as: $mosaicSelection }),
       vg.xDomain(vg.Fixed),
       vg.marginLeft(55),
       vg.width(400),

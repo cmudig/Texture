@@ -8,7 +8,7 @@
 
   $: all_columns = [
     { value: undefined, name: "Not derived" },
-    ...schema.column_info
+    ...schema.columns
       .filter((c) => c.type === "text")
       .map((col) => ({ value: col.name, name: col.name })),
   ];
@@ -26,7 +26,7 @@
         placeholder="Dataset name"
       />
     </ListgroupItem>
-    {#each schema.column_info as col}
+    {#each schema.columns as col}
       <ListgroupItem class="text-base font-semibold gap-2">
         <DataTypeIcon type={col.type} />
 
@@ -48,7 +48,7 @@
             placeholder="Derived from..."
             size="sm"
             items={all_columns.filter((c) => c.value !== col.name)}
-            bind:value={col.associated_text_col_name}
+            bind:value={col.derived_from}
           />
         {:else}
           <div class="w-32" />

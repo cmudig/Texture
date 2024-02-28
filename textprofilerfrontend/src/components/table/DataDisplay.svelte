@@ -1,8 +1,7 @@
 <script lang="ts">
-  import type { DatasetInfo } from "../../backendapi";
   import * as vg from "@uwdata/vgplot";
   import { TableClient } from "./TableClient";
-  import { filters, compareSimilarID } from "../../stores";
+  import { mosaicSelection, compareSimilarID, datasetInfo } from "../../stores";
   import { onDestroy } from "svelte";
   import {
     FilterOutline,
@@ -13,7 +12,6 @@
   import { Select } from "flowbite-svelte";
   import TablePlaceholder from "../utils/TablePlaceholder.svelte";
 
-  export let datasetInfo: DatasetInfo;
   export let currentColToggleStates: Record<string, boolean> = {};
 
   let myTableClient: TableClient;
@@ -26,11 +24,11 @@
     // only get columns with toggle on; remove duplicate pk
     let plotcols = Object.keys(_currentColToggleStates).filter(
       (col) =>
-        _currentColToggleStates[col] && col !== datasetInfo.primary_key.name,
+        _currentColToggleStates[col] && col !== $datasetInfo.primary_key.name,
     );
 
     // always include pk
-    plotcols.push(datasetInfo.primary_key.name);
+    plotcols.push($datasetInfo.primary_key.name);
 
     let client = new TableClient({
       filterBy: filter,
@@ -51,9 +49,9 @@
 
   $: {
     myTableClient = createClient(
-      datasetInfo.name,
+      $datasetInfo.name,
       currentColToggleStates,
-      $filters.brush,
+      $mosaicSelection,
     );
 
     if (previousClient) {
@@ -70,7 +68,7 @@
 
   $: ({ schema, data, sortColumn, sortDesc } = myTableClient);
 
-  $: colTypeMap = datasetInfo.column_info.reduce((acc, col) => {
+  $: colTypeMap = $datasetInfo.columns.reduce((acc, col) => {
     acc[col.name] = col.type;
     return acc;
   }, {});
@@ -115,14 +113,13 @@
             {#each $data as row}
               {@const rowArr = Object.entries(row)}
               <RowView
-                id={Number(row[datasetInfo.primary_key.name])}
+                id={Number(row[$datasetInfo.primary_key.name])}
                 textData={rowArr.filter(([k, v]) => colTypeMap[k] === "text")}
                 metadata={rowArr.filter(
                   ([k, v]) =>
                     colTypeMap[k] !== "text" &&
-                    k !== datasetInfo.primary_key.name,
+                    k !== $datasetInfo.primary_key.name,
                 )}
-                {datasetInfo}
                 selection={myTableClient.filterBy}
               >
                 <div
@@ -134,7 +131,9 @@
                     title="filter me"
                     size="sm"
                     on:click={() =>
-                      displaySimilar(Number(row[datasetInfo.primary_key.name]))}
+                      displaySimilar(
+                        Number(row[$datasetInfo.primary_key.name]),
+                      )}
                   />
                 </div>
               </RowView>

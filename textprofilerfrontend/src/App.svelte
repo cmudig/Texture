@@ -3,7 +3,8 @@
   import type { ColumnSummary } from "./shared/types";
   import type { DatasetInfo } from "./backendapi/models/DatasetInfo";
   import {
-    filters,
+    mosaicSelection,
+    datasetInfo,
     showBackgroundDist,
     filteredCount,
     databaseConnection,
@@ -35,7 +36,6 @@
   // Locals
   let datasets: Record<string, DatasetInfo>;
   let currentDatasetName: string;
-  let datasetInfo: DatasetInfo;
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
   let showAddDataModal = false;
@@ -58,9 +58,9 @@
 
   async function setDataset() {
     const info = datasets[currentDatasetName];
-    datasetInfo = info;
+    $datasetInfo = info;
 
-    currentColToggleStates = datasetInfo.column_info.reduce(
+    currentColToggleStates = $datasetInfo.columns.reduce(
       (acc: Record<string, boolean>, col) => {
         acc[col.name] = true;
 
@@ -70,26 +70,13 @@
     );
 
     // create new brush to clear selections from old dataset
-    $filters = {
-      brush: vg.Selection.crossfilter(),
-      datasetName: info.name,
-      joinDatasetInfo: info.joinDatasetInfo,
-    };
-
+    $mosaicSelection = vg.Selection.crossfilter();
     datasetSize = await databaseConnection.getCount(info.name);
     datasetColSummaries = await databaseConnection.getColSummaries(info.name);
   }
 
   function updateData() {
     dataPromise = setDataset();
-  }
-
-  function resetBrush() {
-    $filters = {
-      brush: vg.Selection.crossfilter(),
-      datasetName: datasetInfo.name,
-      joinDatasetInfo: datasetInfo.joinDatasetInfo,
-    };
   }
 </script>
 
@@ -101,10 +88,10 @@
   <div class="grow" />
 
   <Search
-    columnNames={datasetInfo?.column_info
+    columnNames={$datasetInfo?.columns
       .filter((col) => col.type === "text")
       .map((col) => col.name)}
-    tableName={datasetInfo?.name}
+    tableName={$datasetInfo?.name}
   />
 
   <CirclePlusSolid
@@ -164,7 +151,7 @@
       <div class="mt-2">
         <Label>Display in table</Label>
         <div class="mt-2 flex flex-col gap-1">
-          {#each datasetInfo.column_info as col}
+          {#each $datasetInfo.columns as col}
             <Toggle bind:checked={currentColToggleStates[col.name]}>
               <span class="overflow-hidden text-ellipsis">
                 {col.name}
@@ -183,7 +170,7 @@
     }}
   />
 
-  <LLMModal bind:panelOpen={showAddColModal} {datasetInfo} />
+  <LLMModal bind:panelOpen={showAddColModal} />
 </div>
 
 {#await dataPromise}
@@ -209,19 +196,18 @@
 
   <div class="flex flex-row">
     <div class="h-screen w-1/3 overflow-scroll">
-      <Sidebar {datasetInfo} {datasetColSummaries} />
+      <Sidebar {datasetColSummaries} />
     </div>
     <div class="h-screen w-2/3 overflow-scroll border-l-2 border-slate-50">
       {#if $compareSimilarID !== undefined}
         <SimilarView
-          {datasetInfo}
           similarDocID={$compareSimilarID}
           clearFunc={() => {
             $compareSimilarID = undefined;
           }}
         />
       {:else}
-        <DataDisplay {datasetInfo} {currentColToggleStates} />
+        <DataDisplay {currentColToggleStates} />
       {/if}
     </div>
   </div>

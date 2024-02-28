@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { slide } from "svelte/transition";
   import type { ColumnSummary } from "../shared/types";
   import type { Column } from "../backendapi/models/Column";
   import DataTypeIcon from "./DataTypeIcon.svelte";
@@ -8,10 +7,12 @@
   import CatChartSepTable from "./charts/CatChartSepTable.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
-  import { filters, showBackgroundDist } from "../stores";
+  import { mosaicSelection, datasetInfo, showBackgroundDist } from "../stores";
   import { stopwords } from "../shared/stopwords";
 
   export let displayCol: Column;
+
+  // TODO get rid of plotCols -- just use one column profile per column
   export let plotCols: Column[];
   export let colSummary: ColumnSummary | undefined = undefined;
   export let colType: string | undefined = undefined;
@@ -65,19 +66,19 @@
         {#each plotCols as col}
           {#if col.type === "number"}
             <Histogram
-              mainDatasetName={$filters.datasetName}
+              mainDatasetName={$datasetInfo.name}
               showBackground={$showBackgroundDist}
               columnName={col.name}
             />
           {:else if col.type === "categorical"}
             <CategoricalChart
-              mainDatasetName={$filters.datasetName}
+              mainDatasetName={$datasetInfo.name}
               showBackground={$showBackgroundDist}
               columnName={col.name}
             />
           {:else if col.type === "date"}
             <DateChart
-              mainDatasetName={$filters.datasetName}
+              mainDatasetName={$datasetInfo.name}
               columnName={col.name}
             />
           {:else}

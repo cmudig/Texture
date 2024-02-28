@@ -3,7 +3,7 @@
 
   import { afterUpdate, onDestroy } from "svelte";
   import {
-    filters,
+    mosaicSelection,
     clearColumnSelections,
     currentWordViewName,
   } from "../../stores";
@@ -61,7 +61,7 @@
     currentWordViewName.set(datasetName);
 
     plotWrapper = getPlot(
-      vg.barX(vg.from(datasetName, { filterBy: $filters.brush }), {
+      vg.barX(vg.from(datasetName, { filterBy: $mosaicSelection }), {
         x: vg.count(),
         y: cName,
         order: cName,
@@ -70,8 +70,8 @@
       }),
       vg.highlight({ by: selection }),
       vg.toggleY({ as: selection }),
-      vg.toggleY({ as: $filters.brush }),
-      vg.text(vg.from(datasetName, { filterBy: $filters.brush }), {
+      vg.toggleY({ as: $mosaicSelection }),
+      vg.text(vg.from(datasetName, { filterBy: $mosaicSelection }), {
         x: vg.count(),
         y: cName,
         order: cName,
