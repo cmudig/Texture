@@ -12,7 +12,7 @@
 
   {#each $datasetInfo.columns as col}
     <!-- Dont make row entry for text cols -->
-    {#if ["categorical", "date", "numeric"].includes(col.type)}
+    {#if col.type === "categorical" || col.type === "number" || col.type === "date"}
       <ColumnProfile
         displayCol={col}
         colSummary={datasetColSummaries.get(col.name)}
