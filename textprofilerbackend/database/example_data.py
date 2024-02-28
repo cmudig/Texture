@@ -10,18 +10,19 @@ dataset_vis_papers = DatasetInfo(
             "name": "word",
             "type": "categorical",
             "table_name": "vis_papers_words",
+            "derived_from": "Abstract",
         },
         {
             "name": "author",
             "type": "categorical",
             "table_name": "vis_papers_authors",
-            # "derived_from": "AuthorNames-Deduped",
+            "derived_from": "AuthorNames-Deduped",
         },
         {
             "name": "keyword",
             "type": "categorical",
             "table_name": "vis_papers_keywords",
-            # "derived_from": "AuthorKeywords",
+            "derived_from": "AuthorKeywords",
         },
         # columns in main table
         {
@@ -56,22 +57,22 @@ dataset_vis_papers = DatasetInfo(
         {
             "name": "MODEL_num_participants",
             "type": "number",
-            # "derived_from": "Abstract",
+            "derived_from": "Abstract",
         },
         {
             "name": "MODEL_keywords",
             "type": "categorical",
-            # "derived_from": "Abstract",
+            "derived_from": "Abstract",
         },
         {
             "name": "MODEL_summary",
             "type": "text",
-            # "derived_from": "Abstract",
+            "derived_from": "Abstract",
         },
         {
             "name": "MODEL_has_user_study",
             "type": "categorical",
-            # "derived_from": "Abstract",
+            "derived_from": "Abstract",
         },
         # {
         #     "name": "DOI",

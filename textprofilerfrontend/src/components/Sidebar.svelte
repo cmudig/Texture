@@ -4,30 +4,18 @@
   import ProjectionOverview from "./ProjectionOverview.svelte";
   import { datasetInfo } from "../stores";
 
-  export let datasetColSummaries: ColumnSummary[];
-
-  // probably better to turn datasetColSummaries into a Map then index rather than find cuz that slow
+  export let datasetColSummaries: Map<string, ColumnSummary>;
 </script>
 
 <div>
   <ProjectionOverview />
 
   {#each $datasetInfo.columns as col}
-    {#if col.type == "text"}
+    <!-- Dont make row entry for text cols -->
+    {#if ["categorical", "date", "numeric"].includes(col.type)}
       <ColumnProfile
         displayCol={col}
-        colType="text"
-        plotCols={$datasetInfo.columns.filter(
-          (c) => c.derived_from === col.name,
-        )}
-        colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
-      />
-    {:else if col.derived_from == null}
-      <!-- only plot metadata without associated text column so those already plotted -->
-      <ColumnProfile
-        displayCol={col}
-        plotCols={$datasetInfo.columns.filter((c) => c.name === col.name)}
-        colSummary={datasetColSummaries.find((c) => c.column_name === col.name)}
+        colSummary={datasetColSummaries.get(col.name)}
       />
     {/if}
   {/each}

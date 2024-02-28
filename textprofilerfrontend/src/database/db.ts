@@ -1,8 +1,9 @@
 import * as vg from "@uwdata/vgplot";
-import type { ColumnSummary } from "../shared/types";
 // @ts-ignore
 import { tableFromIPC } from "apache-arrow";
+import { get } from "svelte/store";
 
+import type { ColumnSummary } from "../shared/types";
 import type {
   DefaultService,
   ExecResponse,
@@ -11,9 +12,8 @@ import type {
   DuckQueryData,
   DatasetInfo,
 } from "../backendapi";
-
-import { currentWordViewName } from "../stores";
-import { get } from "svelte/store";
+import { derivedViewNames } from "../stores";
+import { getCacheKey } from "../shared/utils";
 
 type DuckQueryResult = ExecResponse | JsonResponse | ErrorResponse;
 
@@ -175,11 +175,20 @@ export class DatabaseConnection {
     return datasetSize;
   }
 
-  async getColSummaries(datasetName: string): Promise<ColumnSummary[]> {
+  async getColSummaries(
+    datasetName: string,
+  ): Promise<Map<string, ColumnSummary>> {
     let q = vg.sql`summarize ${vg.column(datasetName)}`;
-    let r = await vg.coordinator().query(q, { type: "json" });
+    let r: ColumnSummary[] = await vg.coordinator().query(q, { type: "json" });
 
-    return r;
+    const resultMap = new Map<string, any>();
+
+    for (const item of r) {
+      const columnName = item.column_name;
+      resultMap.set(columnName, item);
+    }
+
+    return resultMap;
   }
 
   async getDocsByID(dsInfo: DatasetInfo, ids: any[]): Promise<any[]> {
@@ -197,19 +206,22 @@ export class DatabaseConnection {
   }
 
   async getSpansPerDoc(
-    datasetInfo: DatasetInfo,
+    table: string,
+    col: string,
+    joinKey: string,
     id: number,
     mosaicSelection: any, // vg.selection to get the predicates from
   ): Promise<any[]> {
-    let joinKey = vg.column(datasetInfo.joinDatasetInfo?.joinKey);
+    const viewMap = get(derivedViewNames);
+    const viewName = viewMap.get(getCacheKey({ table, col }));
 
     const predicates = mosaicSelection.predicate({
-      from: get(currentWordViewName),
+      from: viewName,
     });
 
     let q = vg.Query.select("*")
-      .from({ source: datasetInfo.joinDatasetInfo?.joinDatasetName })
-      .where([...predicates, vg.sql`"source".${joinKey} = ${id}`]);
+      .from({ source: table })
+      .where([...predicates, vg.sql`"source".${vg.column(joinKey)} = ${id}`]);
 
     let r = await vg.coordinator().query(q, { type: "json" });
 

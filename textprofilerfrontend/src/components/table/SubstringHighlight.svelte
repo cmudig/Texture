@@ -7,6 +7,8 @@
   export let value: any;
   export let highlights: any[];
 
+  console.log("substring highlight");
+
   type AnnotatedSpan = {
     span: string;
     included: boolean;

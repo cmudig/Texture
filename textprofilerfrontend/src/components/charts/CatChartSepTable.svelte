@@ -1,19 +1,16 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
-
   import { afterUpdate, onDestroy } from "svelte";
   import {
     mosaicSelection,
     clearColumnSelections,
-    currentWordViewName,
+    derivedViewNames,
   } from "../../stores";
-  import { getDatasetName, getUUID } from "../../shared/utils";
+  import { getDatasetName, getUUID, getCacheKey } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
-  export let columnName: string;
-  export let parentTableName: string;
   export let plotTableName: string;
-  export let joinKey: string;
+  export let columnName: string;
   export let limit = 10;
   export let excludeList: string[] | undefined = undefined;
 
@@ -45,11 +42,9 @@
   }
 
   async function renderChart(
-    _parentTableName: string,
+    _plotTableName: string,
     cName: string,
     selection: any,
-    _plotTableName: string,
-    _joinKey: string,
     _excludeList?: string[],
   ) {
     let datasetName = await getDatasetName(
@@ -58,7 +53,11 @@
       true,
       _excludeList,
     );
-    currentWordViewName.set(datasetName);
+
+    $derivedViewNames.set(
+      getCacheKey({ table: _plotTableName, col: cName }),
+      datasetName,
+    );
 
     plotWrapper = getPlot(
       vg.barX(vg.from(datasetName, { filterBy: $mosaicSelection }), {
@@ -89,14 +88,7 @@
   }
 
   afterUpdate(() => {
-    renderChart(
-      parentTableName,
-      columnName,
-      thisSelection,
-      plotTableName,
-      joinKey,
-      excludeList,
-    );
+    renderChart(plotTableName, columnName, thisSelection, excludeList);
   });
 
   onDestroy(() => {

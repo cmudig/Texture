@@ -25,8 +25,8 @@
     id: number,
     textCols: string[],
     selectionMap: SelectionMap,
+    datasetInfo: DatasetInfo,
     _selection?: any,
-    datasetInfo?: DatasetInfo,
   ): Promise<undefined | Record<string, unknown[]>> {
     if (!datasetInfo || !selection || !Object.keys(selectionMap).length) {
       return undefined;
@@ -35,17 +35,26 @@
     let spanMap = {};
 
     for (let textCol of textCols) {
-      // TODO FIGURE OUT SOME WAY TO QUERY RIGHT TABLE?
+      let derivedCol = datasetInfo.columns.find(
+        (col) =>
+          col.derived_from === textCol &&
+          col.table_name &&
+          col.table_name !== datasetInfo.name,
+      );
 
       if (
-        joinInfo?.joinColumn.associated_text_col_name === textCol &&
-        joinInfo?.joinColumn.name in selectionMap
+        derivedCol &&
+        derivedCol.table_name &&
+        derivedCol.name in selectionMap
       ) {
         let spans = await databaseConnection.getSpansPerDoc(
-          datasetInfo,
+          derivedCol.table_name,
+          derivedCol.name,
+          datasetInfo.primary_key.name,
           id,
           _selection,
         );
+
         spanMap[textCol] = spans;
       }
     }
@@ -62,8 +71,8 @@
     id,
     textData.map((d) => d[0]),
     $selectionDisplay,
-    selection,
     $datasetInfo,
+    selection,
   );
 </script>
 

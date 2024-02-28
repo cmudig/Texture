@@ -7,15 +7,11 @@
   import CatChartSepTable from "./charts/CatChartSepTable.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
-  import { mosaicSelection, datasetInfo, showBackgroundDist } from "../stores";
+  import { datasetInfo, showBackgroundDist } from "../stores";
   import { stopwords } from "../shared/stopwords";
 
   export let displayCol: Column;
-
-  // TODO get rid of plotCols -- just use one column profile per column
-  export let plotCols: Column[];
-  export let colSummary: ColumnSummary | undefined = undefined;
-  export let colType: string | undefined = undefined;
+  export let colSummary: ColumnSummary | undefined;
 
   let active = true;
 </script>
@@ -36,6 +32,11 @@
     >
       {displayCol.name}
     </p>
+    {#if displayCol.derived_from}
+      <p class="text-gray-400 italic">
+        (derived from {displayCol.derived_from})
+      </p>
+    {/if}
 
     <div class="grow" />
 
@@ -44,48 +45,44 @@
     {/if}
   </button>
   <div class="w-full">
-    <div class="ml-4 mt-2" class:hidden={!active}>
-      {#if colType === "text" && $filters.joinDatasetInfo?.joinColumn.associated_text_col_name === displayCol.name}
-        <h3 class="italic">{$filters.joinDatasetInfo.joinColumn.name}</h3>
-
-        <CatChartSepTable
-          columnName={$filters.joinDatasetInfo.joinColumn.name}
-          parentTableName={$filters.datasetName}
-          plotTableName={$filters.joinDatasetInfo.joinDatasetName}
-          joinKey={$filters.joinDatasetInfo.joinKey}
-          limit={20}
-          excludeList={$stopwords}
-        />
-      {/if}
-
-      <div class="flex flex-col">
-        {#if colType === "text" && plotCols.length}
-          <h3 class="italic">Extracted metadata</h3>
+    <div class="ml-4 my-1" class:hidden={!active}>
+      {#if displayCol.table_name && displayCol.table_name !== $datasetInfo.name}
+        {#if displayCol.type === "categorical" || displayCol.type === "text"}
+          <CatChartSepTable
+            plotTableName={displayCol.table_name}
+            columnName={displayCol.name}
+            limit={20}
+            excludeList={$datasetInfo.columns.find(
+              (c) => c.name === displayCol.derived_from,
+            )?.type === "text"
+              ? $stopwords
+              : undefined}
+          />
+        {:else}
+          Not currently supporting quantitative columns from another table...
         {/if}
-
-        {#each plotCols as col}
-          {#if col.type === "number"}
-            <Histogram
-              mainDatasetName={$datasetInfo.name}
-              showBackground={$showBackgroundDist}
-              columnName={col.name}
-            />
-          {:else if col.type === "categorical"}
-            <CategoricalChart
-              mainDatasetName={$datasetInfo.name}
-              showBackground={$showBackgroundDist}
-              columnName={col.name}
-            />
-          {:else if col.type === "date"}
-            <DateChart
-              mainDatasetName={$datasetInfo.name}
-              columnName={col.name}
-            />
-          {:else}
-            <div>{col.name}: Unsupported column type ({col.type})</div>
-          {/if}
-        {/each}
-      </div>
+      {:else if displayCol.type === "number"}
+        <Histogram
+          mainDatasetName={$datasetInfo.name}
+          showBackground={$showBackgroundDist}
+          columnName={displayCol.name}
+        />
+      {:else if displayCol.type === "categorical"}
+        <CategoricalChart
+          mainDatasetName={$datasetInfo.name}
+          showBackground={$showBackgroundDist}
+          columnName={displayCol.name}
+        />
+      {:else if displayCol.type === "date"}
+        <DateChart
+          mainDatasetName={$datasetInfo.name}
+          columnName={displayCol.name}
+        />
+      {:else}
+        <div>
+          {displayCol.name}: Unsupported column type ({displayCol.type})
+        </div>
+      {/if}
     </div>
   </div>
 </div>
