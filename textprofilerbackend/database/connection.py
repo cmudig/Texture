@@ -1,5 +1,4 @@
 from pathlib import Path
-import time
 import duckdb
 import pyarrow as pa
 from textprofilerbackend.models import (
@@ -10,7 +9,10 @@ from textprofilerbackend.models import (
     ErrorResponse,
 )
 from fastapi.responses import Response
-from textprofilerbackend.example_data import EXAMPLE_DATASETS
+from textprofilerbackend.database.example_data import (
+    EXAMPLE_DATASET_INFO,
+    EXAMPLE_DATA_PATHS,
+)
 import pandas as pd
 import numpy as np
 import lancedb
@@ -18,7 +20,9 @@ import torch
 import sentence_transformers
 
 # NOTE: this path is affected by where the server is run from, assuming it is run in textprofilerbackend for now
-CACHE_PATH = ".textprofiler_cache/"
+CACHE_DIR = ".textprofiler_cache/"
+CACHE_PATH = Path(CACHE_DIR)
+CACHE_PATH.mkdir(parents=True, exist_ok=True)
 
 
 def get_embedding(col: np.ndarray, model_name):
@@ -27,52 +31,36 @@ def get_embedding(col: np.ndarray, model_name):
     return e
 
 
+def load_datasets(duckdbconn, dsGroup):
+    for dsName, dsPath in EXAMPLE_DATA_PATHS[dsGroup]["datasets"].items():
+        duckdbconn.load_dataset(dsName, dsPath)
+
+
+def load_embeddings(vectordbconn, dsGroup):
+    for dsName, embeddingPath in EXAMPLE_DATA_PATHS[dsGroup]["embeddings"].items():
+        embeddings = torch.load(CACHE_PATH / embeddingPath)
+        df = pd.read_parquet(
+            CACHE_PATH / EXAMPLE_DATA_PATHS[dsGroup]["datasets"][dsName]
+        )
+
+        df["vector"] = list(embeddings.numpy())
+        embed_func = lambda x: get_embedding(x, "all-mpnet-base-v2")
+
+        vectordbconn.add_table(dsName, df, "id", embed_func)
+
+
 def init_db():
     duckdbconn = DatabaseConnection()
     vectordbconn = VectorDBConnection()
-
-    print("Loading duckdb data...")
-    # datasetPaths = {
-    #     "vast2021": "raw_data/vast_w_id.parquet",
-    #     "vast2021_word": "raw_data/vast_word_w_id.parquet",
-    #     "dolly": "raw_data/dolly15k.parquet",
-    #     "opus": "raw_data/opus100_en_es.parquet",
-    #     "squad": "raw_data/squad_validation.parquet",
-    #     "bbc": "raw_data/bbc_with_lava.parquet",
-    # }
     metadataCache = {}
-    # load example datasets into duckdb
-    # for datasetInfo in EXAMPLE_DATASETS:
-    #     dsName = datasetInfo.name
-    #     duckdbconn.load_dataset(dsName, datasetPaths[dsName])
-    #     metadataCache[dsName] = datasetInfo
 
-    # TEMP: load example data
-    # duckdbconn.load_dataset("vast2021", "raw_data/vast_w_id.parquet")
-    # duckdbconn.load_dataset("vast2021_word", "raw_data/vast_word_w_id.parquet")
-    duckdbconn.load_dataset(
-        "vis_papers", "raw_data/vis_papers_sample/vis_papers.parquet"
-    )
-    duckdbconn.load_dataset(
-        "vis_papers_words", "raw_data/vis_papers_sample/vis_papers_words_span.parquet"
-    )
-    metadataCache["vis_papers"] = EXAMPLE_DATASETS[0]
-    # metadataCache["vast2021"] = EXAMPLE_DATASETS[1]
+    for dsGroupName in EXAMPLE_DATASET_INFO:
+        print(f"Loading data for {dsGroupName}...")
+        load_datasets(duckdbconn, dsGroupName)
+        load_embeddings(vectordbconn, dsGroupName)
+        metadataCache[dsGroupName] = EXAMPLE_DATASET_INFO[dsGroupName]
 
-    print("Loading vector data...")
-    vis_paper_embeddings = torch.load(
-        ".textprofiler_cache/raw_data/vis_papers_sample/vis_papers_embeddings.pt"
-    )
-    vis_paper_df = pd.read_parquet(
-        ".textprofiler_cache/raw_data/vis_papers_sample/vis_papers.parquet"
-    )
-    vis_paper_df["vector"] = list(vis_paper_embeddings.numpy())
-    embed_func = lambda x: get_embedding(x, "all-mpnet-base-v2")
-
-    vectordbconn.add_table("vis_papers", vis_paper_df, "id", embed_func)
-
-    print("Example data loaded.")
-
+    print("Finished Database init.")
     return duckdbconn, vectordbconn, metadataCache
 
 
@@ -114,13 +102,8 @@ class DatabaseConnection:
             dataset_name: name of the dataset
             dataset_path: path to parquet file
         """
-        p = Path(CACHE_PATH) / dataset_path
-
-        # TODO: should maybe use the register function, especially for arrow data like parquet?
-        #  See: https://duckdb.org/docs/archive/0.9.2/api/python/data_ingestion#dataframes--arrow-tables
-
         self.execute(
-            f"CREATE TABLE IF NOT EXISTS '{dataset_name}' AS (SELECT * FROM read_parquet('{str(p)}'));"
+            f"CREATE TABLE IF NOT EXISTS '{dataset_name}' AS (SELECT * FROM read_parquet('{CACHE_PATH / dataset_path}'));"
         )
 
     def load_dataframe(self, dataset_name, df: pd.DataFrame):
@@ -131,6 +114,7 @@ class DatabaseConnection:
             dataset_name: name of the dataset
             df: DataFrame to load
         """
+        # NOTE: this only creates a view im pretty sure of the dataframe
         self.connection.register(dataset_name, df)
         print("registed new dataset in duckdb:  ", dataset_name)
 
@@ -156,7 +140,6 @@ class DatabaseConnection:
         """
         uuid = data.uuid
         sql = data.sql
-        # start = time.time()
         response_message = None
 
         try:
@@ -178,8 +161,6 @@ class DatabaseConnection:
             print("[Handle JSON message ERROR]: ", e, "\nExecuting SQL: ", sql)
             response_message = ErrorResponse(error=str(e), uuid=uuid)
 
-        # total = round((time.time() - start) * 1_000)
-        # print(f"DONE. Query { uuid } took { total } ms.\n{ sql }")
         return response_message
 
     def _handle_arrow_message(self, data: DuckQueryData):
@@ -188,7 +169,6 @@ class DatabaseConnection:
         """
         uuid = data.uuid
         sql = data.sql
-        # start = time.time()
         response_message = None
 
         try:
@@ -204,7 +184,6 @@ class DatabaseConnection:
                 response_message = Response(
                     content=pybytes,
                     media_type="application/vnd.apache.arrow.stream",
-                    # headers={"type": "arrow", "uuid": uuid}, # dont think this does anything
                 )
 
             else:
@@ -215,9 +194,6 @@ class DatabaseConnection:
             print("[Handle Arrow message ERROR]: ", e, "\nExecuting SQL: ", sql)
             response_message = ErrorResponse(error=str(e), uuid=uuid)
 
-        # total = round((time.time() - start) * 1_000)
-        # print(f"DONE. Query { uuid } took { total } ms.\n{ sql }")
-
         return response_message
 
 
@@ -227,12 +203,9 @@ class VectorDBConnection:
         embed_func: function that takes a string and returns a numpy array embedding.
         This MUST be same model as original embeddings or else comparison will not work
         """
-        Path(CACHE_PATH).mkdir(parents=True, exist_ok=True)
-        p = Path(CACHE_PATH) / database_dir
-
         print("Making new LanceDB connection")
 
-        self.connection = lancedb.connect(p)
+        self.connection = lancedb.connect(CACHE_PATH / database_dir)
         self.id_cols = {}
         self.embed_funcs = {}
 

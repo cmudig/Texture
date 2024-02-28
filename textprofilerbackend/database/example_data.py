@@ -11,6 +11,18 @@ dataset_vis_papers = DatasetInfo(
             "type": "categorical",
             "table_name": "vis_papers_words",
         },
+        {
+            "name": "author",
+            "type": "categorical",
+            "table_name": "vis_papers_authors",
+            # "derived_from": "AuthorNames-Deduped",
+        },
+        {
+            "name": "keyword",
+            "type": "categorical",
+            "table_name": "vis_papers_keywords",
+            # "derived_from": "AuthorKeywords",
+        },
         # columns in main table
         {
             "name": "id",
@@ -28,14 +40,14 @@ dataset_vis_papers = DatasetInfo(
             "name": "Conference",
             "type": "categorical",
         },
-        {
-            "name": "AuthorNames-Deduped",
-            "type": "categorical",
-        },
-        {
-            "name": "AuthorKeywords",
-            "type": "categorical",
-        },
+        # {
+        #     "name": "AuthorNames-Deduped",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "AuthorKeywords",
+        #     "type": "categorical",
+        # },
         {
             "name": "Abstract_text_length",
             "type": "number",
@@ -138,6 +150,20 @@ dataset_vis_papers = DatasetInfo(
 )
 
 
-EXAMPLE_DATASETS = {
+EXAMPLE_DATASET_INFO = {
     "vis_papers": dataset_vis_papers,
+}
+
+EXAMPLE_DATA_PATHS = {
+    "vis_papers": {
+        "datasets": {
+            "vis_papers": "raw_data/vis_papers_sample/vis_papers.parquet",
+            "vis_papers_words": "raw_data/vis_papers_sample/vis_papers_words_span.parquet",
+            "vis_papers_authors": "raw_data/vis_papers_sample/vis_papers_authors_span.parquet",
+            "vis_papers_keywords": "raw_data/vis_papers_sample/vis_papers_keywords_span.parquet",
+        },
+        "embeddings": {
+            "vis_papers": "raw_data/vis_papers_sample/vis_papers_embeddings.pt"
+        },
+    }
 }
