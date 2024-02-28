@@ -20,7 +20,6 @@ export { DuckQueryData } from "./models/DuckQueryData";
 export type { ErrorResponse } from "./models/ErrorResponse";
 export type { ExecResponse } from "./models/ExecResponse";
 export type { HTTPValidationError } from "./models/HTTPValidationError";
-export type { JoinInfo } from "./models/JoinInfo";
 export type { JsonResponse } from "./models/JsonResponse";
 export type { LLMResponse } from "./models/LLMResponse";
 export type { LLMTransformCommit } from "./models/LLMTransformCommit";
