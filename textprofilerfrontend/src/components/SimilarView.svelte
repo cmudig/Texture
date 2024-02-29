@@ -94,6 +94,7 @@
         id={data.originalDoc.id}
         textData={data.originalDoc.textData}
         metadata={data.originalDoc.metadata}
+        originalMetadata={data.originalDoc.metadata}
       >
         <div slot="title" class="font-semibold">Original Record</div>
       </RowView>
@@ -104,6 +105,7 @@
           id={relatedDoc.id}
           textData={relatedDoc.textData}
           metadata={relatedDoc.metadata}
+          originalMetadata={data.originalDoc.metadata}
         >
           <div slot="title" class="italic text-gray-500">
             Distance: {formatNumber(relatedDoc.distance)}

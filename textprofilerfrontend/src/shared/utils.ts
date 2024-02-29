@@ -73,3 +73,22 @@ export function shouldHighlight(
 export function getCacheKey({ table, col }): string {
   return `${table}_${col}`;
 }
+
+
+export function compareHighlight(
+  originalMetadata,
+  itemKey:string,
+  itemValue:any,
+  type?: Column.type,
+): boolean {
+  if(originalMetadata === undefined) {
+    return false;
+  }
+
+  let originalMetadataDict = Object.fromEntries(originalMetadata);
+  return originalMetadataDict[itemKey] === itemValue;
+  
+  // TODO: if list? After making changes to data table, verify once!
+  // return originalMetadataDict[itemKey].some(v => itemValue.includes(v));
+  return false;
+}
