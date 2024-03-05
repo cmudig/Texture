@@ -219,8 +219,8 @@ def get_server() -> FastAPI:
         new_col_name = "MODEL_" + request.newColumnName
         duckdb_conn.add_column(request.tableName, new_col_name, processed_results)
         colType = get_type_from_response(request.taskFormat.type)
-        datasetMetadataCache[request.tableName].column_info.append(
-            Column(name=new_col_name, type=colType)
+        datasetMetadataCache[request.tableName].columns.append(
+            Column(name=new_col_name, type=colType, derived_from=request.columnName)
         )
 
         return LLMResponse(success=True, result=[])
