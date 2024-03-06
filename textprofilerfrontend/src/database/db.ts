@@ -242,4 +242,12 @@ export class DatabaseConnection {
 
     return r;
   }
+
+  async getColCount(tableName: string, cName: string): Promise<number> {
+    let q = vg.Query.from(tableName).select({
+      count: vg.sql`COUNT(DISTINCT CASE WHEN ${vg.column(cName)} IS NULL THEN 'null' ELSE ${vg.column(cName)} END)`,
+    });
+    let r = await vg.coordinator().query(q, { type: "json" });
+    return r[0]?.["count"];
+  }
 }

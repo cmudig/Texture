@@ -1,8 +1,13 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { mosaicSelection, clearColumnSelections } from "../../stores";
-  import { getDatasetName, getUUID } from "../../shared/utils";
+  import {
+    mosaicSelection,
+    clearColumnSelections,
+    derivedViewNames,
+    databaseConnection,
+  } from "../../stores";
+  import { getDatasetName, getUUID, getCacheKey } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
   export let columnName: string;
@@ -11,12 +16,16 @@
   export let plotNulls = true;
   export let limit = 10;
   export let excludeList: string[] | undefined = undefined;
+  export let isDerivedTable = false;
 
   let el: HTMLElement;
   let plotWrapper;
   let thisSelection = vg.Selection.single();
   let uuid = getUUID();
+  let colCount: number;
   $: saveSelectionToCache(thisSelection, columnName);
+
+  $: remainingRows = colCount - limit;
 
   function resetSelection(s) {
     s.clauses.forEach((clause) => {
@@ -54,6 +63,18 @@
     );
     let fromClause: any = datasetName;
 
+    if (isDerivedTable) {
+      $derivedViewNames.set(
+        getCacheKey({ table: mainDsName, col: cName }),
+        datasetName,
+      );
+    }
+
+    colCount = await databaseConnection.getColCount(
+      mainDatasetName,
+      columnName,
+    );
+
     if (showBackground) {
       plotWrapper = getPlot(
         // including this breaks the click interation and doesnt cut off text?
@@ -90,10 +111,10 @@
           textOverflow: "ellipsis",
           fill: "white",
         }),
-        vg.yLabel(null),
-        vg.marginLeft(80),
+        vg.margins({ left: 80, bottom: 0, top: 0, right: 0 }),
         vg.width(400),
-        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7 }),
+        vg.axis(null),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7, label: null }),
       );
     } else {
       plotWrapper = getPlot(
@@ -118,10 +139,10 @@
           textOverflow: "ellipsis",
           fill: "white",
         }),
-        vg.yLabel(null),
-        vg.marginLeft(80),
+        vg.margins({ left: 80, bottom: 0, top: 0, right: 0 }),
         vg.width(400),
-        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7 }),
+        vg.axis(null),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7, label: null }),
       );
     }
 
@@ -149,4 +170,29 @@
   });
 </script>
 
-<div class="summaryChart" bind:this={el} />
+<div class="max-h-96 overflow-auto">
+  <div class="summaryChart" bind:this={el} />
+</div>
+<div class="mt-1 flex justify-center gap-1">
+  {#if remainingRows > 0}
+    <button
+      class="hover:bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded"
+      on:click={() => {
+        limit += 10;
+      }}
+    >
+      +{remainingRows} values. Click to load more.
+    </button>
+  {/if}
+
+  {#if limit != 10}
+    <button
+      class="hover:bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded"
+      on:click={() => {
+        limit = 10;
+      }}
+    >
+      Reset
+    </button>
+  {/if}
+</div>
