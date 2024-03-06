@@ -4,7 +4,6 @@
   import DataTypeIcon from "./DataTypeIcon.svelte";
   import Histogram from "./charts/Histogram.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";
-  import CatChartSepTable from "./charts/CatChartSepTable.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
   import { datasetInfo, showBackgroundDist } from "../stores";
@@ -48,8 +47,8 @@
     <div class="ml-4 my-1" class:hidden={!active}>
       {#if displayCol.table_name && displayCol.table_name !== $datasetInfo.name}
         {#if displayCol.type === "categorical" || displayCol.type === "text"}
-          <CatChartSepTable
-            plotTableName={displayCol.table_name}
+          <CategoricalChart
+            mainDatasetName={displayCol.table_name}
             columnName={displayCol.name}
             limit={20}
             excludeList={$datasetInfo.columns.find(
@@ -57,6 +56,8 @@
             )?.type === "text"
               ? $stopwords
               : undefined}
+            plotNulls={true}
+            isDerivedTable={true}
           />
         {:else}
           Not currently supporting quantitative columns from another table...
