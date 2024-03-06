@@ -50,7 +50,6 @@
           <CategoricalChart
             mainDatasetName={displayCol.table_name}
             columnName={displayCol.name}
-            limit={20}
             excludeList={$datasetInfo.columns.find(
               (c) => c.name === displayCol.derived_from,
             )?.type === "text"

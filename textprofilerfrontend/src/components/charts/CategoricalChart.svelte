@@ -5,6 +5,7 @@
     mosaicSelection,
     clearColumnSelections,
     derivedViewNames,
+    databaseConnection,
   } from "../../stores";
   import { getDatasetName, getUUID, getCacheKey } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
@@ -21,7 +22,10 @@
   let plotWrapper;
   let thisSelection = vg.Selection.single();
   let uuid = getUUID();
+  let colCount: number;
   $: saveSelectionToCache(thisSelection, columnName);
+
+  $: remainingRows = colCount - limit;
 
   function resetSelection(s) {
     s.clauses.forEach((clause) => {
@@ -65,6 +69,11 @@
         datasetName,
       );
     }
+
+    colCount = await databaseConnection.getColCount(
+      mainDatasetName,
+      columnName,
+    );
 
     if (showBackground) {
       plotWrapper = getPlot(
@@ -161,4 +170,29 @@
   });
 </script>
 
-<div class="summaryChart" bind:this={el} />
+<div class="max-h-96 overflow-auto">
+  <div class="summaryChart" bind:this={el} />
+</div>
+<div class="mt-1 flex justify-center gap-1">
+  {#if remainingRows > 0}
+    <button
+      class="hover:bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded"
+      on:click={() => {
+        limit += 10;
+      }}
+    >
+      +{remainingRows} values. Click to load more.
+    </button>
+  {/if}
+
+  {#if limit != 10}
+    <button
+      class="hover:bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded"
+      on:click={() => {
+        limit = 10;
+      }}
+    >
+      Reset
+    </button>
+  {/if}
+</div>
