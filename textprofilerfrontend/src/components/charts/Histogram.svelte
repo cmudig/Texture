@@ -39,9 +39,11 @@
         }),
         vg.intervalX({ as: $mosaicSelection }),
         vg.xDomain(vg.Fixed),
-        vg.marginLeft(55),
         vg.width(400),
         vg.height(150),
+        vg.axisX({ label: null }),
+        vg.axisY({ label: null }),
+        vg.margins({ top: 10, right: 15, left: 25 }),
       );
     } else {
       plotWrapper = getPlot(
@@ -53,9 +55,11 @@
         }),
         vg.intervalX({ as: $mosaicSelection }),
         vg.xDomain(vg.Fixed),
-        vg.marginLeft(55),
         vg.width(400),
         vg.height(150),
+        vg.axisX({ label: null }),
+        vg.axisY({ label: null }),
+        vg.margins({ top: 10, right: 15, left: 25 }),
       );
     }
 

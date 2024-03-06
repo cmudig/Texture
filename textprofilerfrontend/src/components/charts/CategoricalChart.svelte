@@ -1,8 +1,12 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { mosaicSelection, clearColumnSelections } from "../../stores";
-  import { getDatasetName, getUUID } from "../../shared/utils";
+  import {
+    mosaicSelection,
+    clearColumnSelections,
+    derivedViewNames,
+  } from "../../stores";
+  import { getDatasetName, getUUID, getCacheKey } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
   export let columnName: string;
@@ -11,6 +15,7 @@
   export let plotNulls = true;
   export let limit = 10;
   export let excludeList: string[] | undefined = undefined;
+  export let isDerivedTable = false;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -54,6 +59,13 @@
     );
     let fromClause: any = datasetName;
 
+    if (isDerivedTable) {
+      $derivedViewNames.set(
+        getCacheKey({ table: mainDsName, col: cName }),
+        datasetName,
+      );
+    }
+
     if (showBackground) {
       plotWrapper = getPlot(
         // including this breaks the click interation and doesnt cut off text?
@@ -90,10 +102,10 @@
           textOverflow: "ellipsis",
           fill: "white",
         }),
-        vg.yLabel(null),
-        vg.marginLeft(80),
+        vg.margins({ left: 80, bottom: 0, top: 0, right: 0 }),
         vg.width(400),
-        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7 }),
+        vg.axis(null),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7, label: null }),
       );
     } else {
       plotWrapper = getPlot(
@@ -118,10 +130,10 @@
           textOverflow: "ellipsis",
           fill: "white",
         }),
-        vg.yLabel(null),
-        vg.marginLeft(80),
+        vg.margins({ left: 80, bottom: 0, top: 0, right: 0 }),
         vg.width(400),
-        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7 }),
+        vg.axis(null),
+        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7, label: null }),
       );
     }
 
