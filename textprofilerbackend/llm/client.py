@@ -357,36 +357,46 @@ def mainTesting():
     llm_client = LLMClient()
 
     df = pd.read_parquet(
-        "/Users/wepperso/workspaces/Research/TextProfileAll/TextProfiler/textprofilerbackend/.textprofiler_cache/raw_data/vis_papers/vis_papers.parquet"
+        "../.textprofiler_cache/raw_data/vis_papers_sample/vis_papers.parquet"
     )
 
-    df = df[(df.umap_x > 10.5) & (df.umap_y < 10)]
+    gt_has_user_study = [
+        False,  # id 0
+        True,  # id 1
+        True,  # id 2
+        True,  # id 3
+        False,  # id 4 -- kind of "control experiment and "expert interviews" - ambiguous
+        False,  # id 5 - no study, yes interviews - ambiguous
+        True,  # id 6
+        True,  # id 7
+        False,  # id 8
+        True,  # id 9
+    ]
 
-    gt = ["basketball", "racket", "basketball"]
-
-    data = df.Abstract.tolist()
-    user_prompt = "Which sport does this abstract have to do with? If multiple mentioned pick the main sport and if it does not have to do with sports then reply with None."
+    data = df.Abstract.iloc[:10].tolist()
+    user_prompt = "Does this article mention a user study?"
 
     # STEP 1: get response format
-    response_format = TaskFormat(name="sport_name", type="string", num_replies="single")
+    response_format = llm_client.get_response_format(user_prompt)
     print("Generated response format:", response_format)
 
     #### VERSION 1: GENERIC RESPONSE
-    # call1Data = data[3:]
-    # response = llm_client.get_transformations(user_prompt, response_format, call1Data)
-    # df_response = pd.DataFrame(response, columns=[response_format["name"]])
-    # df_response["data"] = call1Data
+    call1Data = data[3:]
+    response = llm_client.get_transformations(user_prompt, response_format, call1Data)
+    df_response = pd.DataFrame(response, columns=[response_format["name"]])
+    df_response["data"] = call1Data
 
-    # print("Generic response:", df_response)
+    print("Generic response:", df_response)
 
     #### VERSION 2: EXAMPLE RESPONSE
-    call2Data = data
+    call2Data = data[3:]
     call2DataExamples = data[:3]
     call2ExResponses = [
-        {"sport_name": "basketball"},
-        {"sport_name": "racket"},
-        {"sport_name": "basketball"},
+        {"user_study": False},
+        {"user_study": True},
+        {"user_study": True},
     ]
+    response_format_2 = {"name": "user_study", "type": "bool", "num_replies": "single"}
 
     response2 = llm_client.get_transformations(
         user_prompt,
@@ -396,15 +406,10 @@ def mainTesting():
         call2ExResponses,
     )
 
-    df_response2 = pd.DataFrame(response2, columns=[response_format.name])
+    df_response2 = pd.DataFrame(response2, columns=[response_format_2["name"]])
+    df_response2["data"] = call2Data
 
-    df_response2.to_parquet("RESULT.parquet")
-
-    print("Example response:", df_response2)
+    print("Example response:", df_response)
 
     breakpoint()
     print("<|endoftext|>")
-
-
-# if __name__ == "__main__":
-#     mainTesting()

@@ -5,23 +5,12 @@ dataset_vis_papers = DatasetInfo(
     primary_key={"name": "id", "type": "number"},
     origin="example",
     columns=[
-        {
-            "name": "Abstract",
-            "type": "text",
-        },
+        # join tables
         {
             "name": "word",
             "type": "categorical",
             "table_name": "vis_papers_words",
             "derived_from": "Abstract",
-        },
-        {
-            "name": "Title",
-            "type": "categorical",
-        },
-        {
-            "name": "Conference",
-            "type": "categorical",
         },
         {
             "name": "author",
@@ -35,43 +24,22 @@ dataset_vis_papers = DatasetInfo(
             "table_name": "vis_papers_keywords",
             "derived_from": "AuthorKeywords",
         },
-        {
-            "name": "Year",
-            "type": "number",
-        },
-        {
-            "name": "PaperType",
-            "type": "categorical",
-        },
-        {
-            "name": "AminerCitationCount",
-            "type": "number",
-        },
-        {
-            "name": "CitationCount_CrossRef",
-            "type": "number",
-        },
-        {
-            "name": "PubsCited_CrossRef",
-            "type": "number",
-        },
-        {
-            "name": "Award",
-            "type": "categorical",
-        },
-        {
-            "name": "Abstract_num_words",
-            "type": "number",
-            "derived_from": "Abstract",
-        },
+        # columns in main table
         {
             "name": "id",
             "type": "number",
         },
         {
-            "name": "MODEL_sport",
+            "name": "Abstract",
+            "type": "text",
+        },
+        {
+            "name": "Title",
             "type": "categorical",
-            "derived_from": "Abstract",
+        },
+        {
+            "name": "Conference",
+            "type": "categorical",
         },
         # {
         #     "name": "AuthorNames-Deduped",
@@ -81,31 +49,31 @@ dataset_vis_papers = DatasetInfo(
         #     "name": "AuthorKeywords",
         #     "type": "categorical",
         # },
-        # {
-        #     "name": "Abstract_text_length",
-        #     "type": "number",
-        #     "derived_from": "Abstract",
-        # },
-        # {
-        #     "name": "MODEL_num_participants",
-        #     "type": "number",
-        #     "derived_from": "Abstract",
-        # },
-        # {
-        #     "name": "MODEL_keywords",
-        #     "type": "categorical",
-        #     "derived_from": "Abstract",
-        # },
-        # {
-        #     "name": "MODEL_summary",
-        #     "type": "text",
-        #     "derived_from": "Abstract",
-        # },
-        # {
-        #     "name": "MODEL_has_user_study",
-        #     "type": "categorical",
-        #     "derived_from": "Abstract",
-        # },
+        {
+            "name": "Abstract_text_length",
+            "type": "number",
+            "derived_from": "Abstract",
+        },
+        {
+            "name": "MODEL_num_participants",
+            "type": "number",
+            "derived_from": "Abstract",
+        },
+        {
+            "name": "MODEL_keywords",
+            "type": "categorical",
+            "derived_from": "Abstract",
+        },
+        {
+            "name": "MODEL_summary",
+            "type": "text",
+            "derived_from": "Abstract",
+        },
+        {
+            "name": "MODEL_has_user_study",
+            "type": "categorical",
+            "derived_from": "Abstract",
+        },
         # {
         #     "name": "DOI",
         #     "type": "categorical",
@@ -136,6 +104,35 @@ dataset_vis_papers = DatasetInfo(
         # },
         #
         # {
+        #     "name": "Year",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "PaperType",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "AminerCitationCount",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "CitationCount_CrossRef",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "PubsCited_CrossRef",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "Award",
+        #     "type": "categorical",
+        # },
+        # {
+        #     "name": "Abstract_num_words",
+        #     "type": "number",
+        #     "derived_from": "Abstract",
+        # },
+        # {
         #     "name": "Abstract_max_word_length",
         #     "type": "number",
         #     "derived_from": "Abstract",
@@ -161,11 +158,13 @@ EXAMPLE_DATASET_INFO = {
 EXAMPLE_DATA_PATHS = {
     "vis_papers": {
         "datasets": {
-            "vis_papers": "raw_data/vis_papers/vis_papers.parquet",
-            "vis_papers_words": "raw_data/vis_papers/vis_papers_words_span.parquet",
-            "vis_papers_authors": "raw_data/vis_papers/vis_papers_authors_span.parquet",
-            "vis_papers_keywords": "raw_data/vis_papers/vis_papers_keywords_span.parquet",
+            "vis_papers": "raw_data/vis_papers_sample/vis_papers.parquet",
+            "vis_papers_words": "raw_data/vis_papers_sample/vis_papers_words_span.parquet",
+            "vis_papers_authors": "raw_data/vis_papers_sample/vis_papers_authors_span.parquet",
+            "vis_papers_keywords": "raw_data/vis_papers_sample/vis_papers_keywords_span.parquet",
         },
-        "embeddings": {"vis_papers": "raw_data/vis_papers/vis_papers_embeddings.pt"},
+        "embeddings": {
+            "vis_papers": "raw_data/vis_papers_sample/vis_papers_embeddings.pt"
+        },
     }
 }

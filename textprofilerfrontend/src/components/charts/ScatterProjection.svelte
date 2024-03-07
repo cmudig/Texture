@@ -66,7 +66,6 @@
       vg.intervalXY({ as: $mosaicSelection }),
       vg.width(400),
       vg.height(250),
-      vg.margins({ top: 10, right: 10, left: 10, bottom: 10 }),
     );
 
     el.replaceChildren(plotWrapper.element);

@@ -43,7 +43,7 @@
         vg.height(150),
         vg.axisX({ label: null }),
         vg.axisY({ label: null }),
-        vg.margins({ top: 10, right: 15, left: 40 }),
+        vg.margins({ top: 10, right: 15, left: 25 }),
       );
     } else {
       plotWrapper = getPlot(
@@ -59,7 +59,7 @@
         vg.height(150),
         vg.axisX({ label: null }),
         vg.axisY({ label: null }),
-        vg.margins({ top: 10, right: 15, left: 40 }),
+        vg.margins({ top: 10, right: 15, left: 25 }),
       );
     }
 
