@@ -111,3 +111,4 @@ class LLMTransformCommit(BaseModel):
     newColumnName: str
     exampleData: List[str]
     exampleResponse: List[Dict[str, Any]]
+    applyToIndices: List[int]

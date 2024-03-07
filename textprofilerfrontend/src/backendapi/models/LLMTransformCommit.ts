@@ -13,4 +13,5 @@ export type LLMTransformCommit = {
   newColumnName: string;
   exampleData: Array<string>;
   exampleResponse: Array<Record<string, any>>;
+  applyToIndices: Array<number>;
 };

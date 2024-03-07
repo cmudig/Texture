@@ -250,4 +250,21 @@ export class DatabaseConnection {
     let r = await vg.coordinator().query(q, { type: "json" });
     return r[0]?.["count"];
   }
+
+  async getIndex(
+    datasetName: string,
+    selection?: any,
+    indexCol = "id",
+  ): Promise<number[]> {
+    let q = vg.Query.from({ source: datasetName }).select(indexCol);
+    if (selection) {
+      q = q.where(selection.predicate({ from: datasetName }));
+    }
+
+    let r = await vg.coordinator().query(q, { type: "json" });
+
+    // get only numbers
+    let col = r.map((item) => item[indexCol]);
+    return col;
+  }
 }

@@ -119,7 +119,14 @@ class DatabaseConnection:
         print("registed new dataset in duckdb:  ", dataset_name)
 
     def add_column(self, tableName, columnName, data):
-        """Add a new column to the table with the given data. Data must match the length of the table."""
+        """
+        Add a new column to the table with the given data. Data must match the length of the table.
+
+        Args:
+            tableName: name of the dataset
+            columnName: NEW column name to add
+            data: data to add. Can be list-like or pd.Series
+        """
 
         # get current data
         current_df = self.connection.execute(f"SELECT * FROM {tableName}").fetchdf()
