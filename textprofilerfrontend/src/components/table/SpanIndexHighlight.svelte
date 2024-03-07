@@ -2,8 +2,6 @@
   export let value: any;
   export let highlights: any[]; // {id, span_start, span_end, word}
 
-  console.log("Span index highlight");
-
   function processText(value: string, highlights) {
     let result = "";
     let lastIndex = 0;
