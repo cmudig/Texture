@@ -10,6 +10,7 @@ class Column(BaseModel):
     derived_from: Optional[str] = None
     # for join datasets, if None assumed to be in main table
     table_name: Optional[str] = None
+    derived_how: Optional[Literal["model", "preprocess"]] = None
 
 
 class DatasetInfo(BaseModel):

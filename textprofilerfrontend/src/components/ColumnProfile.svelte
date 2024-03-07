@@ -17,7 +17,7 @@
 
 <div>
   <button
-    class="space-between flex h-9 w-full items-center justify-between gap-2 px-2 hover:bg-gray-100"
+    class={`space-between flex h-9 w-full items-center justify-between gap-2 px-2 ${displayCol.derived_how ? "bg-gradient-to-r from-yellow-300/40 to-gray-50" : "hover:bg-gray-100"}`}
     class:bg-gray-50={active}
     on:click={() => {
       active = !active;

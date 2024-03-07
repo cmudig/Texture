@@ -226,7 +226,13 @@ def get_server() -> FastAPI:
         )
         colType = get_type_from_response(request.taskFormat.type)
         datasetMetadataCache[request.tableName].columns.insert(
-            0, Column(name=new_col_name, type=colType, derived_from=request.columnName)
+            0,
+            Column(
+                name=new_col_name,
+                type=colType,
+                derived_from=request.columnName,
+                derived_how="model",
+            ),
         )
 
         return LLMResponse(success=True, result=[])

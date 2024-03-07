@@ -8,6 +8,7 @@ export type Column = {
   type: Column.type;
   derived_from?: string | null;
   table_name?: string | null;
+  derived_how?: "model" | "preprocess" | null;
 };
 
 export namespace Column {
