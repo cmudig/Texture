@@ -9,6 +9,7 @@
   } from "../../stores";
   import { getDatasetName, getUUID, getCacheKey } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
+  import { formatInt } from "../../shared/format";
 
   export let columnName: string;
   export let mainDatasetName: string;
@@ -181,7 +182,7 @@
         limit += 10;
       }}
     >
-      +{remainingRows} values. Click to load more.
+      +{formatInt(remainingRows)} values. Click to load more.
     </button>
   {/if}
 
