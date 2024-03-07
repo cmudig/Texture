@@ -186,7 +186,7 @@
 </script>
 
 <div class="max-h-96 overflow-auto">
-  <div class="summaryChart" bind:this={el} />
+  <div bind:this={el} />
 </div>
 <div class="mt-1 flex justify-center gap-1">
   {#if $colCountStore - limit > 0}
