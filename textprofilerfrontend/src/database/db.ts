@@ -243,17 +243,10 @@ export class DatabaseConnection {
     return r;
   }
 
-  async getColCount(
-    tableName: string,
-    cName: string,
-    selection?: any,
-  ): Promise<number> {
-    let q = vg.Query.from({ source: tableName }).select({
+  async getColCount(tableName: string, cName: string): Promise<number> {
+    let q = vg.Query.from(tableName).select({
       count: vg.sql`COUNT(DISTINCT CASE WHEN ${vg.column(cName)} IS NULL THEN 'null' ELSE ${vg.column(cName)} END)`,
     });
-    if (selection) {
-      q = q.where(selection.predicate({ from: tableName }));
-    }
     let r = await vg.coordinator().query(q, { type: "json" });
     return r[0]?.["count"];
   }

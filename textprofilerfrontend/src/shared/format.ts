@@ -6,11 +6,6 @@ type NumberOptions = {
   [key: string]: any;
 };
 
-export function formatInt(value: any): string {
-  if (value == undefined || Number.isNaN(value)) return "null";
-  return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
-}
-
 export function formatNumber(value: any, options: NumberOptions = {}): string {
   const { range, locale = "en-US" } = options;
 
