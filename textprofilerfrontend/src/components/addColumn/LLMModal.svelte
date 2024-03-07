@@ -30,9 +30,7 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   // locals
   let targetColName: string;
-  // let userPrompt: string;
-  let userPrompt: string =
-    "Which sport does this abstract have to do with? If multiple mentioned pick the main sport and if it does not have to do with sports then reply with None.";
+  let userPrompt: string;
   // step 1 for schema
   let responseFormat: TaskFormat;
   let schemaResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
