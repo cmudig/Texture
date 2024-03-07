@@ -57,6 +57,7 @@
               : undefined}
             plotNulls={true}
             isDerivedTable={true}
+            showBackground={false}
           />
         {:else}
           Not currently supporting quantitative columns from another table...
