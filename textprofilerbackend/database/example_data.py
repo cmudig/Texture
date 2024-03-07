@@ -10,6 +10,12 @@ dataset_vis_papers = DatasetInfo(
             "type": "text",
         },
         {
+            "name": "MODEL_sport",
+            "type": "categorical",
+            "derived_from": "Abstract",
+            "derived_how": "model",
+        },
+        {
             "name": "word",
             "type": "categorical",
             "table_name": "vis_papers_words",
@@ -67,11 +73,6 @@ dataset_vis_papers = DatasetInfo(
         {
             "name": "id",
             "type": "number",
-        },
-        {
-            "name": "MODEL_sport",
-            "type": "categorical",
-            "derived_from": "Abstract",
         },
         # {
         #     "name": "AuthorNames-Deduped",
