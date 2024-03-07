@@ -194,33 +194,39 @@ def get_server() -> FastAPI:
 
         print("Request is: ", request)
 
-        data = duckdb_conn.connection.execute(
-            f'SELECT "{request.columnName}" from "{request.tableName}"'
-        ).df()[request.columnName]
+        all_data_df = duckdb_conn.connection.execute(
+            f'SELECT "id", "{request.columnName}" from "{request.tableName}"'
+        ).df()
 
-        print("Data is: ", data.head())
+        transform_data = pd.merge(
+            all_data_df, pd.DataFrame({"id": request.applyToIndices}), on="id"
+        )
+        print("Transform data is: ", transform_data.head())
 
         # get results and turn into flat array
         results = llm_client.get_transformations(
             request.userPrompt,
             request.taskFormat,
-            data,
+            transform_data[request.columnName],
             request.exampleData,
             request.exampleResponse,
         )
-
         print("RAW RESULTS ARE: ", results)
-
         processed_results = process_results(results, request.newColumnName)
-
-        print("RESULTS TO COMMIT ARE: ", processed_results)
+        processed_df = pd.DataFrame(
+            {"processed": processed_results}, index=request.applyToIndices
+        )
+        processed_df = processed_df.reindex(all_data_df.index)
+        print("processed_df: ", processed_df)
 
         # NOTE: assuming that this is unique col name
         new_col_name = "MODEL_" + request.newColumnName
-        duckdb_conn.add_column(request.tableName, new_col_name, processed_results)
+        duckdb_conn.add_column(
+            request.tableName, new_col_name, processed_df["processed"]
+        )
         colType = get_type_from_response(request.taskFormat.type)
-        datasetMetadataCache[request.tableName].columns.append(
-            Column(name=new_col_name, type=colType, derived_from=request.columnName)
+        datasetMetadataCache[request.tableName].columns.insert(
+            0, Column(name=new_col_name, type=colType, derived_from=request.columnName)
         )
 
         return LLMResponse(success=True, result=[])

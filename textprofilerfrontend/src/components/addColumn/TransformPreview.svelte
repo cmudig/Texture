@@ -18,7 +18,7 @@
 <div>
   <div class="flex w-full font-semibold">
     <div
-      class="w-8 shrink-0 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
+      class="w-12 shrink-0 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
     >
       {idColName ?? ""}
     </div>
@@ -42,7 +42,7 @@
   {#each columnData as cd, index}
     <div class="flex w-full">
       <div
-        class="w-8 shrink-0 whitespace-normal break-words align-top p-2 overflow-auto border-b border-l border-gray-200"
+        class="w-12 text-sm shrink-0 whitespace-normal break-words align-top p-2 overflow-auto border-b border-l border-gray-200"
       >
         {idColName ? cd[idColName] : ""}
       </div>

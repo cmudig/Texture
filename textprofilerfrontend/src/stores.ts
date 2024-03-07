@@ -67,12 +67,37 @@ export const filteredCount: Readable<number | undefined> = derived(
         );
         set(v);
       });
-      // event listener not triggered on initial set so call manually
       let v = databaseConnection
         .getCount($datasetInfo.name, $mosaicSelection)
         .then((v) => set(v));
     } else {
       set(undefined);
+    }
+  },
+);
+
+export const filteredIndices: Readable<number[]> = derived(
+  [mosaicSelection, datasetInfo],
+  ([$mosaicSelection, $datasetInfo], set) => {
+    if ($mosaicSelection && $datasetInfo) {
+      $mosaicSelection.addEventListener("value", async () => {
+        databaseConnection
+          .getIndex(
+            $datasetInfo.name,
+            $mosaicSelection,
+            $datasetInfo.primary_key.name,
+          )
+          .then((v) => set(v));
+      });
+      databaseConnection
+        .getIndex(
+          $datasetInfo.name,
+          $mosaicSelection,
+          $datasetInfo.primary_key.name,
+        )
+        .then((v) => set(v));
+    } else {
+      set([]);
     }
   },
 );

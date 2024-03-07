@@ -1,5 +1,10 @@
 <script lang="ts">
-  import { databaseConnection, datasetInfo } from "../../stores";
+  import {
+    databaseConnection,
+    datasetInfo,
+    filteredIndices,
+    filteredCount,
+  } from "../../stores";
   import {
     Modal,
     Spinner,
@@ -12,6 +17,7 @@
   import { CheckSolid, RocketSolid } from "flowbite-svelte-icons";
   import TransformPreview from "./TransformPreview.svelte";
   import { LLMQueryStatus } from "../../shared/types";
+  import { formatInt } from "../../shared/format";
 
   const INSTRUCTION = `Describe how you want to transform the column data in a few sentences with as much details as possible.
 For example, "Extract 3 - 5 keywords per article"`;
@@ -25,19 +31,32 @@ For example, "Extract 3 - 5 keywords per article"`;
   // locals
   let targetColName: string;
   let userPrompt: string;
-  // let userPrompt: string = "Does this article mention a user study?";
   // step 1 for schema
   let responseFormat: TaskFormat;
   let schemaResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
 
-  // step 2 for editable examples
+  // indices
   let example_idxs = [0, 1, 2];
+  let preview_idxs = [3, 4, 5, 6, 7];
+
+  filteredIndices.subscribe((newIndices) => {
+    example_idxs =
+      newIndices && newIndices.length > 0 ? newIndices.slice(0, 3) : [0, 1, 2];
+
+    preview_idxs =
+      newIndices && newIndices.length > 3
+        ? newIndices.slice(3, 8)
+        : [3, 4, 5, 6, 7];
+
+    fetchColData();
+  });
+
+  // step 2 for editable examples
   let columnExampleData: any[];
   let exampleResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
   let exampleResult: any[];
 
   // step 3 for transform preview
-  let preview_idxs = [3, 4, 5, 6, 7];
   let columnPreviewData: any[];
   let finalPreviewStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
   let finalPreview: any[];
@@ -50,7 +69,10 @@ For example, "Extract 3 - 5 keywords per article"`;
     fetchColData();
   }
 
-  function handleModalClose() {}
+  function handleModalClose() {
+    console.log("modal closed");
+    // TODO: should just destroy this component on close instead of resetting everything
+  }
 
   function fetchColData() {
     if (targetColName && idColName) {
@@ -84,7 +106,7 @@ For example, "Extract 3 - 5 keywords per article"`;
   }
 
   async function submitInitialTransformation() {
-    if (columnExampleData && responseFormat) {
+    if (columnExampleData && responseFormat && userPrompt) {
       exampleResultStatus = LLMQueryStatus.PENDING;
       databaseConnection.api
         .getLlmTransformResult({
@@ -105,7 +127,7 @@ For example, "Extract 3 - 5 keywords per article"`;
   }
 
   async function previewTransformation() {
-    if (columnPreviewData && responseFormat) {
+    if (columnPreviewData && responseFormat && userPrompt) {
       finalPreviewStatus = LLMQueryStatus.PENDING;
       databaseConnection.api
         .getLlmTransformResult({
@@ -150,6 +172,7 @@ For example, "Extract 3 - 5 keywords per article"`;
         exampleResponse: exampleResult.map((item) => ({
           [responseFormat.name]: item,
         })),
+        applyToIndices: $filteredIndices,
       })
       .then((r) => {
         commitResultStatus = LLMQueryStatus.COMPLETED;
@@ -192,7 +215,7 @@ For example, "Extract 3 - 5 keywords per article"`;
           Extraction Prompt & Schema
         </div>
         <div class="flex gap-2 items-center">
-          Extract from
+          <p>Extract from</p>
           <Select
             class="w-64"
             size="sm"
@@ -204,6 +227,7 @@ For example, "Extract 3 - 5 keywords per article"`;
             bind:value={targetColName}
             on:change={fetchColData}
           />
+          <p>in current selection ({formatInt($filteredCount)} rows)</p>
         </div>
 
         <Textarea
@@ -351,7 +375,7 @@ For example, "Extract 3 - 5 keywords per article"`;
             >
               <RocketSolid size="sm" class="mr-2" />
 
-              Apply to entire column
+              Apply to current selection ({formatInt($filteredCount)} rows)
             </Button>
           </div>
         {/if}
