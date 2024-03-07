@@ -24,6 +24,8 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   // props
   export let panelOpen: boolean;
+  export let finishedCommitHandler: () => void;
+
   $: textCols = $datasetInfo?.columns.filter((col) => col.type === "text");
   $: allColNames = $datasetInfo?.columns.map((col) => col.name);
   $: idColName = $datasetInfo?.primary_key.name;
@@ -177,6 +179,7 @@ For example, "Extract 3 - 5 keywords per article"`;
       .then((r) => {
         commitResultStatus = LLMQueryStatus.COMPLETED;
         console.log("commit result finished with: ", r);
+        finishedCommitHandler();
       });
   }
 

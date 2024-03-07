@@ -171,7 +171,12 @@
     }}
   />
 
-  <LLMModal bind:panelOpen={showAddColModal} />
+  <LLMModal
+    bind:panelOpen={showAddColModal}
+    finishedCommitHandler={() => {
+      dataPromise = populateDataTables(currentDatasetName);
+    }}
+  />
 </div>
 
 {#await dataPromise}
