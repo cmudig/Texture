@@ -12,6 +12,7 @@ import {
   type DatasetInfo,
 } from "./backendapi";
 import { DatabaseConnection } from "./database/db";
+import { updateSelectionMap } from "./shared/selection";
 
 // ~~~~~~~~~~~~~~~  Database init ~~~~~~~~~~~~~~~
 // This needs to match API url
@@ -75,40 +76,6 @@ export const filteredCount: Readable<number | undefined> = derived(
     }
   },
 );
-
-function updateSelectionMap(mosaicSelection: any): SelectionMap {
-  if (mosaicSelection?.clauses) {
-    let r = mosaicSelection.clauses.reduce((d: SelectionMap, clause: any) => {
-      try {
-        let colNames = clause.predicate.columns;
-        let v = clause.value;
-        let val = Array.isArray(v) ? v.flat() : [v];
-
-        colNames.forEach((c: string) => {
-          if (c in d) {
-            d[c] = [...d[c], ...val];
-          } else {
-            d[c] = val;
-          }
-        });
-      } catch (error) {
-        console.error(error);
-      }
-
-      return d;
-    }, {});
-
-    // Just get predicate as string
-    // let smap2 = mosaicSelection.clauses.map((c: any) => ({
-    //   value: c.value,
-    //   sql: String(c.predicate),
-    // }));
-
-    return r;
-  }
-
-  return {};
-}
 
 export function deleteFilters(col: string) {
   const brush = get(mosaicSelection);
