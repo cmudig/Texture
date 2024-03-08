@@ -18,7 +18,7 @@ def timeit(func):
 
 
 def process_results(results, colName):
-    mapped_results = [obj[colName] if colName in obj else None for obj in results]
+    mapped_results = map_results(results, colName)
 
     processed_results = []
 
@@ -38,6 +38,17 @@ def process_results(results, colName):
             processed_results.append(None)
 
     return processed_results
+
+
+def map_results(results, colName):
+    mapped = []
+    for item in results:
+        try:
+            mapped.append(item[colName])
+        except Exception as e:
+            mapped.append(None)
+
+    return mapped
 
 
 def get_type_from_response(inputType) -> DataType:
