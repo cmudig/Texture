@@ -2,7 +2,7 @@
   import { TrashBinOutline } from "flowbite-svelte-icons";
   import { Spinner, Textarea } from "flowbite-svelte";
   import TextPlaceholder from "../utils/TextPlaceholder.svelte";
-  import { LLMQueryStatus } from "../../shared/types";
+  import { QueryStatus } from "../../shared/types";
   import type { TaskFormat } from "../../backendapi";
 
   export let idColName: string | undefined;
@@ -10,7 +10,7 @@
   export let responseFormat: TaskFormat;
   export let columnData: any[];
   export let resultData: any[];
-  export let queryStatus: LLMQueryStatus;
+  export let queryStatus: QueryStatus;
   export let deleteResult: ((index: number) => void) | undefined = undefined;
   export let allowEdits = true;
 </script>
@@ -54,7 +54,7 @@
       <div
         class="grow whitespace-normal break-words border-l border-b border-gray-200 bg-green-50 text-black align-top p-2 overflow-auto max-h-32"
       >
-        {#if queryStatus === LLMQueryStatus.COMPLETED}
+        {#if queryStatus === QueryStatus.COMPLETED}
           {#if allowEdits}
             <Textarea
               rows="3"

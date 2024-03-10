@@ -16,7 +16,7 @@
   import type { TaskFormat } from "../../backendapi";
   import { CheckSolid, RocketSolid } from "flowbite-svelte-icons";
   import TransformPreview from "./TransformPreview.svelte";
-  import { LLMQueryStatus } from "../../shared/types";
+  import { QueryStatus } from "../../shared/types";
   import { formatInt } from "../../shared/format";
 
   const INSTRUCTION = `Describe how you want to transform the column data in a few sentences with as much details as possible.
@@ -35,7 +35,7 @@ For example, "Extract 3 - 5 keywords per article"`;
   let userPrompt: string;
   // step 1 for schema
   let responseFormat: TaskFormat;
-  let schemaResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
+  let schemaResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
 
   // indices
   let example_idxs = [0, 1, 2];
@@ -55,16 +55,16 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   // step 2 for editable examples
   let columnExampleData: any[];
-  let exampleResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
+  let exampleResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
   let exampleResult: any[];
 
   // step 3 for transform preview
   let columnPreviewData: any[];
-  let finalPreviewStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
+  let finalPreviewStatus: QueryStatus = QueryStatus.NOT_STARTED;
   let finalPreview: any[];
 
   // step 4 apply to entire column
-  let commitResultStatus: LLMQueryStatus = LLMQueryStatus.NOT_STARTED;
+  let commitResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
 
   async function init(_textCols) {
     targetColName = _textCols?.[0].name;
@@ -94,7 +94,7 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   let schemaEditTimer;
   async function getSchema() {
-    schemaResultStatus = LLMQueryStatus.PENDING;
+    schemaResultStatus = QueryStatus.PENDING;
 
     // NOTE: this maybe doesnt need to be LLM call, but kinda fun
     if (userPrompt) {
@@ -104,12 +104,12 @@ For example, "Extract 3 - 5 keywords per article"`;
 
       console.log("Schema is: ", responseFormat);
     }
-    schemaResultStatus = LLMQueryStatus.COMPLETED;
+    schemaResultStatus = QueryStatus.COMPLETED;
   }
 
   async function submitInitialTransformation() {
     if (columnExampleData && responseFormat && userPrompt) {
-      exampleResultStatus = LLMQueryStatus.PENDING;
+      exampleResultStatus = QueryStatus.PENDING;
       databaseConnection.api
         .getLlmTransformResult({
           userPrompt,
@@ -121,7 +121,7 @@ For example, "Extract 3 - 5 keywords per article"`;
           exampleResult = parsedResult.map(
             (item) => item[responseFormat.name] ?? "",
           );
-          exampleResultStatus = LLMQueryStatus.COMPLETED;
+          exampleResultStatus = QueryStatus.COMPLETED;
         });
     } else {
       console.error("Missing columnExampleData or responseFormat!");
@@ -130,7 +130,7 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   async function previewTransformation() {
     if (columnPreviewData && responseFormat && userPrompt) {
-      finalPreviewStatus = LLMQueryStatus.PENDING;
+      finalPreviewStatus = QueryStatus.PENDING;
       databaseConnection.api
         .getLlmTransformResult({
           userPrompt,
@@ -146,7 +146,7 @@ For example, "Extract 3 - 5 keywords per article"`;
           finalPreview = parsedResult.map(
             (item) => item[responseFormat.name] ?? "",
           );
-          finalPreviewStatus = LLMQueryStatus.COMPLETED;
+          finalPreviewStatus = QueryStatus.COMPLETED;
         });
     } else {
       console.error("Missing columnPreviewData or responseFormat!");
@@ -162,7 +162,7 @@ For example, "Extract 3 - 5 keywords per article"`;
     };
     console.log(data);
 
-    commitResultStatus = LLMQueryStatus.PENDING;
+    commitResultStatus = QueryStatus.PENDING;
     databaseConnection.api
       .commitLlmTransformResult({
         userPrompt,
@@ -177,7 +177,7 @@ For example, "Extract 3 - 5 keywords per article"`;
         applyToIndices: $filteredIndices,
       })
       .then((r) => {
-        commitResultStatus = LLMQueryStatus.COMPLETED;
+        commitResultStatus = QueryStatus.COMPLETED;
         console.log("commit result finished with: ", r);
         finishedCommitHandler();
       });
@@ -251,12 +251,12 @@ For example, "Extract 3 - 5 keywords per article"`;
               Schema
               <Input
                 class="w-48"
-                disabled={schemaResultStatus === LLMQueryStatus.PENDING}
+                disabled={schemaResultStatus === QueryStatus.PENDING}
                 bind:value={responseFormat.name}
               />
               <Select
                 class="w-48"
-                disabled={schemaResultStatus === LLMQueryStatus.PENDING}
+                disabled={schemaResultStatus === QueryStatus.PENDING}
                 items={[
                   {
                     value: "bool",
@@ -276,7 +276,7 @@ For example, "Extract 3 - 5 keywords per article"`;
               />
               <Select
                 class="w-48"
-                disabled={schemaResultStatus === LLMQueryStatus.PENDING}
+                disabled={schemaResultStatus === QueryStatus.PENDING}
                 items={[
                   {
                     value: "single",
@@ -296,7 +296,7 @@ For example, "Extract 3 - 5 keywords per article"`;
               Generate initial schema
             </Button> -->
           {/if}
-          {#if schemaResultStatus === LLMQueryStatus.PENDING}
+          {#if schemaResultStatus === QueryStatus.PENDING}
             <Spinner />
           {/if}
 
@@ -305,7 +305,7 @@ For example, "Extract 3 - 5 keywords per article"`;
             on:click={submitInitialTransformation}
             disabled={!userPrompt || namingErrorExists || !responseFormat}
           >
-            {#if exampleResultStatus === LLMQueryStatus.PENDING}
+            {#if exampleResultStatus === QueryStatus.PENDING}
               <Spinner size="4" class="mr-2" />
             {:else}
               <CheckSolid size="sm" class="mr-2" />
@@ -319,7 +319,7 @@ For example, "Extract 3 - 5 keywords per article"`;
           </div>
         {/if}
 
-        {#if exampleResultStatus !== LLMQueryStatus.NOT_STARTED && columnExampleData}
+        {#if exampleResultStatus !== QueryStatus.NOT_STARTED && columnExampleData}
           <!-- Sample response table -->
           <div class="text-black text-lg font-semibold">Curate Examples</div>
 
@@ -339,7 +339,7 @@ For example, "Extract 3 - 5 keywords per article"`;
               on:click={previewTransformation}
               disabled={!userPrompt}
             >
-              {#if finalPreviewStatus === LLMQueryStatus.PENDING}
+              {#if finalPreviewStatus === QueryStatus.PENDING}
                 <Spinner size="4" class="mr-2" />
               {:else}
                 <CheckSolid size="sm" class="mr-2" />
@@ -349,7 +349,7 @@ For example, "Extract 3 - 5 keywords per article"`;
           </div>
         {/if}
 
-        {#if finalPreviewStatus !== LLMQueryStatus.NOT_STARTED && columnPreviewData}
+        {#if finalPreviewStatus !== QueryStatus.NOT_STARTED && columnPreviewData}
           <div class="text-black text-lg font-semibold">
             Preview transformation
           </div>
@@ -365,9 +365,9 @@ For example, "Extract 3 - 5 keywords per article"`;
           />
 
           <div class="flex gap-2 items-center">
-            {#if commitResultStatus === LLMQueryStatus.PENDING}
+            {#if commitResultStatus === QueryStatus.PENDING}
               <Spinner />
-            {:else if commitResultStatus === LLMQueryStatus.COMPLETED}
+            {:else if commitResultStatus === QueryStatus.COMPLETED}
               <div class="text-green-500">Completed query!</div>
             {/if}
 
