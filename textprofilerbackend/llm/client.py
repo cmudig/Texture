@@ -440,7 +440,7 @@ def mainTesting():
     # ]
 
     # prompt 2: number participants
-    # df = df[df.Abstract.str.contains("participants", case=False)]
+    # df = df[df.Abstract.str.contains("participants", case=False)].iloc[:30]
     # user_prompt = "Extract the number of participants this paper includes in user studies or interviews"
     # response_format = TaskFormat(
     #     name="number_participants", type="number", num_replies="single"
@@ -452,28 +452,28 @@ def mainTesting():
     # ]
 
     # prompt 3: evaluation methods
-    # df = df.iloc[:30]
-    # user_prompt = "How was this paper evaluated? If no method explicitly mentioned reply with 'n/a'"
-    # response_format = TaskFormat(
-    #     name="evaluation_methods", type="string", num_replies="multiple"
-    # )
-    # call2ExResponses = [
-    #     {"evaluation_methods": []},
-    #     {"evaluation_methods": ["Expert reviews", "comparative study"]},
-    #     {"evaluation_methods": ["User study"]},
-    # ]
-
-    # prompt 4
     df = df.iloc[:30]
-    user_prompt = "Did this paper run a user study or talk to participants?"
+    user_prompt = "How was this paper evaluated? If no method explicitly mentioned reply with 'n/a'"
     response_format = TaskFormat(
-        name="evaluation_methods", type="bool", num_replies="single"
+        name="evaluation_methods", type="string", num_replies="multiple"
     )
     call2ExResponses = [
-        {"evaluation_methods": False},
-        {"evaluation_methods": True},
-        {"evaluation_methods": True},
+        {"evaluation_methods": []},
+        {"evaluation_methods": ["Expert reviews", "comparative study"]},
+        {"evaluation_methods": ["User study"]},
     ]
+
+    # prompt 4
+    # df = df.iloc[:30]
+    # user_prompt = "Did this paper run a user study or talk to participants?"
+    # response_format = TaskFormat(
+    #     name="evaluation_methods", type="bool", num_replies="single"
+    # )
+    # call2ExResponses = [
+    #     {"evaluation_methods": False},
+    #     {"evaluation_methods": True},
+    #     {"evaluation_methods": True},
+    # ]
 
     data = df.Abstract.tolist()
 
