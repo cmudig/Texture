@@ -241,7 +241,7 @@ def get_server() -> FastAPI:
     @api_app.post("/save_to_file", response_model=bool)
     def save_database_to_file(table_name: str):
 
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         file_path = f"{table_name}_{current_time}.parquet"
 
         duckdb_conn.write_table_to_file(table_name, file_path)
