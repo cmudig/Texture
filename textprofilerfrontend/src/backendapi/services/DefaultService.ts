@@ -267,4 +267,23 @@ export class DefaultService {
       },
     });
   }
+
+  /**
+   * Save Database To File
+   * @param tableName
+   * @returns boolean Successful Response
+   * @throws ApiError
+   */
+  public saveDatabaseToFile(tableName: string): CancelablePromise<boolean> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/save_to_file",
+      query: {
+        table_name: tableName,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
 }

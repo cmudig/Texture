@@ -141,6 +141,11 @@ class DatabaseConnection:
         )
         self.connection.execute(f"DROP VIEW IF EXISTS {viewName}")
 
+    def write_table_to_file(self, table_name, file_path):
+        self.connection.execute(
+            f"COPY (SELECT * FROM {table_name}) TO '{CACHE_PATH / file_path}' (FORMAT 'parquet');"
+        )
+
     def _handle_json_message(self, data: DuckQueryData) -> DuckQueryResult:
         """
         From: https://github.com/uwdata/mosaic/blob/main/packages/widget/mosaic_widget/__init__.py

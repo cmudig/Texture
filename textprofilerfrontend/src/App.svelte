@@ -18,6 +18,7 @@
   import FilterBar from "./components/FilterBar.svelte";
   import StopwordEditor from "./components/settings/StopwordEditor.svelte";
   import LLMModal from "./components/addColumn/LLMModal.svelte";
+  import SaveTableToFile from "./components/SaveTableToFile.svelte";
   import {
     Select,
     Popover,
@@ -125,40 +126,51 @@
     class="z-10 w-80 bg-white text-sm font-light text-gray-500"
     title="Settings"
   >
-    <div class="flex flex-col gap-2 p-3">
-      <Select
-        size="sm"
-        items={Object.values(datasets).map((k) => ({
-          value: k.name,
-          name: k.origin === "example" ? `${k.name} (example)` : k.name,
-        }))}
-        placeholder="Select dataset"
-        bind:value={currentDatasetName}
-        on:change={updateData}
-      />
+    <div class="flex flex-col gap-4 p-3">
+      <div class="flex flex-col gap-2 pb-2 border-b-2 border-grey-300">
+        <h3>Dataset</h3>
 
-      <div class="mt-2">
+        <Select
+          size="sm"
+          items={Object.values(datasets).map((k) => ({
+            value: k.name,
+            name: k.origin === "example" ? `${k.name} (example)` : k.name,
+          }))}
+          placeholder="Select dataset"
+          bind:value={currentDatasetName}
+          on:change={updateData}
+        />
+
+        <SaveTableToFile />
+      </div>
+
+      <div class="flex flex-col gap-2 pb-2 border-b-2 border-grey-300">
+        <h3>Stopwords</h3>
         <StopwordEditor />
       </div>
 
-      <div class="mt-2">
-        <Label>Background distributions</Label>
+      <div class="flex flex-col gap-2">
+        <h3>Display Settings</h3>
 
-        <Toggle class="mt-2" bind:checked={$showBackgroundDist}
-          >Show in plot</Toggle
-        >
-      </div>
+        <div>
+          <Label>Background distributions</Label>
 
-      <div class="mt-2">
-        <Label>Display in table</Label>
-        <div class="mt-2 flex flex-col gap-1">
-          {#each $datasetInfo.columns as col}
-            <Toggle bind:checked={currentColToggleStates[col.name]}>
-              <span class="overflow-hidden text-ellipsis">
-                {col.name}
-              </span>
-            </Toggle>
-          {/each}
+          <Toggle class="mt-2" bind:checked={$showBackgroundDist}
+            >Show in plot</Toggle
+          >
+        </div>
+
+        <div>
+          <Label>Display in table</Label>
+          <div class="mt-2 flex flex-col gap-1">
+            {#each $datasetInfo.columns as col}
+              <Toggle bind:checked={currentColToggleStates[col.name]}>
+                <span class="overflow-hidden text-ellipsis">
+                  {col.name}
+                </span>
+              </Toggle>
+            {/each}
+          </div>
         </div>
       </div>
     </div>
