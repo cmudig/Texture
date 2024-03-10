@@ -10,6 +10,7 @@ from textprofilerbackend.models import TaskFormat
 # Note - json mode only works with these two model names
 # MODEL_NAME = "gpt-4-turbo-preview"
 MODEL_NAME = "gpt-3.5-turbo"
+# MODEL_NAME = "gpt-3.5-turbo-instruct"  # higher token limit but have to coerce to valid json
 
 
 ################ PROMPT 1: For getting the json representation of the response format
@@ -103,7 +104,7 @@ def format_user_prompt_generic(
 
 ################ Prompt 3: Use examples to construct prompt if we have them
 PROMPT_W_EXAMPLES_BASE = """# Overall Description
-You are a data processing assistant. I am going to give you a piece of text and a description of what to extract, and I need you to extract the data for me as JSON.  If you are not confident the data is actually present, then return empty JSON.
+You are a data processing assistant. I am going to give you a piece of text and a description of what to extract, and I need you to extract the data for me as JSON.  If you are not confident the data can be extracted then return 'n/a'.
 
 # Format
 Extract the specified data according to the format and task below and return a valid JSON object with only double quoted strings.
@@ -194,6 +195,7 @@ class LLMClient:
                 r = await asyncio.wait_for(
                     self.client.chat.completions.create(
                         model=MODEL_NAME,
+                        # for newer chat.completions API
                         response_format={"type": "json_object"},
                         messages=[
                             {"role": "system", "content": system_prompt},
@@ -202,6 +204,9 @@ class LLMClient:
                                 "content": user_prompt,
                             },
                         ],
+                        temperature=0,
+                        # for legacy completions API
+                        # prompt=f"{system_prompt}\n{user_prompt}",
                     ),
                     timeout=10,
                 )
@@ -251,26 +256,31 @@ class LLMClient:
 
         return responses
 
-    def parse_results(self, responses):
+    def parse_results(self, responses, response_format: TaskFormat):
         """
         Parses the results as JSON from a list of responses. Expects a list of openai.ChatCompletion objects.
         """
         processed_results = []
+        default_response = get_default_response(response_format)
         for response in responses:
             if response:
-                item = response.choices[0].message.content
+                item = response.choices[0].message.content  # chat completions
+                # item = response.choices[0].text # legacy completions
                 try:
                     r = json.loads(item)
+                    r = coerce_result(r, response_format)
                 except Exception as e:
                     try:
                         print("Bad initial json, trying to fix")
                         item = item.replace("'", '"')
                         r = json.loads(item)
+                        r = coerce_result(r, response_format)
+
                     except Exception as e:
                         print("Error parsing JSON: ", e)
-                        r = item
+                        r = default_response
             else:
-                r = None
+                r = default_response
 
             processed_results.append(r)
 
@@ -345,14 +355,73 @@ class LLMClient:
                 )
             )
 
-        parsed_results = self.parse_results(raw_results)
+        parsed_results = self.parse_results(raw_results, response_format)
 
         return parsed_results
+
+
+def coerce_result(json_result, response_format: TaskFormat):
+    """
+    Coerce the result to the correct type based on the response format.
+    """
+    try:
+        if response_format.name in json_result:
+            result = json_result[response_format.name]
+        elif isinstance(json_result, dict) and len(json_result) == 1:
+            result = json_result[list(json_result.keys())[0]]
+        else:
+            result = None
+    except Exception as e:
+        print("Exception: ", e)
+        result = None
+
+    if response_format.num_replies == "single":
+        parsed_instance = parse_instance_by_type(result, response_format.type)
+    elif isinstance(result, list):
+        parsed_instance = [
+            parse_instance_by_type(r, response_format.type) for r in result
+        ]
+    else:
+        parsed_instance = [parse_instance_by_type(result, response_format.type)]
+
+    return {response_format.name: parsed_instance}
+
+
+def parse_instance_by_type(result, type):
+    """Force results into appropriate type."""
+    if result is None:
+        return None
+
+    try:
+        # check if default value
+        if str(result).strip().lower() in ["n/a", "", "none"]:
+            return None
+
+        if type == "number":
+            return float(result)
+        elif type == "bool":
+            # note this will return true if not actually a bool but a real value
+            return bool(result)
+        elif type == "string":
+            return str(result)
+
+        return None
+
+    except ValueError as e:
+        return None
+
+
+def get_default_response(response_format: TaskFormat):
+    if response_format.num_replies == "single":
+        return {response_format.name: None}
+
+    return {response_format.name: []}
 
 
 def mainTesting():
     print("\n\n\n~~~~~~~~~~~~~~~~~~~ Starting Run.... ~~~~~~~~~~~~~~~~~~~")
     import pandas as pd
+    import datetime
 
     llm_client = LLMClient()
 
@@ -360,15 +429,55 @@ def mainTesting():
         "/Users/wepperso/workspaces/Research/TextProfileAll/TextProfiler/textprofilerbackend/.textprofiler_cache/raw_data/vis_papers/vis_papers.parquet"
     )
 
-    df = df[(df.umap_x > 10.5) & (df.umap_y < 10)]
+    # prompt 1: extract sports
+    # df = df[(df.umap_x > 10.5) & (df.umap_y < 10)] # sports
+    # user_prompt = "Which sport does this abstract have to do with? If multiple mentioned pick the main sport and if it does not have to do with sports then reply with 'n/a'."
+    # response_format = TaskFormat(name="sport_name", type="string", num_replies="single")
+    # call2ExResponses = [
+    #     {"sport_name": "basketball"},
+    #     {"sport_name": "racket"},
+    #     {"sport_name": "basketball"},
+    # ]
 
-    gt = ["basketball", "racket", "basketball"]
+    # prompt 2: number participants
+    # df = df[df.Abstract.str.contains("participants", case=False)]
+    # user_prompt = "Extract the number of participants this paper includes in user studies or interviews"
+    # response_format = TaskFormat(
+    #     name="number_participants", type="number", num_replies="single"
+    # )
+    # call2ExResponses = [
+    #     {"number_participants": 12},
+    #     {"number_participants": 0},
+    #     {"number_participants": 23},
+    # ]
+
+    # prompt 3: evaluation methods
+    # df = df.iloc[:30]
+    # user_prompt = "How was this paper evaluated? If no method explicitly mentioned reply with 'n/a'"
+    # response_format = TaskFormat(
+    #     name="evaluation_methods", type="string", num_replies="multiple"
+    # )
+    # call2ExResponses = [
+    #     {"evaluation_methods": []},
+    #     {"evaluation_methods": ["Expert reviews", "comparative study"]},
+    #     {"evaluation_methods": ["User study"]},
+    # ]
+
+    # prompt 4
+    df = df.iloc[:30]
+    user_prompt = "Did this paper run a user study or talk to participants?"
+    response_format = TaskFormat(
+        name="evaluation_methods", type="bool", num_replies="single"
+    )
+    call2ExResponses = [
+        {"evaluation_methods": False},
+        {"evaluation_methods": True},
+        {"evaluation_methods": True},
+    ]
 
     data = df.Abstract.tolist()
-    user_prompt = "Which sport does this abstract have to do with? If multiple mentioned pick the main sport and if it does not have to do with sports then reply with None."
 
     # STEP 1: get response format
-    response_format = TaskFormat(name="sport_name", type="string", num_replies="single")
     print("Generated response format:", response_format)
 
     #### VERSION 1: GENERIC RESPONSE
@@ -382,11 +491,6 @@ def mainTesting():
     #### VERSION 2: EXAMPLE RESPONSE
     call2Data = data
     call2DataExamples = data[:3]
-    call2ExResponses = [
-        {"sport_name": "basketball"},
-        {"sport_name": "racket"},
-        {"sport_name": "basketball"},
-    ]
 
     response2 = llm_client.get_transformations(
         user_prompt,
@@ -398,13 +502,16 @@ def mainTesting():
 
     df_response2 = pd.DataFrame(response2, columns=[response_format.name])
 
-    df_response2.to_parquet("RESULT.parquet")
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    file_path = f"RESULT_{current_time}.csv"
+
+    df_response2.to_csv(file_path)
 
     print("Example response:", df_response2)
 
-    breakpoint()
-    print("<|endoftext|>")
+    # breakpoint()
+    print("<|END|>")
 
 
-# if __name__ == "__main__":
-#     mainTesting()
+if __name__ == "__main__":
+    mainTesting()
