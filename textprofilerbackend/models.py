@@ -83,7 +83,7 @@ class VectorSearchResponse(BaseModel):
     result: List[Dict[str, Any]]
 
 
-class LLMResponse(BaseModel):
+class TransformResponse(BaseModel):
     success: bool
     result: Union[List, Dict]
 

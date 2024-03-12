@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type LLMResponse = {
+export type TransformResponse = {
   success: boolean;
   result: Record<string, any>;
 };

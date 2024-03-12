@@ -14,7 +14,7 @@ from textprofilerbackend.models import (
     DatasetVerifyResponse,
     DatasetTokenizeResponse,
     VectorSearchResponse,
-    LLMResponse,
+    TransformResponse,
     LLMTransformRequest,
     LLMTransformCommit,
     Column,
@@ -173,12 +173,12 @@ def get_server() -> FastAPI:
             success=True, result=result_df.to_dict(orient="records")
         )
 
-    @api_app.post("/fetch_llm_response_format", response_model=LLMResponse)
+    @api_app.post("/fetch_llm_response_format", response_model=TransformResponse)
     def get_llm_response_format(userPrompt: str):
         task_format = llm_client.get_response_format(userPrompt)
-        return LLMResponse(success=True, result=task_format)
+        return TransformResponse(success=True, result=task_format)
 
-    @api_app.post("/fetch_llm_transform_result", response_model=LLMResponse)
+    @api_app.post("/fetch_llm_transform_result", response_model=TransformResponse)
     def get_llm_transform_result(request: LLMTransformRequest):
         results = llm_client.get_transformations(
             request.userPrompt,
@@ -188,9 +188,9 @@ def get_server() -> FastAPI:
             request.exampleResponse,
         )
         print("[get_llm_transform_result] has results: ", results)
-        return LLMResponse(success=True, result=results)
+        return TransformResponse(success=True, result=results)
 
-    @api_app.post("/commit_llm_transform_result", response_model=LLMResponse)
+    @api_app.post("/commit_llm_transform_result", response_model=TransformResponse)
     def commit_llm_transform_result(request: LLMTransformCommit):
 
         print("Request is: ", request)
@@ -236,7 +236,7 @@ def get_server() -> FastAPI:
             ),
         )
 
-        return LLMResponse(success=True, result=[])
+        return TransformResponse(success=True, result=[])
 
     @api_app.post("/save_to_file", response_model=bool)
     def save_database_to_file(table_name: str):
