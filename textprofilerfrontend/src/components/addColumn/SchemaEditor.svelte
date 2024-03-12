@@ -2,20 +2,19 @@
   import { Select, Input } from "flowbite-svelte";
   import type { TaskFormat } from "../../backendapi";
 
-  export let responseFormat: TaskFormat;
+  export let responseSchema: TaskFormat;
   export let disabled: boolean = false;
 </script>
 
 <div class="flex gap-2 items-center">
-  Schema
   <Input
-    class="w-48"
+    class="w-48 bg-white"
     placeholder="New column name"
     {disabled}
-    bind:value={responseFormat.name}
+    bind:value={responseSchema.name}
   />
   <Select
-    class="w-48"
+    class="w-48 bg-white"
     {disabled}
     items={[
       {
@@ -32,10 +31,10 @@
       },
     ]}
     placeholder="Response type..."
-    bind:value={responseFormat.type}
+    bind:value={responseSchema.type}
   />
   <Select
-    class="w-48"
+    class="w-48 bg-white"
     {disabled}
     items={[
       {
@@ -48,6 +47,6 @@
       },
     ]}
     placeholder="Number responses..."
-    bind:value={responseFormat.num_replies}
+    bind:value={responseSchema.num_replies}
   />
 </div>

@@ -5,16 +5,20 @@
     filteredIndices,
     filteredCount,
   } from "../../stores";
-  import { Modal, Spinner, Select, Textarea, Button } from "flowbite-svelte";
-  import type { TaskFormat } from "../../backendapi";
-  import { CheckSolid, RocketSolid } from "flowbite-svelte-icons";
+  import { Modal, Spinner, Select, Button } from "flowbite-svelte";
+  import { TaskFormat } from "../../backendapi";
+  import {
+    RocketSolid,
+    WandMagicSparklesOutline,
+    CodeOutline,
+    CheckSolid,
+  } from "flowbite-svelte-icons";
   import TransformPreview from "./TransformPreview.svelte";
   import { QueryStatus } from "../../shared/types";
   import { formatInt } from "../../shared/format";
   import SchemaEditor from "./SchemaEditor.svelte";
-
-  const INSTRUCTION = `Describe how you want to transform the column data in a few sentences with as much details as possible.
-For example, "Extract 3 - 5 keywords per article"`;
+  import LLMExtract from "./LLMExtract.svelte";
+  import CodeExtract from "./CodeExtract.svelte";
 
   // props
   export let panelOpen: boolean;
@@ -27,9 +31,15 @@ For example, "Extract 3 - 5 keywords per article"`;
   // locals
   let targetColName: string;
   let userPrompt: string;
+  let transformType: "llm" | "code" = "llm";
+
   // step 1 for schema
-  let responseFormat: TaskFormat;
-  let schemaResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
+  let responseSchema: TaskFormat = {
+    name: "",
+    type: TaskFormat.type.STRING,
+    num_replies: TaskFormat.num_replies.SINGLE,
+  };
+  export let schemaResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
 
   // indices
   let example_idxs = [0, 1, 2];
@@ -49,7 +59,6 @@ For example, "Extract 3 - 5 keywords per article"`;
 
   // step 2 for editable examples
   let columnExampleData: any[];
-  let exampleResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
   let exampleResult: any[];
 
   // step 3 for transform preview
@@ -86,59 +95,35 @@ For example, "Extract 3 - 5 keywords per article"`;
     }
   }
 
-  let schemaEditTimer;
-  async function getSchema() {
-    schemaResultStatus = QueryStatus.PENDING;
+  // GENERATE PREVIEWS
 
-    // NOTE: this maybe doesnt need to be LLM call, but kinda fun
-    if (userPrompt) {
-      let _responseFormat =
-        await databaseConnection.api.getLlmResponseFormat(userPrompt);
-      responseFormat = _responseFormat.result as TaskFormat;
+  let readyToGenPreview = false;
 
-      console.log("Schema is: ", responseFormat);
-    }
-    schemaResultStatus = QueryStatus.COMPLETED;
-  }
-
-  async function submitInitialTransformation() {
-    if (columnExampleData && responseFormat && userPrompt) {
-      exampleResultStatus = QueryStatus.PENDING;
-      databaseConnection.api
-        .getLlmTransformResult({
-          userPrompt,
-          taskFormat: responseFormat,
-          columnData: columnExampleData.map((cd) => cd[targetColName]),
-        })
-        .then((r) => {
-          let parsedResult = r.result;
-          exampleResult = parsedResult.map(
-            (item) => item[responseFormat.name] ?? "",
-          );
-          exampleResultStatus = QueryStatus.COMPLETED;
-        });
+  function generatePreview() {
+    if (transformType === "llm") {
+      generateLLMTransformPreview();
     } else {
-      console.error("Missing columnExampleData or responseFormat!");
+      // TODO: generate code preview in future
     }
   }
 
-  async function previewTransformation() {
-    if (columnPreviewData && responseFormat && userPrompt) {
+  async function generateLLMTransformPreview() {
+    if (columnPreviewData && responseSchema && userPrompt) {
       finalPreviewStatus = QueryStatus.PENDING;
       databaseConnection.api
         .getLlmTransformResult({
           userPrompt,
-          taskFormat: responseFormat,
+          taskFormat: responseSchema,
           columnData: columnPreviewData.map((cd) => cd[targetColName]),
           exampleData: columnExampleData.map((cd) => cd[targetColName]),
           exampleResponse: exampleResult.map((item) => ({
-            [responseFormat.name]: item,
+            [responseSchema.name]: item,
           })),
         })
         .then((r) => {
           let parsedResult = r.result;
           finalPreview = parsedResult.map(
-            (item) => item[responseFormat.name] ?? "",
+            (item) => item[responseSchema.name] ?? "",
           );
           finalPreviewStatus = QueryStatus.COMPLETED;
         });
@@ -160,13 +145,13 @@ For example, "Extract 3 - 5 keywords per article"`;
     databaseConnection.api
       .commitLlmTransformResult({
         userPrompt,
-        taskFormat: responseFormat,
+        taskFormat: responseSchema,
         columnName: targetColName,
         tableName: $datasetInfo.name,
-        newColumnName: responseFormat.name,
+        newColumnName: responseSchema.name,
         exampleData: columnExampleData.map((cd) => cd[targetColName]),
         exampleResponse: exampleResult.map((item) => ({
-          [responseFormat.name]: item,
+          [responseSchema.name]: item,
         })),
         applyToIndices: $filteredIndices,
       })
@@ -177,21 +162,12 @@ For example, "Extract 3 - 5 keywords per article"`;
       });
   }
 
-  function deleteResult(index) {
-    columnExampleData.splice(index, 1);
-    exampleResult.splice(index, 1);
-
-    columnExampleData = columnExampleData; // trigger reactivity
-    exampleResult = exampleResult; // trigger reactivity
-  }
-
   $: initPromise = init(textCols);
-
   // error handling
   $: namingErrorExists =
-    responseFormat?.name &&
-    (allColNames.includes(responseFormat.name) ||
-      allColNames.includes("MODEL_" + responseFormat.name));
+    responseSchema?.name &&
+    (allColNames.includes(responseSchema.name) ||
+      allColNames.includes("MODEL_" + responseSchema.name));
 </script>
 
 <Modal
@@ -208,126 +184,111 @@ For example, "Extract 3 - 5 keywords per article"`;
   {:then r}
     {#if textCols}
       <div class="flex flex-col gap-4">
-        <div class="text-black text-lg font-semibold">
-          Extraction Prompt & Schema
-        </div>
-        <div class="flex gap-2 items-center">
-          <p>Extract from</p>
-          <Select
-            class="w-64"
-            size="sm"
-            items={textCols.map((k) => ({
-              value: k.name,
-              name: k.name,
-            }))}
-            placeholder="Select column"
-            bind:value={targetColName}
-            on:change={fetchColData}
-          />
-          <p>in current selection ({formatInt($filteredCount)} rows)</p>
-        </div>
+        <div
+          class="flex flex-col gap-4 border border-gray-300 bg-slate-50 py-4 px-2 rounded"
+        >
+          <div class="text-black text-lg font-semibold">
+            Configure extraction
+          </div>
+          <div class="flex gap-2 items-center">
+            <p>Extract from</p>
+            <Select
+              class="w-64 bg-white"
+              size="sm"
+              items={textCols.map((k) => ({
+                value: k.name,
+                name: k.name,
+              }))}
+              placeholder="Select column"
+              bind:value={targetColName}
+              on:change={fetchColData}
+            />
+            <p>in current selection ({formatInt($filteredCount)} rows)</p>
+          </div>
 
-        <Textarea
-          class="min-h-20"
-          rows="5"
-          placeholder={INSTRUCTION}
-          bind:value={userPrompt}
-          on:input={() => {
-            clearTimeout(schemaEditTimer);
-            schemaEditTimer = setTimeout(getSchema, 1000);
-          }}
-        />
+          <div class="flex gap-2 items-center">
+            <p>New attribute</p>
 
-        <div class="flex flex-wrap gap-2 items-center">
-          <!-- Schema editor -->
-          {#if responseFormat}
             <SchemaEditor
-              bind:responseFormat
+              bind:responseSchema
               disabled={schemaResultStatus === QueryStatus.PENDING}
             />
+            {#if schemaResultStatus === QueryStatus.PENDING}
+              <Spinner />
+            {/if}
+            {#if namingErrorExists}
+              <div class="text-red-500">
+                Column {responseSchema.name} is already in the dataset, try another
+                name!
+              </div>
+            {/if}
+          </div>
+          <div class="flex gap-2">
+            <Button
+              color={transformType === "llm" ? "primary" : "alternative"}
+              class="flex items-center gap-2"
+              on:click={() => (transformType = "llm")}
+            >
+              <WandMagicSparklesOutline size="sm" />
+              Extract with LLM
+            </Button>
 
-            <!-- {:else if userPrompt}
-            <Button class="w-64 bg-gray-500" on:click={getSchema}>
-              Generate initial schema
-            </Button> -->
-          {/if}
-          {#if schemaResultStatus === QueryStatus.PENDING}
-            <Spinner />
-          {/if}
+            <Button
+              color={transformType === "code" ? "primary" : "alternative"}
+              class="flex items-center gap-2"
+              on:click={() => (transformType = "code")}
+            >
+              <CodeOutline size="sm" />
+              Extract with code
+            </Button>
+          </div>
+        </div>
 
-          <Button
-            class="w-64 ml-auto"
-            on:click={submitInitialTransformation}
-            disabled={!userPrompt || namingErrorExists || !responseFormat}
-          >
-            {#if exampleResultStatus === QueryStatus.PENDING}
+        {#if transformType === "llm"}
+          <LLMExtract
+            {targetColName}
+            {idColName}
+            setPreviewReady={(v) => (readyToGenPreview = v)}
+            bind:userPrompt
+            bind:responseSchema
+            bind:schemaResultStatus
+            bind:columnExampleData
+            bind:exampleResult
+          />
+        {:else}
+          <CodeExtract />
+        {/if}
+
+        {#if readyToGenPreview}
+          <hr />
+          <Button class="w-64" on:click={generatePreview}>
+            {#if finalPreviewStatus === QueryStatus.PENDING}
               <Spinner size="4" class="mr-2" />
             {:else}
               <CheckSolid size="sm" class="mr-2" />
             {/if}
-            Get example responses
+            Generate a preview
           </Button>
-        </div>
-        {#if namingErrorExists}
-          <div class="text-red-500">
-            Column {responseFormat.name} is already in the dataset, try another name!
-          </div>
-        {/if}
-
-        {#if exampleResultStatus !== QueryStatus.NOT_STARTED && columnExampleData}
-          <!-- Sample response table -->
-          <div class="text-black text-lg font-semibold">Curate Examples</div>
-
-          <TransformPreview
-            {idColName}
-            {targetColName}
-            {responseFormat}
-            columnData={columnExampleData}
-            bind:resultData={exampleResult}
-            queryStatus={exampleResultStatus}
-            {deleteResult}
-          />
-
-          <div class="flex gap-2 items-center">
-            <Button
-              class="w-64 ml-auto"
-              on:click={previewTransformation}
-              disabled={!userPrompt}
-            >
-              {#if finalPreviewStatus === QueryStatus.PENDING}
-                <Spinner size="4" class="mr-2" />
-              {:else}
-                <CheckSolid size="sm" class="mr-2" />
-              {/if}
-              Preview Transform
-            </Button>
-          </div>
         {/if}
 
         {#if finalPreviewStatus !== QueryStatus.NOT_STARTED && columnPreviewData}
           <div class="text-black text-lg font-semibold">
-            Preview transformation
+            Transformation Preview
           </div>
 
           <TransformPreview
             {idColName}
             {targetColName}
-            {responseFormat}
+            {responseSchema}
             columnData={columnPreviewData}
             bind:resultData={finalPreview}
             queryStatus={finalPreviewStatus}
             allowEdits={false}
           />
 
-          <div class="flex gap-2 items-center">
-            {#if commitResultStatus === QueryStatus.PENDING}
-              <Spinner />
-            {:else if commitResultStatus === QueryStatus.COMPLETED}
-              <div class="text-green-500">Completed query!</div>
-            {/if}
-
+          <div class="flex gap-2 items-center w-full">
             <Button
-              class="w-64 ml-auto"
+              class="w-96"
               on:click={applyToEntireColumn}
               disabled={!userPrompt}
             >
@@ -335,6 +296,11 @@ For example, "Extract 3 - 5 keywords per article"`;
 
               Apply to current selection ({formatInt($filteredCount)} rows)
             </Button>
+            {#if commitResultStatus === QueryStatus.PENDING}
+              <Spinner />
+            {:else if commitResultStatus === QueryStatus.COMPLETED}
+              <div class="text-green-500">Completed query!</div>
+            {/if}
           </div>
         {/if}
       </div>
