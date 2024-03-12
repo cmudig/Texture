@@ -31,7 +31,7 @@
   // locals
   let targetColName: string;
   let userPrompt: string;
-  let transformType: "llm" | "code" = "llm";
+  let transformType: "llm" | "code" = "code";
 
   // step 1 for schema
   let responseSchema: TaskFormat = {
