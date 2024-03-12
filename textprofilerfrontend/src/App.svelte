@@ -16,7 +16,7 @@
   import SimilarView from "./components/SimilarView.svelte";
   import FilterBar from "./components/FilterBar.svelte";
   import StopwordEditor from "./components/settings/StopwordEditor.svelte";
-  import LLMModal from "./components/addColumn/LLMModal.svelte";
+  import ColumnTransformModal from "./components/addColumn/ColumnTransformModal.svelte";
   import SaveTableToFile from "./components/SaveTableToFile.svelte";
   import {
     Select,
@@ -181,7 +181,7 @@
     }}
   /> -->
 
-  <LLMModal
+  <ColumnTransformModal
     bind:panelOpen={showAddColModal}
     finishedCommitHandler={() => {
       dataPromise = populateDataTables(currentDatasetName);
