@@ -39,7 +39,7 @@
     type: TaskFormat.type.STRING,
     num_replies: TaskFormat.num_replies.SINGLE,
   };
-  export let schemaResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
+  let schemaResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
 
   // indices
   let example_idxs = [0, 1, 2];
@@ -61,6 +61,9 @@
   let columnExampleData: any[];
   let exampleResult: any[];
 
+  // step 2 for code
+  let userTransformCode: string;
+
   // step 3 for transform preview
   let columnPreviewData: any[];
   let finalPreviewStatus: QueryStatus = QueryStatus.NOT_STARTED;
@@ -72,11 +75,6 @@
   async function init(_textCols) {
     targetColName = _textCols?.[0].name;
     fetchColData();
-  }
-
-  function handleModalClose() {
-    console.log("modal closed");
-    // TODO: should just destroy this component on close instead of resetting everything
   }
 
   function fetchColData() {
@@ -96,14 +94,13 @@
   }
 
   // GENERATE PREVIEWS
-
   let readyToGenPreview = false;
 
   function generatePreview() {
     if (transformType === "llm") {
       generateLLMTransformPreview();
     } else {
-      // TODO: generate code preview in future
+      generateCodeTransformPreview();
     }
   }
 
@@ -130,6 +127,10 @@
     } else {
       console.error("Missing columnPreviewData or responseFormat!");
     }
+  }
+
+  async function generateCodeTransformPreview() {
+    console.log("Applying user transform with code: ", userTransformCode);
   }
 
   async function applyToEntireColumn() {
@@ -170,13 +171,7 @@
       allColNames.includes("MODEL_" + responseSchema.name));
 </script>
 
-<Modal
-  bind:open={panelOpen}
-  on:close={handleModalClose}
-  title="Extract new column"
-  size="xl"
-  outsideclose
->
+<Modal bind:open={panelOpen} title="Extract new column" size="xl" outsideclose>
   {#await initPromise}
     <div class="p-2">
       <Spinner />
@@ -256,7 +251,10 @@
             bind:exampleResult
           />
         {:else}
-          <CodeExtract />
+          <CodeExtract
+            bind:userTransformCode
+            setPreviewReady={(v) => (readyToGenPreview = v)}
+          />
         {/if}
 
         {#if readyToGenPreview}
