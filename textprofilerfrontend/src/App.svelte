@@ -38,7 +38,7 @@
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
   // let showAddDataModal = false;
-  let showAddColModal = false;
+  let showAddColModal = true;
   let datasetColSummaries: Map<string, ColumnSummary>;
   let dataPromise: Promise<any> = populateDataTables();
 

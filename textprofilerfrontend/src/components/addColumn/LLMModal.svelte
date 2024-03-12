@@ -5,19 +5,13 @@
     filteredIndices,
     filteredCount,
   } from "../../stores";
-  import {
-    Modal,
-    Spinner,
-    Select,
-    Textarea,
-    Button,
-    Input,
-  } from "flowbite-svelte";
+  import { Modal, Spinner, Select, Textarea, Button } from "flowbite-svelte";
   import type { TaskFormat } from "../../backendapi";
   import { CheckSolid, RocketSolid } from "flowbite-svelte-icons";
   import TransformPreview from "./TransformPreview.svelte";
   import { QueryStatus } from "../../shared/types";
   import { formatInt } from "../../shared/format";
+  import SchemaEditor from "./SchemaEditor.svelte";
 
   const INSTRUCTION = `Describe how you want to transform the column data in a few sentences with as much details as possible.
 For example, "Extract 3 - 5 keywords per article"`;
@@ -247,50 +241,11 @@ For example, "Extract 3 - 5 keywords per article"`;
         <div class="flex flex-wrap gap-2 items-center">
           <!-- Schema editor -->
           {#if responseFormat}
-            <div class="flex gap-2 items-center">
-              Schema
-              <Input
-                class="w-48"
-                disabled={schemaResultStatus === QueryStatus.PENDING}
-                bind:value={responseFormat.name}
-              />
-              <Select
-                class="w-48"
-                disabled={schemaResultStatus === QueryStatus.PENDING}
-                items={[
-                  {
-                    value: "bool",
-                    name: "bool",
-                  },
-                  {
-                    value: "number",
-                    name: "number",
-                  },
-                  {
-                    value: "string",
-                    name: "string",
-                  },
-                ]}
-                placeholder="Response type..."
-                bind:value={responseFormat.type}
-              />
-              <Select
-                class="w-48"
-                disabled={schemaResultStatus === QueryStatus.PENDING}
-                items={[
-                  {
-                    value: "single",
-                    name: "single",
-                  },
-                  {
-                    value: "multiple",
-                    name: "multiple",
-                  },
-                ]}
-                placeholder="Number responses..."
-                bind:value={responseFormat.num_replies}
-              />
-            </div>
+            <SchemaEditor
+              bind:responseFormat
+              disabled={schemaResultStatus === QueryStatus.PENDING}
+            />
+
             <!-- {:else if userPrompt}
             <Button class="w-64 bg-gray-500" on:click={getSchema}>
               Generate initial schema
