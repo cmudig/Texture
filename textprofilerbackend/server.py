@@ -225,16 +225,14 @@ def get_server() -> FastAPI:
         processed_df = processed_df.reindex(all_data_df.index)
         print("processed_df: ", processed_df)
 
-        # NOTE: assuming that this is unique col name
-        new_col_name = "MODEL_" + request.newColumnName
         duckdb_conn.add_column(
-            request.tableName, new_col_name, processed_df["processed"]
+            request.tableName, request.newColumnName, processed_df["processed"]
         )
         colType = get_type_from_response(request.taskFormat.type)
         datasetMetadataCache[request.tableName].columns.insert(
             0,
             Column(
-                name=new_col_name,
+                name=request.newColumnName,
                 type=colType,
                 derived_from=request.columnName,
                 derived_how="model",
@@ -277,19 +275,17 @@ def get_server() -> FastAPI:
         processed_df = processed_df.reindex(all_data_df.index)
         print("processed_df: ", processed_df)
 
-        # NOTE: assuming that this is unique col name
-        new_col_name = "MODEL_" + request.newColumnName
         duckdb_conn.add_column(
-            request.tableName, new_col_name, processed_df["processed"]
+            request.tableName, request.newColumnName, processed_df["processed"]
         )
         colType = get_type_from_response(request.taskFormat.type)
         datasetMetadataCache[request.tableName].columns.insert(
             0,
             Column(
-                name=new_col_name,
+                name=request.newColumnName,
                 type=colType,
                 derived_from=request.columnName,
-                derived_how="model",
+                derived_how="code",
             ),
         )
 
