@@ -88,6 +88,7 @@ class TransformResponse(BaseModel):
     result: Union[List, Dict]
 
 
+# TODO rename this to TranformSchema
 class TaskFormat(BaseModel):
     name: str
     type: Literal["number", "string", "bool"]
