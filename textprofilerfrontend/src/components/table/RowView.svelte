@@ -11,13 +11,14 @@
   } from "../../stores";
   import type { DatasetInfo } from "../../backendapi";
   import { Spinner } from "flowbite-svelte";
-  import { shouldHighlight } from "../../shared/utils";
+  import { compareHighlight, shouldHighlight } from "../../shared/utils";
 
   export let id: number;
   export let textData: Array<[string, unknown]>;
   export let metadata: Array<[string, unknown]>;
   export let highlight = false;
   export let selection: any = undefined; // vgplot.Selection
+  export let originalMetadata: Array<[string, unknown]> | undefined = undefined;
 
   let toggle = false;
 
@@ -152,6 +153,12 @@
             <div
               class="whitespace-normal text-ellipsis overflow-hidden text-sm w-1/3 font-semibold italic"
               title={itemKey}
+              class:bg-gray-400={compareHighlight(
+                originalMetadata,
+                itemKey,
+                itemValue,
+                itemType,
+              )}
             >
               {itemKey}
             </div>
