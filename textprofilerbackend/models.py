@@ -109,7 +109,6 @@ class LLMTransformCommit(BaseModel):
     taskFormat: TaskFormat
     columnName: str
     tableName: str
-    newColumnName: str
     exampleData: List[str]
     exampleResponse: List[Dict[str, Any]]
     applyToIndices: List[int]
@@ -126,5 +125,4 @@ class CodeTransformCommit(BaseModel):
     taskFormat: TaskFormat
     columnName: str
     tableName: str
-    newColumnName: str
     applyToIndices: List[int]

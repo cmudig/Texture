@@ -10,6 +10,5 @@ export type CodeTransformCommit = {
   taskFormat: TaskFormat;
   columnName: string;
   tableName: string;
-  newColumnName: string;
   applyToIndices: Array<number>;
 };

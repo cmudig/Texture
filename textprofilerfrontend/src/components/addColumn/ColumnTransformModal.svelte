@@ -140,7 +140,6 @@
         taskFormat: responseSchema,
         columnName: targetColName,
         tableName: $datasetInfo.name,
-        newColumnName: responseSchema.name,
         exampleData: columnExampleData.map((cd) => cd[targetColName]),
         exampleResponse: exampleResult.map((item) => ({
           [responseSchema.name]: item,
@@ -153,7 +152,6 @@
         taskFormat: responseSchema,
         columnName: targetColName,
         tableName: $datasetInfo.name,
-        newColumnName: responseSchema.name,
         applyToIndices: $filteredIndices,
       });
     }
