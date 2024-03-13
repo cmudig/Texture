@@ -2,23 +2,7 @@
   import { onDestroy, onMount, afterUpdate } from "svelte";
   import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
 
-  //   const initialPythonCode = `import pandas as pd
-
-  // def transform(col: pd.Series) -> pd.Series:
-  //   # do transformation here and return a series or array
-  //   pass
-  // `;
-
-  const initialPythonCode = `import pandas as pd
-
-# length (in characters)
-def transform(col: pd.Series):
-  return col.str.len()
-`;
-
-  export let currentCode: string = initialPythonCode;
-
-  $: console.log("IN EDITOR: current code is ", currentCode);
+  export let currentCode: string;
 
   // monaco variables
   let monaco: typeof Monaco;

@@ -1,11 +1,13 @@
 <script lang="ts">
   import { Button } from "flowbite-svelte";
-
+  import type { TaskFormat } from "../../backendapi";
   import CodeEditor from "./MonacoEditor/CodeEditor.svelte";
   import { sampleTransforms } from "./sampleCodeTransforms";
 
   export let setPreviewReady: (status: boolean) => void;
-  export let userTransformCode: string | undefined = undefined;
+  export let targetColName: string;
+  export let responseSchema: TaskFormat;
+  export let userTransformCode: string = sampleTransforms["Empty"].code;
 
   // TODO in future only set this once ready?
   setPreviewReady(true);
@@ -17,8 +19,9 @@
     {#each Object.keys(sampleTransforms) as transformName}
       <Button
         on:click={() => {
-          console.log("Setting code to: ", sampleTransforms[transformName]);
-          userTransformCode = sampleTransforms[transformName];
+          userTransformCode = sampleTransforms[transformName].code;
+          let m = sampleTransforms[transformName].schema;
+          responseSchema = { ...m, name: `${targetColName}_${m.name}` };
         }}
         size="xs"
         class="text-white bg-blue-500 hover:bg-blue-600 focus-within:ring-blue-100 shrink-0"

@@ -228,12 +228,13 @@
     {#if textCols}
       <div class="flex flex-col gap-4">
         <div class="flex gap-2 items-center">
+          From
           <Select
             class="w-64 bg-white"
             size="sm"
             items={textCols.map((k) => ({
               value: k.name,
-              name: "From " + k.name,
+              name: k.name,
             }))}
             placeholder="Select column"
             bind:value={targetColName}
@@ -293,7 +294,9 @@
               />
             {:else}
               <CodeExtract
+                {targetColName}
                 bind:userTransformCode
+                bind:responseSchema
                 setPreviewReady={(v) => (readyToGenPreview = v)}
               />
             {/if}

@@ -51,10 +51,29 @@ def get_avg_word_len(s: str):
 `;
 
 export const sampleTransforms = {
-  Empty: code_empty,
-  "String length": code_str_len,
-  "Number of words": code_str_words,
-  "% special characters": code_str_special_chars,
-  "Max word length": code_max_word_len,
-  "Average word length": code_avg_word_len,
+  Empty: {
+    code: code_empty,
+    schema: { name: "", type: "number", num_replies: "single" },
+  },
+  "Number characters": {
+    code: code_str_len,
+    schema: { name: "num_characters", type: "number", num_replies: "single" },
+  },
+
+  "Number of words": {
+    code: code_str_words,
+    schema: { name: "num_words", type: "number", num_replies: "single" },
+  },
+  "% special characters": {
+    code: code_str_special_chars,
+    schema: { name: "perc_special", type: "number", num_replies: "single" },
+  },
+  "Max word length": {
+    code: code_max_word_len,
+    schema: { name: "max_word_len", type: "number", num_replies: "single" },
+  },
+  "Average word length": {
+    code: code_avg_word_len,
+    schema: { name: "avg_word_len", type: "number", num_replies: "single" },
+  },
 };
