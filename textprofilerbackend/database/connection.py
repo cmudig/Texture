@@ -106,7 +106,7 @@ class DatabaseConnection:
             f"CREATE TABLE IF NOT EXISTS '{dataset_name}' AS (SELECT * FROM read_parquet('{CACHE_PATH / dataset_path}'));"
         )
 
-    def load_dataframe(self, dataset_name, df: pd.DataFrame):
+    def load_dataframe(self, table_name, df: pd.DataFrame):
         """
         Loads a DataFrame into the database
 
@@ -114,9 +114,8 @@ class DatabaseConnection:
             dataset_name: name of the dataset
             df: DataFrame to load
         """
-        # NOTE: this only creates a view im pretty sure of the dataframe
-        self.connection.register(dataset_name, df)
-        print("registed new dataset in duckdb:  ", dataset_name)
+        q = f"CREATE TABLE {table_name} AS SELECT * FROM df"
+        self.execute(q)
 
     def add_column(self, tableName, columnName, data):
         """
