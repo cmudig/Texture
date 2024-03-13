@@ -17,8 +17,8 @@
   import { QueryStatus } from "../../shared/types";
   import { formatInt } from "../../shared/format";
   import SchemaEditor from "./SchemaEditor.svelte";
-  import LLMExtract from "./LLMExtract.svelte";
-  import CodeExtract from "./CodeExtract.svelte";
+  import LLMExtract from "./LLMTransform/LLMExtract.svelte";
+  import CodeExtract from "./CodeTransform/CodeExtract.svelte";
 
   // props
   export let panelOpen: boolean;

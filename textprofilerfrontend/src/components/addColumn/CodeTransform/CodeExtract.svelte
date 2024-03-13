@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button } from "flowbite-svelte";
-  import type { TaskFormat } from "../../backendapi";
-  import CodeEditor from "./MonacoEditor/CodeEditor.svelte";
+  import type { TaskFormat } from "../../../backendapi";
+  import CodeEditor from "./CodeEditor.svelte";
   import { sampleTransforms } from "./sampleCodeTransforms";
 
   export let setPreviewReady: (status: boolean) => void;

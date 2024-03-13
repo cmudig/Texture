@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { databaseConnection } from "../../stores";
-  import type { TaskFormat } from "../../backendapi";
+  import { databaseConnection } from "../../../stores";
+  import type { TaskFormat } from "../../../backendapi";
 
   import { Spinner, Textarea, Button } from "flowbite-svelte";
   import { CheckSolid } from "flowbite-svelte-icons";
-  import TransformPreview from "./TransformPreview.svelte";
-  import { QueryStatus } from "../../shared/types";
+  import TransformPreview from "../TransformPreview.svelte";
+  import { QueryStatus } from "../../../shared/types";
 
   const INSTRUCTION = `Describe how you want to transform the column data in a few sentences with as much details as possible.
 For example, "Extract 3 - 5 keywords per article"`;
