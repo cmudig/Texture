@@ -1,6 +1,7 @@
 from functools import wraps
 import time
 from textprofilerbackend.models import DataType
+import pandas as pd
 
 
 def timeit(func):
@@ -57,3 +58,12 @@ def get_type_from_response(inputType) -> DataType:
         return "number"
 
     return "categorical"
+
+
+def flatten(col: pd.Series, idColName="id"):
+    """flatten a series with arrays into a dataframe with one entry per row"""
+    col = col.explode()
+    col = col.reset_index()
+    col = col.rename(columns={"index": idColName})
+
+    return col

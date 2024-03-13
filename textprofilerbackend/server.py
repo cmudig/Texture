@@ -198,19 +198,17 @@ def get_server() -> FastAPI:
 
     @api_app.post("/commit_llm_transform_result", response_model=TransformResponse)
     def commit_llm_transform_result(request: LLMTransformCommit):
+        new_col_name = request.taskFormat.name
 
-        print("Request is: ", request)
-
+        # Step 1: get data
         all_data_df = duckdb_conn.connection.execute(
             f'SELECT "id", "{request.columnName}" from "{request.tableName}"'
         ).df()
-
         transform_data = pd.merge(
             all_data_df, pd.DataFrame({"id": request.applyToIndices}), on="id"
         )
-        print("Transform data is: ", transform_data.head())
 
-        # get results and turn into flat array
+        # Step 2: get results and turn into flat array
         results = llm_client.get_transformations(
             request.userPrompt,
             request.taskFormat,
@@ -218,27 +216,40 @@ def get_server() -> FastAPI:
             request.exampleData,
             request.exampleResponse,
         )
-        print("RAW RESULTS ARE: ", results)
-        processed_results = process_results(results, request.newColumnName)
-        processed_df = pd.DataFrame(
-            {"processed": processed_results}, index=request.applyToIndices
-        )
-        processed_df = processed_df.reindex(all_data_df.index)
-        print("processed_df: ", processed_df)
 
-        duckdb_conn.add_column(
-            request.tableName, request.newColumnName, processed_df["processed"]
+        # Step 3: format with correct indices transform
+        # processed_results = process_results(results, new_col_name)
+        processed_results = [r[new_col_name] for r in results]
+        processed_df = pd.DataFrame(
+            {new_col_name: processed_results}, index=request.applyToIndices
         )
+
         colType = get_type_from_response(request.taskFormat.type)
-        datasetMetadataCache[request.tableName].columns.insert(
-            0,
-            Column(
-                name=request.newColumnName,
+
+        if request.taskFormat.num_replies == "multiple":
+            newTableDf = flatten(processed_df[new_col_name], idColName="id")
+            newTableName = new_col_name + "_table"
+            duckdb_conn.load_dataframe(newTableName, newTableDf)
+            newColSchema = Column(
+                name=new_col_name,
+                type=colType,
+                table_name=newTableName,
+                derived_from=request.columnName,
+                derived_how="model",
+            )
+        else:
+            processed_df = processed_df.reindex(all_data_df.index)
+            duckdb_conn.add_column(
+                request.tableName, new_col_name, processed_df[new_col_name]
+            )
+            newColSchema = Column(
+                name=new_col_name,
                 type=colType,
                 derived_from=request.columnName,
                 derived_how="model",
-            ),
-        )
+            )
+
+        datasetMetadataCache[request.tableName].columns.insert(0, newColSchema)
 
         return TransformResponse(success=True, result=[])
 
@@ -289,7 +300,7 @@ def get_server() -> FastAPI:
 
         if request.taskFormat.num_replies == "multiple":
             newTableDf = flatten(processed_df[new_col_name], idColName="id")
-            newTableName = request.taskFormat.name + "_table"
+            newTableName = new_col_name + "_table"
             duckdb_conn.load_dataframe(newTableName, newTableDf)
             newColSchema = Column(
                 name=new_col_name,
