@@ -7,7 +7,7 @@
 
   export let idColName: string | undefined;
   export let targetColName: string;
-  export let responseFormat: TaskFormat;
+  export let responseSchema: TaskFormat;
   export let columnData: any[];
   export let resultData: any[];
   export let queryStatus: QueryStatus;
@@ -30,8 +30,8 @@
     <div
       class="grow whitespace-normal break-words p-2 border-l border-y border-gray-200 text-black bg-gray-50"
     >
-      {#if responseFormat}
-        {`${responseFormat.name} (${responseFormat?.type}${responseFormat.num_replies === "single" ? "" : "[]"})`}
+      {#if responseSchema}
+        {`${responseSchema.name} (${responseSchema?.type}${responseSchema.num_replies === "single" ? "" : "[]"})`}
       {:else}
         <Spinner />
       {/if}

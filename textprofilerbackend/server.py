@@ -14,15 +14,20 @@ from textprofilerbackend.models import (
     DatasetVerifyResponse,
     DatasetTokenizeResponse,
     VectorSearchResponse,
-    LLMResponse,
+    TransformResponse,
     LLMTransformRequest,
     LLMTransformCommit,
     Column,
+    CodeTransformRequest,
+    CodeTransformCommit,
 )
 from textprofilerbackend.process_data import process_new_file
 from textprofilerbackend.transform import word_tokenize
 from textprofilerbackend.llm.client import LLMClient
 from textprofilerbackend.utils import process_results, get_type_from_response
+from textprofilerbackend.userCodeTransform.transform import (
+    execute_code_and_apply_function,
+)
 
 from io import BytesIO
 import pandas as pd
@@ -173,12 +178,12 @@ def get_server() -> FastAPI:
             success=True, result=result_df.to_dict(orient="records")
         )
 
-    @api_app.post("/fetch_llm_response_format", response_model=LLMResponse)
+    @api_app.post("/fetch_llm_response_format", response_model=TransformResponse)
     def get_llm_response_format(userPrompt: str):
         task_format = llm_client.get_response_format(userPrompt)
-        return LLMResponse(success=True, result=task_format)
+        return TransformResponse(success=True, result=task_format)
 
-    @api_app.post("/fetch_llm_transform_result", response_model=LLMResponse)
+    @api_app.post("/fetch_llm_transform_result", response_model=TransformResponse)
     def get_llm_transform_result(request: LLMTransformRequest):
         results = llm_client.get_transformations(
             request.userPrompt,
@@ -187,10 +192,11 @@ def get_server() -> FastAPI:
             request.exampleData,
             request.exampleResponse,
         )
-        print("[get_llm_transform_result] has results: ", results)
-        return LLMResponse(success=True, result=results)
+        parsed_results = [r[request.taskFormat.name] for r in results]
+        print("[get_llm_transform_result] has results: ", parsed_results)
+        return TransformResponse(success=True, result=parsed_results)
 
-    @api_app.post("/commit_llm_transform_result", response_model=LLMResponse)
+    @api_app.post("/commit_llm_transform_result", response_model=TransformResponse)
     def commit_llm_transform_result(request: LLMTransformCommit):
 
         print("Request is: ", request)
@@ -220,23 +226,80 @@ def get_server() -> FastAPI:
         processed_df = processed_df.reindex(all_data_df.index)
         print("processed_df: ", processed_df)
 
-        # NOTE: assuming that this is unique col name
-        new_col_name = "MODEL_" + request.newColumnName
         duckdb_conn.add_column(
-            request.tableName, new_col_name, processed_df["processed"]
+            request.tableName, request.newColumnName, processed_df["processed"]
         )
         colType = get_type_from_response(request.taskFormat.type)
         datasetMetadataCache[request.tableName].columns.insert(
             0,
             Column(
-                name=new_col_name,
+                name=request.newColumnName,
                 type=colType,
                 derived_from=request.columnName,
                 derived_how="model",
             ),
         )
 
-        return LLMResponse(success=True, result=[])
+        return TransformResponse(success=True, result=[])
+
+    @api_app.post("/fetch_code_transform_result", response_model=TransformResponse)
+    def get_code_transform_result(request: CodeTransformRequest):
+
+        df = pd.DataFrame({"sample": request.columnData})
+
+        try:
+            results = execute_code_and_apply_function(request.codeString, df["sample"])
+
+            if results is None:
+                raise Exception("No results returned from code execution")
+
+        except Exception as e:
+            print("Exception running user code: ", e)
+            return TransformResponse(success=False, result={"error": str(e)})
+
+        print("[get_code_transform_result] has results: ", results)
+        return TransformResponse(success=True, result=list(results))
+
+    @api_app.post("/commit_code_transform_result", response_model=TransformResponse)
+    def commit_code_transform_result(request: CodeTransformCommit):
+
+        print("Request is: ", request)
+
+        all_data_df = duckdb_conn.connection.execute(
+            f'SELECT "id", "{request.columnName}" from "{request.tableName}"'
+        ).df()
+
+        transform_data = pd.merge(
+            all_data_df, pd.DataFrame({"id": request.applyToIndices}), on="id"
+        )
+        print("Transform data is: ", transform_data.head())
+
+        results = execute_code_and_apply_function(
+            request.codeString, transform_data[request.columnName]
+        )
+
+        print("RAW RESULTS ARE: ", results)
+        processed_df = pd.DataFrame(
+            {"processed": results}, index=request.applyToIndices
+        )
+        processed_df = processed_df.reindex(all_data_df.index)
+        print("processed_df: ", processed_df)
+
+        duckdb_conn.add_column(
+            request.tableName, request.newColumnName, processed_df["processed"]
+        )
+        colType = get_type_from_response(request.taskFormat.type)
+        datasetMetadataCache[request.tableName].columns.insert(
+            0,
+            Column(
+                name=request.newColumnName,
+                type=colType,
+                derived_from=request.columnName,
+                derived_how="code",
+            ),
+        )
+
+        return TransformResponse(success=True, result=[])
 
     @api_app.post("/save_to_file", response_model=bool)
     def save_database_to_file(table_name: str):

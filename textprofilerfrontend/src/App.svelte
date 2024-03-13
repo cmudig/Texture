@@ -12,12 +12,11 @@
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import DataDisplay from "./components/table/DataDisplay.svelte";
-  import UploadDataModal from "./components/uploadData/UploadDataModal.svelte";
   import Search from "./components/Search.svelte";
   import SimilarView from "./components/SimilarView.svelte";
   import FilterBar from "./components/FilterBar.svelte";
   import StopwordEditor from "./components/settings/StopwordEditor.svelte";
-  import LLMModal from "./components/addColumn/LLMModal.svelte";
+  import ColumnTransformModal from "./components/addColumn/ColumnTransformModal.svelte";
   import SaveTableToFile from "./components/SaveTableToFile.svelte";
   import {
     Select,
@@ -29,7 +28,6 @@
   } from "flowbite-svelte";
   import {
     AdjustmentsHorizontalOutline,
-    FilePlusSolid,
     CirclePlusSolid,
   } from "flowbite-svelte-icons";
   import { formatNumber } from "./shared/format";
@@ -39,8 +37,8 @@
   let currentDatasetName: string;
   let currentColToggleStates: Record<string, boolean> = {};
   let datasetSize: number;
-  let showAddDataModal = false;
-  let showAddColModal = false;
+  // let showAddDataModal = false;
+  let showAddColModal = true;
   let datasetColSummaries: Map<string, ColumnSummary>;
   let dataPromise: Promise<any> = populateDataTables();
 
@@ -106,7 +104,7 @@
     >Extract new column</Tooltip
   >
 
-  <FilePlusSolid
+  <!-- <FilePlusSolid
     id="addDatasetIcon"
     size="md"
     class="mx-1 self-center text-white hover:text-primary-700"
@@ -114,7 +112,7 @@
   />
   <Tooltip class="z-10" triggeredBy="#addDatasetIcon" type="light"
     >Add new dataset</Tooltip
-  >
+  > -->
 
   <AdjustmentsHorizontalOutline
     id="settingsToggle"
@@ -176,14 +174,14 @@
     </div>
   </Popover>
 
-  <UploadDataModal
+  <!-- <UploadDataModal
     bind:panelOpen={showAddDataModal}
     finishedUploadHandler={(name) => {
       dataPromise = populateDataTables(name);
     }}
-  />
+  /> -->
 
-  <LLMModal
+  <ColumnTransformModal
     bind:panelOpen={showAddColModal}
     finishedCommitHandler={() => {
       dataPromise = populateDataTables(currentDatasetName);

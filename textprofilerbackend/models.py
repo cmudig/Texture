@@ -10,7 +10,7 @@ class Column(BaseModel):
     derived_from: Optional[str] = None
     # for join datasets, if None assumed to be in main table
     table_name: Optional[str] = None
-    derived_how: Optional[Literal["model", "preprocess"]] = None
+    derived_how: Optional[Literal["model", "code"]] = None
 
 
 class DatasetInfo(BaseModel):
@@ -83,7 +83,7 @@ class VectorSearchResponse(BaseModel):
     result: List[Dict[str, Any]]
 
 
-class LLMResponse(BaseModel):
+class TransformResponse(BaseModel):
     success: bool
     result: Union[List, Dict]
 
@@ -112,4 +112,19 @@ class LLMTransformCommit(BaseModel):
     newColumnName: str
     exampleData: List[str]
     exampleResponse: List[Dict[str, Any]]
+    applyToIndices: List[int]
+
+
+class CodeTransformRequest(BaseModel):
+    codeString: str
+    taskFormat: TaskFormat
+    columnData: List[str]
+
+
+class CodeTransformCommit(BaseModel):
+    codeString: str
+    taskFormat: TaskFormat
+    columnName: str
+    tableName: str
+    newColumnName: str
     applyToIndices: List[int]

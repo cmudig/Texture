@@ -3,6 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Body_upload_dataset } from "../models/Body_upload_dataset";
+import type { CodeTransformCommit } from "../models/CodeTransformCommit";
+import type { CodeTransformRequest } from "../models/CodeTransformRequest";
 import type { DatasetInfo } from "../models/DatasetInfo";
 import type { DatasetTokenizeResponse } from "../models/DatasetTokenizeResponse";
 import type { DatasetUploadResponse } from "../models/DatasetUploadResponse";
@@ -11,9 +13,9 @@ import type { DuckQueryData } from "../models/DuckQueryData";
 import type { ErrorResponse } from "../models/ErrorResponse";
 import type { ExecResponse } from "../models/ExecResponse";
 import type { JsonResponse } from "../models/JsonResponse";
-import type { LLMResponse } from "../models/LLMResponse";
 import type { LLMTransformCommit } from "../models/LLMTransformCommit";
 import type { LLMTransformRequest } from "../models/LLMTransformRequest";
+import type { TransformResponse } from "../models/TransformResponse";
 import type { VectorSearchResponse } from "../models/VectorSearchResponse";
 
 import type { CancelablePromise } from "../core/CancelablePromise";
@@ -210,12 +212,12 @@ export class DefaultService {
   /**
    * Get Llm Response Format
    * @param userPrompt
-   * @returns LLMResponse Successful Response
+   * @returns TransformResponse Successful Response
    * @throws ApiError
    */
   public getLlmResponseFormat(
     userPrompt: string,
-  ): CancelablePromise<LLMResponse> {
+  ): CancelablePromise<TransformResponse> {
     return this.httpRequest.request({
       method: "POST",
       url: "/fetch_llm_response_format",
@@ -231,12 +233,12 @@ export class DefaultService {
   /**
    * Get Llm Transform Result
    * @param requestBody
-   * @returns LLMResponse Successful Response
+   * @returns TransformResponse Successful Response
    * @throws ApiError
    */
   public getLlmTransformResult(
     requestBody: LLMTransformRequest,
-  ): CancelablePromise<LLMResponse> {
+  ): CancelablePromise<TransformResponse> {
     return this.httpRequest.request({
       method: "POST",
       url: "/fetch_llm_transform_result",
@@ -251,15 +253,55 @@ export class DefaultService {
   /**
    * Commit Llm Transform Result
    * @param requestBody
-   * @returns LLMResponse Successful Response
+   * @returns TransformResponse Successful Response
    * @throws ApiError
    */
   public commitLlmTransformResult(
     requestBody: LLMTransformCommit,
-  ): CancelablePromise<LLMResponse> {
+  ): CancelablePromise<TransformResponse> {
     return this.httpRequest.request({
       method: "POST",
       url: "/commit_llm_transform_result",
+      body: requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Get Code Transform Result
+   * @param requestBody
+   * @returns TransformResponse Successful Response
+   * @throws ApiError
+   */
+  public getCodeTransformResult(
+    requestBody: CodeTransformRequest,
+  ): CancelablePromise<TransformResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/fetch_code_transform_result",
+      body: requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Commit Code Transform Result
+   * @param requestBody
+   * @returns TransformResponse Successful Response
+   * @throws ApiError
+   */
+  public commitCodeTransformResult(
+    requestBody: CodeTransformCommit,
+  ): CancelablePromise<TransformResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/commit_code_transform_result",
       body: requestBody,
       mediaType: "application/json",
       errors: {
