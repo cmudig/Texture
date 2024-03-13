@@ -198,21 +198,21 @@
         <div>
           <div class="flex w-full">
             <Button
-              color={transformType === "llm" ? "primary" : "alternative"}
-              class="flex items-center gap-2 w-1/2 text-md py-4 rounded-none rounded-tl-lg"
-              on:click={() => (transformType = "llm")}
-            >
-              <WandMagicSparklesOutline size="sm" />
-              Extract with LLM
-            </Button>
-
-            <Button
               color={transformType === "code" ? "primary" : "alternative"}
-              class="flex items-center gap-2 w-1/2 text-md py-4 rounded-none rounded-tr-lg"
+              class="flex items-center gap-2 w-1/2 text-md py-4 rounded-none rounded-tl-lg"
               on:click={() => (transformType = "code")}
             >
               <CodeOutline size="sm" />
               Extract with code
+            </Button>
+
+            <Button
+              color={transformType === "llm" ? "primary" : "alternative"}
+              class="flex items-center gap-2 w-1/2 text-md py-4 rounded-none rounded-tr-lg"
+              on:click={() => (transformType = "llm")}
+            >
+              <WandMagicSparklesOutline size="sm" />
+              Extract with LLM
             </Button>
           </div>
 

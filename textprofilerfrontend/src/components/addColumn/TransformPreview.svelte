@@ -42,12 +42,12 @@
   {#each columnData as cd, index}
     <div class="flex w-full">
       <div
-        class="w-12 text-sm shrink-0 whitespace-normal break-words align-top p-2 overflow-auto border-b border-l border-gray-200"
+        class="w-12 text-sm shrink-0 whitespace-normal break-words align-top p-2 overflow-auto border-b border-l border-gray-200 bg-white"
       >
         {idColName ? cd[idColName] : ""}
       </div>
       <div
-        class="w-1/2 shrink-0 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200"
+        class="w-1/2 shrink-0 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200 bg-white"
       >
         {cd[targetColName]}
       </div>

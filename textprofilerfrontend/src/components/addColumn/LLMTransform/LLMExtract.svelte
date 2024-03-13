@@ -82,7 +82,7 @@ For example, "Extract 3 - 5 keywords per article"`;
   />
 
   <Button
-    class="w-64 text-white bg-blue-500 hover:bg-blue-600 focus-within:ring-blue-100"
+    class="w-64 text-white bg-secondary-500 hover:bg-secondary-600 focus-within:ring-secondary-100"
     on:click={submitInitialTransformation}
     disabled={!userPrompt || !responseSchema}
   >

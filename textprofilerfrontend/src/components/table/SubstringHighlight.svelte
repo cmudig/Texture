@@ -73,7 +73,7 @@
 <!-- TODO: use different colors for different highlights? -->
 {#each annotatedSpans as s}
   {#if s.included}
-    <span class="bg-yellow-200">{s.span}</span>
+    <span class="bg-highlight-300">{s.span}</span>
   {:else}
     {s.span}
   {/if}
