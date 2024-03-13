@@ -30,7 +30,7 @@
 
   // locals
   let targetColName: string;
-  let transformType: "llm" | "code" = "llm";
+  let transformType: "llm" | "code" = "code";
 
   // example data
   let example_idxs = [0, 1, 2];
