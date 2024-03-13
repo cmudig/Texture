@@ -216,9 +216,7 @@
   $: initPromise = init(textCols);
   // error handling
   $: namingErrorExists =
-    responseSchema?.name &&
-    (allColNames.includes(responseSchema.name) ||
-      allColNames.includes("MODEL_" + responseSchema.name));
+    responseSchema?.name && allColNames.includes(responseSchema.name);
 </script>
 
 <Modal bind:open={panelOpen} title="Extract new column" size="xl" outsideclose>
@@ -229,49 +227,26 @@
   {:then r}
     {#if textCols}
       <div class="flex flex-col gap-4">
-        <div
-          class="flex flex-col gap-4 border border-gray-300 bg-slate-50 py-4 px-2 rounded"
-        >
-          <div class="text-black text-lg font-semibold">
-            Configure extraction
-          </div>
-          <div class="flex gap-2 items-center">
-            <p>Extract from</p>
-            <Select
-              class="w-64 bg-white"
-              size="sm"
-              items={textCols.map((k) => ({
-                value: k.name,
-                name: k.name,
-              }))}
-              placeholder="Select column"
-              bind:value={targetColName}
-              on:change={fetchColData}
-            />
-            <p>in current selection ({formatInt($filteredCount)} rows)</p>
-          </div>
+        <div class="flex gap-2 items-center">
+          <Select
+            class="w-64 bg-white"
+            size="sm"
+            items={textCols.map((k) => ({
+              value: k.name,
+              name: "From " + k.name,
+            }))}
+            placeholder="Select column"
+            bind:value={targetColName}
+            on:change={fetchColData}
+          />
+          <p>in current selection ({formatInt($filteredCount)} rows)</p>
+        </div>
 
-          <div class="flex gap-2 items-center">
-            <p>New attribute</p>
-
-            <SchemaEditor
-              bind:responseSchema
-              disabled={schemaResultStatus === QueryStatus.PENDING}
-            />
-            {#if schemaResultStatus === QueryStatus.PENDING}
-              <Spinner />
-            {/if}
-            {#if namingErrorExists}
-              <div class="text-red-500">
-                Column {responseSchema.name} is already in the dataset, try another
-                name!
-              </div>
-            {/if}
-          </div>
-          <div class="flex gap-2">
+        <div>
+          <div class="flex w-full">
             <Button
               color={transformType === "llm" ? "primary" : "alternative"}
-              class="flex items-center gap-2"
+              class="flex items-center gap-2 w-1/2 text-md rounded-none rounded-tl-lg"
               on:click={() => (transformType = "llm")}
             >
               <WandMagicSparklesOutline size="sm" />
@@ -280,32 +255,50 @@
 
             <Button
               color={transformType === "code" ? "primary" : "alternative"}
-              class="flex items-center gap-2"
+              class="flex items-center gap-2 w-1/2 text-md rounded-none rounded-tr-lg"
               on:click={() => (transformType = "code")}
             >
               <CodeOutline size="sm" />
               Extract with code
             </Button>
           </div>
-        </div>
 
-        {#if transformType === "llm"}
-          <LLMExtract
-            {targetColName}
-            {idColName}
-            setPreviewReady={(v) => (readyToGenPreview = v)}
-            bind:userPrompt
-            bind:responseSchema
-            bind:schemaResultStatus
-            bind:columnExampleData
-            bind:exampleResult
-          />
-        {:else}
-          <CodeExtract
-            bind:userTransformCode
-            setPreviewReady={(v) => (readyToGenPreview = v)}
-          />
-        {/if}
+          <div class="p-4 flex flex-col bg-gray-100 rounded-b-lg">
+            <div class="flex gap-2 items-center mb-4">
+              <SchemaEditor
+                bind:responseSchema
+                disabled={schemaResultStatus === QueryStatus.PENDING}
+              />
+              {#if schemaResultStatus === QueryStatus.PENDING}
+                <Spinner />
+              {/if}
+              {#if namingErrorExists}
+                <div class="text-red-500">
+                  Column {responseSchema.name} is already in the dataset, try another
+                  name!
+                </div>
+              {/if}
+            </div>
+
+            {#if transformType === "llm"}
+              <LLMExtract
+                {targetColName}
+                {idColName}
+                setPreviewReady={(v) => (readyToGenPreview = v)}
+                bind:userPrompt
+                bind:responseSchema
+                bind:schemaResultStatus
+                bind:columnExampleData
+                bind:exampleResult
+              />
+            {:else}
+              <CodeExtract
+                bind:userTransformCode
+                setPreviewReady={(v) => (readyToGenPreview = v)}
+              />
+            {/if}
+          </div>
+        </div>
 
         {#if readyToGenPreview}
           <hr />

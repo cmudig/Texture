@@ -11,21 +11,23 @@
   setPreviewReady(true);
 </script>
 
-<div class="flex gap-2 items-center">
-  Transform templates:
-  {#each Object.keys(sampleTransforms) as transformName}
-    <Button
-      on:click={() => {
-        console.log("Setting code to: ", sampleTransforms[transformName]);
-        userTransformCode = sampleTransforms[transformName];
-      }}
-      color="alternative"
-      size="xs"
-      class="text-gray-500"
-    >
-      {transformName}
-    </Button>
-  {/each}
-</div>
+<div class="flex flex-col gap-2">
+  <div class="flex gap-2 items-center">
+    Transform templates:
+    {#each Object.keys(sampleTransforms) as transformName}
+      <Button
+        on:click={() => {
+          console.log("Setting code to: ", sampleTransforms[transformName]);
+          userTransformCode = sampleTransforms[transformName];
+        }}
+        color="alternative"
+        size="xs"
+        class="text-gray-500"
+      >
+        {transformName}
+      </Button>
+    {/each}
+  </div>
 
-<CodeEditor bind:currentCode={userTransformCode} />
+  <CodeEditor bind:currentCode={userTransformCode} />
+</div>

@@ -57,7 +57,7 @@ def transform(col: pd.Series):
 </script>
 
 <div
-  class="h-48 w-full border-2 border-gray-300 rounded"
+  class="h-40 w-full border-2 border-gray-300 rounded"
   class:border-primary-500={isFocused}
   bind:this={editorElement}
 />
