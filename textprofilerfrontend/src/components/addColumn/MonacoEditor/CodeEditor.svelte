@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, afterUpdate } from "svelte";
   import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
 
   //   const initialPythonCode = `import pandas as pd
@@ -17,6 +17,8 @@ def transform(col: pd.Series):
 `;
 
   export let currentCode: string = initialPythonCode;
+
+  $: console.log("IN EDITOR: current code is ", currentCode);
 
   // monaco variables
   let monaco: typeof Monaco;
@@ -48,6 +50,12 @@ def transform(col: pd.Series):
     editor.onDidChangeModelContent(() => (currentCode = editor.getValue()));
     editor.onDidFocusEditorWidget(() => (isFocused = true));
     editor.onDidBlurEditorWidget(() => (isFocused = false));
+  });
+
+  afterUpdate(() => {
+    if (model && model?.getValue() !== currentCode) {
+      model.setValue(currentCode);
+    }
   });
 
   onDestroy(() => {

@@ -12,17 +12,16 @@
 </script>
 
 <div class="flex flex-col gap-2">
-  <div class="flex gap-2 items-center">
-    Transform templates:
+  <div class="flex gap-2 items-center overflow-x-auto flex-nowrap">
+    Templates:
     {#each Object.keys(sampleTransforms) as transformName}
       <Button
         on:click={() => {
           console.log("Setting code to: ", sampleTransforms[transformName]);
           userTransformCode = sampleTransforms[transformName];
         }}
-        color="alternative"
         size="xs"
-        class="text-gray-500"
+        class="text-white bg-blue-500 hover:bg-blue-600 focus-within:ring-blue-100 shrink-0"
       >
         {transformName}
       </Button>
