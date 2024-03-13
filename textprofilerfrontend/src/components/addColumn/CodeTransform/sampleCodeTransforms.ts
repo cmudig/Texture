@@ -55,7 +55,7 @@ export const sampleTransforms = {
     code: code_empty,
     schema: { name: "", type: "number", num_replies: "single" },
   },
-  "Number characters": {
+  "Number of characters": {
     code: code_str_len,
     schema: { name: "num_characters", type: "number", num_replies: "single" },
   },
