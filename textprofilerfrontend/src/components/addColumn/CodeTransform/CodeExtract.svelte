@@ -23,7 +23,7 @@
           responseSchema = { ...m, name: `${targetColName}_${m.name}` };
         }}
         size="xs"
-        class="text-white bg-blue-500 hover:bg-blue-600 focus-within:ring-blue-100 shrink-0"
+        class="text-white bg-secondary-500 hover:bg-secondary-600 focus-within:ring-secondary-100 shrink-0"
       >
         {transformName}
       </Button>

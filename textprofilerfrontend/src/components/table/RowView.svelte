@@ -157,7 +157,7 @@
             </div>
             <div
               class={`whitespace-normal break-words text-sm w-2/3 ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-800"}`}
-              class:bg-yellow-200={itemKey in $selectionDisplay &&
+              class:bg-highlight-300={itemKey in $selectionDisplay &&
                 shouldHighlight(
                   itemValue,
                   $selectionDisplay[itemKey],

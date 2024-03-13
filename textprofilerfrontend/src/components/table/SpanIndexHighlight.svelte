@@ -11,7 +11,7 @@
 
     highlights.forEach(({ span_start, span_end, word }) => {
       result += value.substring(lastIndex, span_start);
-      result += `<span class="bg-yellow-200">${word}</span>`;
+      result += `<span class="bg-highlight-300">${word}</span>`;
       lastIndex = span_end;
     });
 

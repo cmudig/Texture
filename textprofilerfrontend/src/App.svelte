@@ -79,7 +79,7 @@
 </script>
 
 <div
-  class="flex flex-row gap-2 bg-gradient-to-r to-40% from-[#325C7F] to-[#4682b4] p-4"
+  class="flex flex-row gap-2 bg-gradient-to-r from-primary-700 to-secondary-600 p-4"
 >
   <span class="self-center whitespace-nowrap text-2xl text-white">
     Text<span class="font-light ml-1"> Profiler</span>
@@ -96,7 +96,7 @@
   <CirclePlusSolid
     id="addColIcon"
     size="md"
-    class="mx-1 self-center text-white hover:text-primary-700"
+    class="mx-1 self-center text-white hover:text-gray-300"
     on:click={() => (showAddColModal = true)}
   />
   <Tooltip class="z-10" triggeredBy="#addColIcon" type="light"
@@ -116,7 +116,7 @@
   <AdjustmentsHorizontalOutline
     id="settingsToggle"
     size="md"
-    class="mx-1 self-center text-white hover:text-primary-700"
+    class="mx-1 self-center text-white hover:text-gray-300"
   />
   <Popover
     triggeredBy="#settingsToggle"

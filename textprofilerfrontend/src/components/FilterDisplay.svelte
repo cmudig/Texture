@@ -13,7 +13,7 @@
 </script>
 
 <div
-  class={`flex gap-1 items-center  bg-white rounded-lg border-2 p-1  ${isStringArray(filterRange) || filterRange[0] == undefined ? "border-orange-300 " : "border-blue-300"}`}
+  class={`flex gap-1 items-center  bg-white rounded-lg border-2 p-1  ${isStringArray(filterRange) || filterRange[0] == undefined ? "border-highlight-500 " : "border-highlight-500"}`}
 >
   <div>
     {#if isStringArray(filterRange) || filterRange[0] == undefined}
