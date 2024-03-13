@@ -192,8 +192,9 @@ def get_server() -> FastAPI:
             request.exampleData,
             request.exampleResponse,
         )
-        print("[get_llm_transform_result] has results: ", results)
-        return TransformResponse(success=True, result=results)
+        parsed_results = [r[request.taskFormat.name] for r in results]
+        print("[get_llm_transform_result] has results: ", parsed_results)
+        return TransformResponse(success=True, result=parsed_results)
 
     @api_app.post("/commit_llm_transform_result", response_model=TransformResponse)
     def commit_llm_transform_result(request: LLMTransformCommit):
@@ -245,7 +246,16 @@ def get_server() -> FastAPI:
     def get_code_transform_result(request: CodeTransformRequest):
 
         df = pd.DataFrame({"sample": request.columnData})
-        results = execute_code_and_apply_function(request.codeString, df["sample"])
+
+        try:
+            results = execute_code_and_apply_function(request.codeString, df["sample"])
+
+            if results is None:
+                raise Exception("No results returned from code execution")
+
+        except Exception as e:
+            print("Exception running user code: ", e)
+            return TransformResponse(success=False, result={"error": str(e)})
 
         print("[get_code_transform_result] has results: ", results)
         return TransformResponse(success=True, result=list(results))

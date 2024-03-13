@@ -9,7 +9,6 @@
   export let responseSchema: TaskFormat;
   export let userTransformCode: string = sampleTransforms["Empty"].code;
 
-  // TODO in future only set this once ready?
   setPreviewReady(true);
 </script>
 

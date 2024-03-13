@@ -21,44 +21,42 @@ For example, "Extract 3 - 5 keywords per article"`;
   export let exampleResult;
   export let setPreviewReady: (status: boolean) => void;
 
+  // need to wait until have prompt with examples
+  setPreviewReady(false);
+
   // LOCALS
   let exampleResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
+  let exampleProcessingError;
 
   // FUNCTIONS
   let schemaEditTimer;
   async function getSchema() {
     schemaResultStatus = QueryStatus.PENDING;
 
-    // NOTE: this maybe doesnt need to be LLM call, but kinda fun
     if (userPrompt) {
-      let _responseFormat =
-        await databaseConnection.api.getLlmResponseFormat(userPrompt);
-      responseSchema = _responseFormat.result as TaskFormat;
-
+      let r = await databaseConnection.api.getLlmResponseFormat(userPrompt);
+      responseSchema = r.result as TaskFormat;
       console.log("Schema is: ", responseSchema);
     }
     schemaResultStatus = QueryStatus.COMPLETED;
   }
 
   async function submitInitialTransformation() {
-    if (columnExampleData && responseSchema && userPrompt) {
-      exampleResultStatus = QueryStatus.PENDING;
-      databaseConnection.api
-        .getLlmTransformResult({
-          userPrompt,
-          taskFormat: responseSchema,
-          columnData: columnExampleData.map((cd) => cd[targetColName]),
-        })
-        .then((r) => {
-          let parsedResult = r.result;
-          exampleResult = parsedResult.map(
-            (item) => item[responseSchema.name] ?? "",
-          );
-          exampleResultStatus = QueryStatus.COMPLETED;
-          setPreviewReady(true);
-        });
+    exampleResultStatus = QueryStatus.PENDING;
+    let r = await databaseConnection.api.getLlmTransformResult({
+      userPrompt,
+      taskFormat: responseSchema,
+      columnData: columnExampleData.map((cd) => cd[targetColName]),
+    });
+
+    exampleResultStatus = QueryStatus.COMPLETED;
+
+    if (r.success) {
+      exampleProcessingError = undefined;
+      exampleResult = r.result;
+      setPreviewReady(true);
     } else {
-      console.error("Missing columnExampleData or responseFormat!");
+      exampleProcessingError = r.result?.error;
     }
   }
 
@@ -84,7 +82,7 @@ For example, "Extract 3 - 5 keywords per article"`;
   />
 
   <Button
-    class="w-64"
+    class="w-64 text-white bg-blue-500 hover:bg-blue-600 focus-within:ring-blue-100"
     on:click={submitInitialTransformation}
     disabled={!userPrompt || !responseSchema}
   >
@@ -96,7 +94,11 @@ For example, "Extract 3 - 5 keywords per article"`;
     Generate example responses
   </Button>
 
-  {#if exampleResultStatus !== QueryStatus.NOT_STARTED && columnExampleData}
+  {#if exampleProcessingError}
+    <div class="text-red-500">
+      Error: {exampleProcessingError}
+    </div>
+  {:else if exampleResultStatus !== QueryStatus.NOT_STARTED && columnExampleData}
     <!-- Sample response table -->
     <div class="text-black text-lg font-semibold">Curate Examples</div>
 

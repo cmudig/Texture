@@ -30,18 +30,9 @@
 
   // locals
   let targetColName: string;
-  let userPrompt: string;
   let transformType: "llm" | "code" = "code";
 
-  // step 1 for schema
-  let responseSchema: TaskFormat = {
-    name: "",
-    type: TaskFormat.type.STRING,
-    num_replies: TaskFormat.num_replies.SINGLE,
-  };
-  let schemaResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
-
-  // indices
+  // example data
   let example_idxs = [0, 1, 2];
   let preview_idxs = [3, 4, 5, 6, 7];
 
@@ -57,20 +48,31 @@
     fetchColData();
   });
 
-  // step 2 for editable examples
+  // schema
+  let responseSchema: TaskFormat = {
+    name: "",
+    type: TaskFormat.type.STRING,
+    num_replies: TaskFormat.num_replies.SINGLE,
+  };
+  let schemaResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
+
+  // specify transform
+  let userPrompt: string;
   let columnExampleData: any[];
   let exampleResult: any[];
-
-  // step 2 for code
   let userTransformCode: string;
 
-  // step 3 for transform preview
+  // preview transform
+  let readyToGenPreview = false;
+  $: console.log("Ready to generate preview: ", readyToGenPreview);
   let columnPreviewData: any[];
   let finalPreviewStatus: QueryStatus = QueryStatus.NOT_STARTED;
+  let previewProcessingError;
   let finalPreview: any[];
 
-  // step 4 apply to entire column
+  // apply to final result
   let commitResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
+  let commitError;
 
   async function init(_textCols) {
     targetColName = _textCols?.[0].name;
@@ -93,84 +95,48 @@
     }
   }
 
-  // GENERATE PREVIEWS
-  let readyToGenPreview = false;
+  async function generatePreview() {
+    console.log(`Generating ${transformType} preview`);
+    finalPreviewStatus = QueryStatus.PENDING;
+    let r;
 
-  function generatePreview() {
     if (transformType === "llm") {
-      generateLLMTransformPreview();
+      r = await databaseConnection.api.getLlmTransformResult({
+        userPrompt,
+        taskFormat: responseSchema,
+        columnData: columnPreviewData.map((cd) => cd[targetColName]),
+        exampleData: columnExampleData.map((cd) => cd[targetColName]),
+        exampleResponse: exampleResult.map((item) => ({
+          [responseSchema.name]: item,
+        })),
+      });
     } else {
-      generateCodeTransformPreview();
+      r = await databaseConnection.api.getCodeTransformResult({
+        codeString: userTransformCode,
+        taskFormat: responseSchema,
+        columnData: columnPreviewData.map((cd) => cd[targetColName]),
+      });
+    }
+
+    finalPreviewStatus = QueryStatus.COMPLETED;
+
+    if (r.success) {
+      previewProcessingError = undefined;
+      finalPreview = r.result;
+      console.log("Final Preview: ", finalPreview);
+    } else {
+      console.error("Error in code transform: ", r.result?.error);
+      previewProcessingError = r.result?.error;
     }
   }
 
-  function deriveEntireColumn() {
-    if (transformType === "llm") {
-      applytoColLLM();
-    } else {
-      applytoColCode();
-    }
-  }
-
-  async function generateLLMTransformPreview() {
-    if (columnPreviewData && responseSchema && userPrompt) {
-      finalPreviewStatus = QueryStatus.PENDING;
-      databaseConnection.api
-        .getLlmTransformResult({
-          userPrompt,
-          taskFormat: responseSchema,
-          columnData: columnPreviewData.map((cd) => cd[targetColName]),
-          exampleData: columnExampleData.map((cd) => cd[targetColName]),
-          exampleResponse: exampleResult.map((item) => ({
-            [responseSchema.name]: item,
-          })),
-        })
-        .then((r) => {
-          let parsedResult = r.result;
-          finalPreview = parsedResult.map(
-            (item) => item[responseSchema.name] ?? "",
-          );
-          finalPreviewStatus = QueryStatus.COMPLETED;
-        });
-    } else {
-      console.error("Missing columnPreviewData or responseFormat!");
-    }
-  }
-
-  async function generateCodeTransformPreview() {
-    console.log("Applying user transform with code: ", userTransformCode);
-
-    if (columnPreviewData && responseSchema) {
-      finalPreviewStatus = QueryStatus.PENDING;
-      databaseConnection.api
-        .getCodeTransformResult({
-          codeString: userTransformCode,
-          taskFormat: responseSchema,
-          columnData: columnPreviewData.map((cd) => cd[targetColName]),
-        })
-        .then((r) => {
-          let parsedResult = r.result;
-          console.log("Got: ", parsedResult);
-          finalPreview = parsedResult;
-          finalPreviewStatus = QueryStatus.COMPLETED;
-        });
-    } else {
-      console.error("Missing columnPreviewData or responseSchema!");
-    }
-  }
-
-  async function applytoColLLM() {
-    console.log("Applying to entire column");
-
-    const data = {
-      exampleData: columnExampleData.map((cd) => cd[targetColName]),
-      exampleResponse: exampleResult,
-    };
-    console.log(data);
-
+  async function deriveEntireColumn() {
+    console.log(`Applying ${transformType} transform to entire column.`);
     commitResultStatus = QueryStatus.PENDING;
-    databaseConnection.api
-      .commitLlmTransformResult({
+    let r;
+
+    if (transformType === "llm") {
+      r = await databaseConnection.api.commitLlmTransformResult({
         userPrompt,
         taskFormat: responseSchema,
         columnName: targetColName,
@@ -181,35 +147,24 @@
           [responseSchema.name]: item,
         })),
         applyToIndices: $filteredIndices,
-      })
-      .then((r) => {
-        commitResultStatus = QueryStatus.COMPLETED;
-        console.log("commit result finished with: ", r);
-        finishedCommitHandler();
       });
-  }
-
-  async function applytoColCode() {
-    console.log("Applying user transform with code: ", userTransformCode);
-
-    if (columnPreviewData && responseSchema) {
-      finalPreviewStatus = QueryStatus.PENDING;
-      databaseConnection.api
-        .commitCodeTransformResult({
-          codeString: userTransformCode,
-          taskFormat: responseSchema,
-          columnName: targetColName,
-          tableName: $datasetInfo.name,
-          newColumnName: responseSchema.name,
-          applyToIndices: $filteredIndices,
-        })
-        .then((r) => {
-          commitResultStatus = QueryStatus.COMPLETED;
-          console.log("commit result finished with: ", r);
-          finishedCommitHandler();
-        });
     } else {
-      console.error("Missing columnPreviewData or responseSchema!");
+      r = await databaseConnection.api.commitCodeTransformResult({
+        codeString: userTransformCode,
+        taskFormat: responseSchema,
+        columnName: targetColName,
+        tableName: $datasetInfo.name,
+        newColumnName: responseSchema.name,
+        applyToIndices: $filteredIndices,
+      });
+    }
+
+    commitResultStatus = QueryStatus.COMPLETED;
+    if (r.success) {
+      commitError = undefined;
+      finishedCommitHandler();
+    } else {
+      commitError = r.result?.error;
     }
   }
 
@@ -224,9 +179,9 @@
     <div class="p-2">
       <Spinner />
     </div>
-  {:then r}
+  {:then _}
     {#if textCols}
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-8">
         <div class="flex gap-2 items-center">
           From
           <Select
@@ -240,14 +195,14 @@
             bind:value={targetColName}
             on:change={fetchColData}
           />
-          <p>in current selection ({formatInt($filteredCount)} rows)</p>
+          <p>applied to current selection ({formatInt($filteredCount)} rows)</p>
         </div>
 
         <div>
           <div class="flex w-full">
             <Button
               color={transformType === "llm" ? "primary" : "alternative"}
-              class="flex items-center gap-2 w-1/2 text-md rounded-none rounded-tl-lg"
+              class="flex items-center gap-2 w-1/2 text-md py-4 rounded-none rounded-tl-lg"
               on:click={() => (transformType = "llm")}
             >
               <WandMagicSparklesOutline size="sm" />
@@ -256,7 +211,7 @@
 
             <Button
               color={transformType === "code" ? "primary" : "alternative"}
-              class="flex items-center gap-2 w-1/2 text-md rounded-none rounded-tr-lg"
+              class="flex items-center gap-2 w-1/2 text-md py-4 rounded-none rounded-tr-lg"
               on:click={() => (transformType = "code")}
             >
               <CodeOutline size="sm" />
@@ -304,48 +259,63 @@
         </div>
 
         {#if readyToGenPreview}
-          <hr />
-          <Button class="w-64" on:click={generatePreview}>
+          <Button
+            class="w-64"
+            on:click={generatePreview}
+            disabled={!readyToGenPreview || !responseSchema?.name}
+          >
             {#if finalPreviewStatus === QueryStatus.PENDING}
               <Spinner size="4" class="mr-2" />
             {:else}
               <CheckSolid size="sm" class="mr-2" />
             {/if}
-            Generate a preview
+            Preview transform
           </Button>
-        {/if}
 
-        {#if finalPreviewStatus !== QueryStatus.NOT_STARTED && columnPreviewData}
-          <div class="text-black text-lg font-semibold">
-            Transformation Preview
-          </div>
+          {#if previewProcessingError}
+            <div class="text-red-500">
+              Error: {previewProcessingError}
+            </div>
+          {:else if finalPreviewStatus !== QueryStatus.NOT_STARTED && columnPreviewData}
+            <div class="flex flex-col gap-4">
+              <div class="text-black text-lg font-semibold">
+                Transformation Preview
+              </div>
 
-          <TransformPreview
-            {idColName}
-            {targetColName}
-            {responseSchema}
-            columnData={columnPreviewData}
-            bind:resultData={finalPreview}
-            queryStatus={finalPreviewStatus}
-            allowEdits={false}
-          />
+              <TransformPreview
+                {idColName}
+                {targetColName}
+                {responseSchema}
+                columnData={columnPreviewData}
+                bind:resultData={finalPreview}
+                queryStatus={finalPreviewStatus}
+                allowEdits={false}
+              />
 
-          <div class="flex gap-2 items-center w-full">
-            <Button
-              class="w-96"
-              on:click={deriveEntireColumn}
-              disabled={!responseSchema?.name}
-            >
-              <RocketSolid size="sm" class="mr-2" />
+              <div class="flex gap-2 items-center w-full">
+                <Button
+                  class="w-96"
+                  on:click={deriveEntireColumn}
+                  disabled={!responseSchema?.name}
+                >
+                  <RocketSolid size="sm" class="mr-2" />
 
-              Apply to current selection ({formatInt($filteredCount)} rows)
-            </Button>
-            {#if commitResultStatus === QueryStatus.PENDING}
-              <Spinner />
-            {:else if commitResultStatus === QueryStatus.COMPLETED}
-              <div class="text-green-500">Completed query!</div>
-            {/if}
-          </div>
+                  Run transformation (will transform {formatInt($filteredCount)}
+                  rows)
+                </Button>
+
+                {#if commitError}
+                  <div class="text-red-500">
+                    Error: {commitError}
+                  </div>
+                {:else if commitResultStatus === QueryStatus.PENDING}
+                  <Spinner />
+                {:else if commitResultStatus === QueryStatus.COMPLETED}
+                  <div class="text-green-500">Completed query!</div>
+                {/if}
+              </div>
+            </div>
+          {/if}
         {/if}
       </div>
     {/if}
