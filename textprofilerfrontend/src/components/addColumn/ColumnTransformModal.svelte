@@ -104,6 +104,14 @@
     }
   }
 
+  function deriveEntireColumn() {
+    if (transformType === "llm") {
+      applytoColLLM();
+    } else {
+      applytoColCode();
+    }
+  }
+
   async function generateLLMTransformPreview() {
     if (columnPreviewData && responseSchema && userPrompt) {
       finalPreviewStatus = QueryStatus.PENDING;
@@ -131,9 +139,27 @@
 
   async function generateCodeTransformPreview() {
     console.log("Applying user transform with code: ", userTransformCode);
+
+    if (columnPreviewData && responseSchema) {
+      finalPreviewStatus = QueryStatus.PENDING;
+      databaseConnection.api
+        .getCodeTransformResult({
+          codeString: userTransformCode,
+          taskFormat: responseSchema,
+          columnData: columnPreviewData.map((cd) => cd[targetColName]),
+        })
+        .then((r) => {
+          let parsedResult = r.result;
+          console.log("Got: ", parsedResult);
+          finalPreview = parsedResult;
+          finalPreviewStatus = QueryStatus.COMPLETED;
+        });
+    } else {
+      console.error("Missing columnPreviewData or responseSchema!");
+    }
   }
 
-  async function applyToEntireColumn() {
+  async function applytoColLLM() {
     console.log("Applying to entire column");
 
     const data = {
@@ -161,6 +187,30 @@
         console.log("commit result finished with: ", r);
         finishedCommitHandler();
       });
+  }
+
+  async function applytoColCode() {
+    console.log("Applying user transform with code: ", userTransformCode);
+
+    if (columnPreviewData && responseSchema) {
+      finalPreviewStatus = QueryStatus.PENDING;
+      databaseConnection.api
+        .commitCodeTransformResult({
+          codeString: userTransformCode,
+          taskFormat: responseSchema,
+          columnName: targetColName,
+          tableName: $datasetInfo.name,
+          newColumnName: responseSchema.name,
+          applyToIndices: $filteredIndices,
+        })
+        .then((r) => {
+          commitResultStatus = QueryStatus.COMPLETED;
+          console.log("commit result finished with: ", r);
+          finishedCommitHandler();
+        });
+    } else {
+      console.error("Missing columnPreviewData or responseSchema!");
+    }
   }
 
   $: initPromise = init(textCols);
@@ -287,8 +337,8 @@
           <div class="flex gap-2 items-center w-full">
             <Button
               class="w-96"
-              on:click={applyToEntireColumn}
-              disabled={!userPrompt}
+              on:click={deriveEntireColumn}
+              disabled={!responseSchema?.name}
             >
               <RocketSolid size="sm" class="mr-2" />
 

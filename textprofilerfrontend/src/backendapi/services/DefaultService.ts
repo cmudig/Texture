@@ -3,6 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Body_upload_dataset } from "../models/Body_upload_dataset";
+import type { CodeTransformCommit } from "../models/CodeTransformCommit";
+import type { CodeTransformRequest } from "../models/CodeTransformRequest";
 import type { DatasetInfo } from "../models/DatasetInfo";
 import type { DatasetTokenizeResponse } from "../models/DatasetTokenizeResponse";
 import type { DatasetUploadResponse } from "../models/DatasetUploadResponse";
@@ -260,6 +262,46 @@ export class DefaultService {
     return this.httpRequest.request({
       method: "POST",
       url: "/commit_llm_transform_result",
+      body: requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Get Code Transform Result
+   * @param requestBody
+   * @returns TransformResponse Successful Response
+   * @throws ApiError
+   */
+  public getCodeTransformResult(
+    requestBody: CodeTransformRequest,
+  ): CancelablePromise<TransformResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/fetch_code_transform_result",
+      body: requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Commit Code Transform Result
+   * @param requestBody
+   * @returns TransformResponse Successful Response
+   * @throws ApiError
+   */
+  public commitCodeTransformResult(
+    requestBody: CodeTransformCommit,
+  ): CancelablePromise<TransformResponse> {
+    return this.httpRequest.request({
+      method: "POST",
+      url: "/commit_code_transform_result",
       body: requestBody,
       mediaType: "application/json",
       errors: {

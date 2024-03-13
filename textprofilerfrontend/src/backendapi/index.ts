@@ -11,6 +11,8 @@ export { OpenAPI } from "./core/OpenAPI";
 export type { OpenAPIConfig } from "./core/OpenAPI";
 
 export type { Body_upload_dataset } from "./models/Body_upload_dataset";
+export type { CodeTransformCommit } from "./models/CodeTransformCommit";
+export type { CodeTransformRequest } from "./models/CodeTransformRequest";
 export { Column } from "./models/Column";
 export { DatasetInfo } from "./models/DatasetInfo";
 export type { DatasetTokenizeResponse } from "./models/DatasetTokenizeResponse";
