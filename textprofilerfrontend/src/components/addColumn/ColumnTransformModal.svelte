@@ -30,7 +30,7 @@
 
   // locals
   let targetColName: string;
-  let transformType: "llm" | "code" = "code";
+  let transformType: "llm" | "code" = "llm";
 
   // example data
   let example_idxs = [0, 1, 2];
@@ -64,7 +64,6 @@
 
   // preview transform
   let readyToGenPreview = false;
-  $: console.log("Ready to generate preview: ", readyToGenPreview);
   let columnPreviewData: any[];
   let finalPreviewStatus: QueryStatus = QueryStatus.NOT_STARTED;
   let previewProcessingError;
