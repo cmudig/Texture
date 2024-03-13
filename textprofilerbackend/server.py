@@ -24,7 +24,7 @@ from textprofilerbackend.models import (
 from textprofilerbackend.process_data import process_new_file
 from textprofilerbackend.transform import word_tokenize
 from textprofilerbackend.llm.client import LLMClient
-from textprofilerbackend.utils import process_results, get_type_from_response, flatten
+from textprofilerbackend.utils import get_type_from_response, flatten
 from textprofilerbackend.userCodeTransform.transform import (
     execute_code_and_apply_function,
 )
@@ -218,7 +218,6 @@ def get_server() -> FastAPI:
         )
 
         # Step 3: format with correct indices transform
-        # processed_results = process_results(results, new_col_name)
         processed_results = [r[new_col_name] for r in results]
         processed_df = pd.DataFrame(
             {new_col_name: processed_results}, index=request.applyToIndices
