@@ -24,7 +24,7 @@ from textprofilerbackend.models import (
 from textprofilerbackend.process_data import process_new_file
 from textprofilerbackend.transform import word_tokenize
 from textprofilerbackend.llm.client import LLMClient
-from textprofilerbackend.utils import process_results, get_type_from_response
+from textprofilerbackend.utils import process_results, get_type_from_response, flatten
 from textprofilerbackend.userCodeTransform.transform import (
     execute_code_and_apply_function,
 )
@@ -249,7 +249,6 @@ def get_server() -> FastAPI:
 
         try:
             results = execute_code_and_apply_function(request.codeString, df["sample"])
-
             if results is None:
                 raise Exception("No results returned from code execution")
 
@@ -257,48 +256,61 @@ def get_server() -> FastAPI:
             print("Exception running user code: ", e)
             return TransformResponse(success=False, result={"error": str(e)})
 
-        print("[get_code_transform_result] has results: ", results)
         return TransformResponse(success=True, result=list(results))
 
     @api_app.post("/commit_code_transform_result", response_model=TransformResponse)
     def commit_code_transform_result(request: CodeTransformCommit):
+        new_col_name = request.taskFormat.name
 
-        print("Request is: ", request)
-
+        # Step 1: get data
         all_data_df = duckdb_conn.connection.execute(
             f'SELECT "id", "{request.columnName}" from "{request.tableName}"'
         ).df()
-
         transform_data = pd.merge(
             all_data_df, pd.DataFrame({"id": request.applyToIndices}), on="id"
         )
-        print("Transform data is: ", transform_data.head())
 
-        results = execute_code_and_apply_function(
-            request.codeString, transform_data[request.columnName]
-        )
+        # Step 2: do transform
+        try:
+            results = execute_code_and_apply_function(
+                request.codeString, transform_data[request.columnName]
+            )
+            if results is None:
+                raise Exception("No results returned from code execution")
+        except Exception as e:
+            print("Exception running user code: ", e)
+            return TransformResponse(success=False, result={"error": str(e)})
 
-        print("RAW RESULTS ARE: ", results)
+        # Step 3: format with correct indices transform
         processed_df = pd.DataFrame(
-            {"processed": results}, index=request.applyToIndices
-        )
-        processed_df = processed_df.reindex(all_data_df.index)
-        print("processed_df: ", processed_df)
-
-        duckdb_conn.add_column(
-            request.tableName, request.newColumnName, processed_df["processed"]
+            {new_col_name: results}, index=request.applyToIndices
         )
         colType = get_type_from_response(request.taskFormat.type)
-        datasetMetadataCache[request.tableName].columns.insert(
-            0,
-            Column(
-                name=request.newColumnName,
+
+        if request.taskFormat.num_replies == "multiple":
+            newTableDf = flatten(processed_df[new_col_name], idColName="id")
+            newTableName = request.taskFormat.name + "_table"
+            duckdb_conn.load_dataframe(newTableName, newTableDf)
+            newColSchema = Column(
+                name=new_col_name,
+                type=colType,
+                table_name=newTableName,
+                derived_from=request.columnName,
+                derived_how="code",
+            )
+        else:
+            processed_df = processed_df.reindex(all_data_df.index)
+            duckdb_conn.add_column(
+                request.tableName, new_col_name, processed_df[new_col_name]
+            )
+            newColSchema = Column(
+                name=new_col_name,
                 type=colType,
                 derived_from=request.columnName,
                 derived_how="code",
-            ),
-        )
+            )
 
+        datasetMetadataCache[request.tableName].columns.insert(0, newColSchema)
         return TransformResponse(success=True, result=[])
 
     @api_app.post("/save_to_file", response_model=bool)
