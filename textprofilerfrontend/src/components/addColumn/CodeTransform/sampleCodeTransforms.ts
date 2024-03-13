@@ -1,7 +1,7 @@
 const code_empty = `import pandas as pd
 
+# Note: function must be called transform!
 def transform(col: pd.Series) -> pd.Series:
-  # do transformation here and return a series or array
   pass
 `;
 
