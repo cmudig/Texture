@@ -265,7 +265,7 @@
           </div>
 
           <div class="p-4 flex flex-col bg-gray-100 rounded-b-lg">
-            <div class="flex gap-2 items-center mb-4">
+            <div class="flex gap-2 items-center mb-8">
               <SchemaEditor
                 bind:responseSchema
                 disabled={schemaResultStatus === QueryStatus.PENDING}
