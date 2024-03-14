@@ -76,7 +76,7 @@
   });
 </script>
 
-<div class="relative w-full max-w-80">
+<div class="relative w-full max-w-96">
   <div
     class="flex absolute inset-y-0 start-0 items-center ps-3 pointer-events-none"
   >
