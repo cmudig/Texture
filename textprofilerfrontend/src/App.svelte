@@ -100,7 +100,7 @@
     on:click={() => (showAddColModal = true)}
   />
   <Tooltip class="z-10" triggeredBy="#addColIcon" type="light"
-    >Extract new column</Tooltip
+    >Derive new column</Tooltip
   >
 
   <!-- <FilePlusSolid

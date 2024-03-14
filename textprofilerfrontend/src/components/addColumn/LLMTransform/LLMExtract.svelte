@@ -8,7 +8,7 @@
   import { QueryStatus } from "../../../shared/types";
 
   const INSTRUCTION = `Describe how you want to transform the column data in a few sentences with as much details as possible.
-For example, "Extract 3 - 5 keywords per article"`;
+For example, "Derive 3 - 5 keywords per article"`;
 
   // PROPS that we only read
   export let targetColName: string;

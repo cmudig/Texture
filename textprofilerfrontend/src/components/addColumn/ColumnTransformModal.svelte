@@ -171,7 +171,7 @@
     responseSchema?.name && allColNames.includes(responseSchema.name);
 </script>
 
-<Modal bind:open={panelOpen} title="Extract new column" size="xl" outsideclose>
+<Modal bind:open={panelOpen} title="Derive new column" size="xl" outsideclose>
   {#await initPromise}
     <div class="p-2">
       <Spinner />
@@ -203,7 +203,7 @@
               on:click={() => (transformType = "code")}
             >
               <CodeOutline size="sm" />
-              Extract with code
+              Derive with code
             </Button>
 
             <Button
@@ -212,7 +212,7 @@
               on:click={() => (transformType = "llm")}
             >
               <WandMagicSparklesOutline size="sm" />
-              Extract with LLM
+              Derive with LLM
             </Button>
           </div>
 
