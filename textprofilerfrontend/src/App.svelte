@@ -79,7 +79,7 @@
 </script>
 
 <div
-  class="flex flex-row gap-2 bg-gradient-to-r from-primary-700 to-secondary-600 p-4"
+  class="flex flex-row gap-2 bg-gradient-to-r from-primary-900 to-primary-500 p-4"
 >
   <span class="self-center whitespace-nowrap text-2xl text-white">
     Text<span class="font-light ml-1"> Profiler</span>
