@@ -64,8 +64,8 @@
           {:else}
             <div>
               {responseSchema.num_replies === "multiple"
-                ? "[" + resultData[index] + "]"
-                : resultData[index]}
+                ? "[" + resultData?.[index] + "]"
+                : resultData?.[index]}
             </div>
           {/if}
         {:else}
