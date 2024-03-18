@@ -326,10 +326,18 @@ def get_server() -> FastAPI:
     @api_app.post("/save_to_file", response_model=bool)
     def save_database_to_file(table_name: str):
 
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-        file_path = f"{table_name}_{current_time}.parquet"
+        all_table_names = set([table_name])
+        # get all table names
+        for col in datasetMetadataCache[table_name].columns:
+            if col.table_name is not None:
+                all_table_names.add(col.table_name)
 
-        duckdb_conn.write_table_to_file(table_name, file_path)
+        print("Saving tables: ", all_table_names)
+
+        for t_name in all_table_names:
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+            file_path = f"{t_name}_{current_time}.parquet"
+            duckdb_conn.write_table_to_file(t_name, file_path)
 
         return True
 

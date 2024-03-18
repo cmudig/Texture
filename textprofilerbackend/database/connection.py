@@ -142,7 +142,7 @@ class DatabaseConnection:
 
     def write_table_to_file(self, table_name, file_path):
         self.connection.execute(
-            f"COPY (SELECT * FROM {table_name}) TO '{CACHE_PATH / file_path}' (FORMAT 'parquet');"
+            f"""COPY (SELECT * FROM "{table_name}") TO '{CACHE_PATH / file_path}' (FORMAT 'parquet');"""
         )
 
     def _handle_json_message(self, data: DuckQueryData) -> DuckQueryResult:
