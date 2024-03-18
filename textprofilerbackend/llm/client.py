@@ -3,14 +3,21 @@ from openai import AsyncOpenAI
 import json
 import asyncio
 from tqdm.asyncio import tqdm_asyncio
+from typing import List
+import tiktoken
 
 from textprofilerbackend.utils import timeit
 from textprofilerbackend.models import TaskFormat
 
 # Note - json mode only works with these two model names
 # MODEL_NAME = "gpt-4-turbo-preview"
+# MAX_TPM = 450000
 MODEL_NAME = "gpt-3.5-turbo"
+MAX_TPM = 80000
 # MODEL_NAME = "gpt-3.5-turbo-instruct"  # higher token limit but have to coerce to valid json
+model_encoding = tiktoken.encoding_for_model(MODEL_NAME)
+
+MAX_BATCH_SIZE = 150
 
 
 ################ PROMPT 1: For getting the json representation of the response format
@@ -188,7 +195,7 @@ class LLMClient:
         """
         print(f"[RQ {id}]\tGetting response...")
 
-        sleepAmount = [10, 60]
+        sleepAmount = [10, 60, 60]
 
         for tryIdx in range(len(sleepAmount)):
             try:
@@ -216,8 +223,8 @@ class LLMClient:
                 continue  # Skip to the next iteration
             except openai.RateLimitError as e:
                 print(
-                    f"[RQ {id}]\tTry {tryIdx}: Rate limit error, waiting for ",
-                    sleepAmount[tryIdx],
+                    f"[RQ {id}]\tTry {tryIdx}: Rate limit error, waiting for {sleepAmount[tryIdx]} sec. Error: ",
+                    e,
                 )
                 await asyncio.sleep(sleepAmount[tryIdx])
 
@@ -231,28 +238,63 @@ class LLMClient:
     async def _run_transform_generic_parallel(
         self, system_prompt, documents, user_task_description, response_format
     ):
-        responses = await tqdm_asyncio.gather(
-            *[
-                self._do_transform_retry(
-                    idx,
-                    system_prompt,
-                    format_user_prompt_generic(
-                        user_task_description, response_format, d
-                    ),
-                )
-                for idx, d in enumerate(documents)
-            ]
+        responses = []
+
+        batches = generate_batches(
+            system_prompt,
+            [
+                format_user_prompt_generic(user_task_description, response_format, d)
+                for d in documents
+            ],
         )
+
+        for (
+            batch_num,
+            batch,
+        ) in enumerate(batches):
+            print(f"Running batch {batch_num + 1}/{len(batches)}")
+            batch_response = await tqdm_asyncio.gather(
+                *[
+                    self._do_transform_retry(
+                        idx,
+                        system_prompt,
+                        user_prompt,
+                    )
+                    for idx, user_prompt in enumerate(batch)
+                ]
+            )
+
+            responses.extend(batch_response)
+            print(f"Finished batch {batch_num + 1}/{len(batches)}")
 
         return responses
 
     async def _run_transform_w_examples_parallel(self, system_prompt, documents):
-        responses = await tqdm_asyncio.gather(
-            *[
-                self._do_transform_retry(idx, system_prompt, format_user_prompt(d))
-                for idx, d in enumerate(documents)
-            ]
+        responses = []
+
+        batches = generate_batches(
+            system_prompt,
+            [format_user_prompt(d) for d in documents],
         )
+
+        for (
+            batch_num,
+            batch,
+        ) in enumerate(batches):
+            print(f"Running batch {batch_num + 1}/{len(batches)}")
+            batch_response = await tqdm_asyncio.gather(
+                *[
+                    self._do_transform_retry(
+                        idx,
+                        system_prompt,
+                        user_prompt,
+                    )
+                    for idx, user_prompt in enumerate(batch)
+                ]
+            )
+
+            responses.extend(batch_response)
+            print(f"Finished batch {batch_num + 1}/{len(batches)}")
 
         return responses
 
@@ -418,6 +460,39 @@ def get_default_response(response_format: TaskFormat):
     return {response_format.name: []}
 
 
+def generate_batches(system_prompt: str, user_prompts: List[str]):
+    """
+    Get batches of user prompts. Each batch should have a maximum of MAX_BATCH_SIZE user prompts AND be less than MAX_TPM tokens.
+    """
+    batches = []
+    current_batch = []
+    current_batch_tokens = 0
+
+    system_prompt_tokens = get_num_tokens(system_prompt)
+
+    for user_prompt in user_prompts:
+        i_tokens = system_prompt_tokens + get_num_tokens(user_prompt)
+        if (
+            len(current_batch) >= MAX_BATCH_SIZE
+            or current_batch_tokens + i_tokens >= MAX_TPM
+        ):
+            batches.append(current_batch)
+            current_batch = [user_prompt]
+            current_batch_tokens = i_tokens
+        else:
+            current_batch.append(user_prompt)
+            current_batch_tokens += i_tokens
+
+    if current_batch:
+        batches.append(current_batch)
+
+    return batches
+
+
+def get_num_tokens(string: str):
+    return len(model_encoding.encode(string))
+
+
 def mainTesting():
     print("\n\n\n~~~~~~~~~~~~~~~~~~~ Starting Run.... ~~~~~~~~~~~~~~~~~~~")
     import pandas as pd
@@ -452,15 +527,15 @@ def mainTesting():
     # ]
 
     # prompt 3: evaluation methods
-    df = df.iloc[:30]
-    user_prompt = "How was this paper evaluated? If no method explicitly mentioned reply with 'n/a'"
+    df = df.iloc[:300]
+    user_prompt = "How was this paper evaluated? Pick the single most predominant evaluation method. If no method explicitly mentioned reply with 'n/a'"
     response_format = TaskFormat(
-        name="evaluation_methods", type="string", num_replies="multiple"
+        name="evaluation_methods", type="string", num_replies="single"
     )
     call2ExResponses = [
-        {"evaluation_methods": []},
-        {"evaluation_methods": ["Expert reviews", "comparative study"]},
-        {"evaluation_methods": ["User study"]},
+        {"evaluation_methods": "n/a"},
+        {"evaluation_methods": "comparative study"},
+        {"evaluation_methods": "User study"},
     ]
 
     # prompt 4
