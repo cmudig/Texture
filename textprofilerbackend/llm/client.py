@@ -10,10 +10,10 @@ from textprofilerbackend.utils import timeit
 from textprofilerbackend.models import TaskFormat
 
 # Note - json mode only works with these two model names
-MODEL_NAME = "gpt-4-turbo-preview"
-MAX_TPM = 300000
-# MODEL_NAME = "gpt-3.5-turbo"
-# MAX_TPM = 60000
+# MODEL_NAME = "gpt-4-turbo-preview"
+# MAX_TPM = 450000
+MODEL_NAME = "gpt-3.5-turbo"
+MAX_TPM = 80000
 # MODEL_NAME = "gpt-3.5-turbo-instruct"  # higher token limit but have to coerce to valid json
 model_encoding = tiktoken.encoding_for_model(MODEL_NAME)
 
