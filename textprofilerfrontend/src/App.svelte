@@ -41,7 +41,10 @@
   let datasetColSummaries: Map<string, ColumnSummary>;
   let dataPromise: Promise<any> = populateDataTables();
 
-  async function populateDataTables(datasetName?: string): Promise<void> {
+  async function populateDataTables(
+    datasetName?: string,
+    resetCrossfilter = true,
+  ): Promise<void> {
     let d = await databaseConnection.api.readDatasetInfo();
     datasets = d;
 
@@ -51,10 +54,10 @@
       currentDatasetName = Object.keys(datasets)[0];
     }
 
-    return setDataset();
+    return setDataset(resetCrossfilter);
   }
 
-  async function setDataset() {
+  async function setDataset(resetCrossfilter = true) {
     const info = datasets[currentDatasetName];
     $datasetInfo = info;
 
@@ -68,7 +71,9 @@
     );
 
     // create new brush to clear selections from old dataset
-    $mosaicSelection = vg.Selection.crossfilter();
+    if (resetCrossfilter) {
+      $mosaicSelection = vg.Selection.crossfilter();
+    }
     datasetSize = await databaseConnection.getCount(info.name);
     datasetColSummaries = await databaseConnection.getColSummaries(info.name);
   }
@@ -183,7 +188,7 @@
   <ColumnTransformModal
     bind:panelOpen={showAddColModal}
     finishedCommitHandler={() => {
-      dataPromise = populateDataTables(currentDatasetName);
+      dataPromise = populateDataTables(currentDatasetName, false);
     }}
   />
 </div>
