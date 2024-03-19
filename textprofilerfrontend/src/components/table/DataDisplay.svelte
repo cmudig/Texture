@@ -66,6 +66,7 @@
       });
   }
 
+  // BUG #71: I think these stores are not triggering reload when new TableClient created
   $: ({ schema, data, sortColumn, sortDesc } = myTableClient);
 
   $: colTypeMap = $datasetInfo.columns.reduce((acc, col) => {
