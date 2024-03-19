@@ -219,14 +219,16 @@ def get_server() -> FastAPI:
 
         # Step 3: format with correct indices transform
         processed_results = [r[new_col_name] for r in results]
-        processed_df = pd.DataFrame(
-            {new_col_name: processed_results}, index=request.applyToIndices
+        processed_df = pd.DataFrame({new_col_name: processed_results}).set_index(
+            pd.Index(request.applyToIndices)
         )
 
         colType = get_type_from_response(request.taskFormat.type)
 
         if request.taskFormat.num_replies == "multiple":
             newTableDf = flatten(processed_df[new_col_name], idColName="id")
+            if colType == "number":
+                newTableDf[new_col_name] = pd.to_numeric(newTableDf[new_col_name])
             newTableName = new_col_name + "_table"
             duckdb_conn.load_dataframe(newTableName, newTableDf)
             newColSchema = Column(
@@ -237,6 +239,8 @@ def get_server() -> FastAPI:
                 derived_how="model",
             )
         else:
+            if colType == "number":
+                processed_df[new_col_name] = pd.to_numeric(processed_df[new_col_name])
             processed_df = processed_df.reindex(all_data_df.index)
             duckdb_conn.add_column(
                 request.tableName, new_col_name, processed_df[new_col_name]
@@ -292,13 +296,15 @@ def get_server() -> FastAPI:
             return TransformResponse(success=False, result={"error": str(e)})
 
         # Step 3: format with correct indices transform
-        processed_df = pd.DataFrame(
-            {new_col_name: results}, index=request.applyToIndices
+        processed_df = pd.DataFrame({new_col_name: list(results)}).set_index(
+            pd.Index(request.applyToIndices)
         )
         colType = get_type_from_response(request.taskFormat.type)
 
         if request.taskFormat.num_replies == "multiple":
             newTableDf = flatten(processed_df[new_col_name], idColName="id")
+            if colType == "number":
+                newTableDf[new_col_name] = pd.to_numeric(newTableDf[new_col_name])
             newTableName = new_col_name + "_table"
             duckdb_conn.load_dataframe(newTableName, newTableDf)
             newColSchema = Column(
@@ -309,6 +315,9 @@ def get_server() -> FastAPI:
                 derived_how="code",
             )
         else:
+            if colType == "number":
+                processed_df[new_col_name] = pd.to_numeric(processed_df[new_col_name])
+
             processed_df = processed_df.reindex(all_data_df.index)
             duckdb_conn.add_column(
                 request.tableName, new_col_name, processed_df[new_col_name]
