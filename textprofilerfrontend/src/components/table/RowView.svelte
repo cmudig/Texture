@@ -95,12 +95,13 @@
       {/if}
     </button>
     <slot name="optionButtons" />
-    <slot name="title" />
   </div>
 
   <div
     class={`w-full px-2 pt-2 pb-4 text-gray-800 flex flex-col gap-1 border-gray-300 border-r ${toggle ? "overflow-auto" : "overflow-hidden"}`}
   >
+    <slot name="title" />
+
     {#await wordSpans}
       {#each textData as [textColName, textColData] (textColName)}
         <div>
