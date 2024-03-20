@@ -79,7 +79,7 @@
 </script>
 
 <div
-  class={`rounded border bg-white flex ${highlight ? "border-dashed border-primary-500" : "border-solid border-gray-300"} ${toggle ? "max-h-96" : "max-h-48"}`}
+  class={`rounded border bg-white flex ${highlight ? "border-dashed border-primary-500" : "border-solid border-gray-300"} ${toggle ? "max-h-96" : "max-h-40"}`}
 >
   <div
     class="flex flex-col items-center border-r border-gray-300 p-1 gap-1 w-8 max-w-10 shrink-0"
@@ -105,7 +105,7 @@
     {#await wordSpans}
       {#each textData as [textColName, textColData] (textColName)}
         <div>
-          <div class="border-b border-gray-300 italic">
+          <div class="border-b border-gray-300 font-light text-secondary-700">
             {textColName}
             <Spinner class="ml-1" size="4" />
           </div>
