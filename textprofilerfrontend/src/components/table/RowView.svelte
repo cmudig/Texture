@@ -19,6 +19,8 @@
   export let highlight = false;
   export let selection: any = undefined; // vgplot.Selection
 
+  $: plotMetadata = [["id", id], ...metadata];
+
   let toggle = false;
 
   async function getWordSpans(
@@ -77,9 +79,11 @@
 </script>
 
 <div
-  class={`rounded border bg-white ${highlight ? "border-dashed border-primary-500" : "border-solid border-gray-300"}`}
+  class={`rounded border bg-white flex ${highlight ? "border-dashed border-primary-500" : "border-solid border-gray-300"}`}
 >
-  <div class="flex items-center border-b border-gray-300 p-2 gap-1">
+  <div
+    class="flex flex-col items-center border-r border-gray-300 p-1 gap-1 w-8 max-w-10 shrink-0"
+  >
     <button
       class="hover:bg-gray-100 text-gray-500 p-1 rounded"
       on:click={() => (toggle = !toggle)}
@@ -92,9 +96,6 @@
     </button>
     <slot name="optionButtons" />
     <slot name="title" />
-
-    <div class="grow"></div>
-    <div class="text-gray-500">{id}</div>
   </div>
 
   <div
@@ -117,7 +118,7 @@
       {:then wordSpanMap}
         {#each textData as [textColName, textColData] (textColName)}
           <div>
-            <div class="border-b border-gray-300 italic">
+            <div class="border-b border-gray-300 font-light">
               {textColName}
             </div>
 
@@ -133,7 +134,7 @@
                 value={textColData}
               />
             {:else}
-              <div>
+              <div class="text-gray-800">
                 {formatValue(textColData, { type: "text" })}
               </div>
             {/if}
@@ -142,21 +143,21 @@
       {/await}
     </div>
 
-    {#if metadata.length}
-      <div class="bg-gray-50 w-80 shrink-0 h-full">
-        {#each metadata as [itemKey, itemValue] (itemKey)}
+    {#if plotMetadata.length}
+      <div class=" border-gray-300 border-l w-80 shrink-0 h-full pt-3">
+        {#each plotMetadata as [itemKey, itemValue] (itemKey)}
           {@const itemType = $datasetInfo?.columns.find(
             (col) => col.name === itemKey,
           )?.type}
-          <div class="flex border-b border-gray-200 px-2">
+          <div class="flex px-2">
             <div
-              class="whitespace-normal text-ellipsis overflow-hidden text-sm w-1/3 font-semibold italic"
-              title={itemKey}
+              class="whitespace-normal text-ellipsis overflow-hidden text-sm font-light text-secondary-700 w-1/3"
+              title={String(itemKey)}
             >
               {itemKey}
             </div>
             <div
-              class={`whitespace-normal break-words text-sm w-2/3 ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-800"}`}
+              class={`whitespace-normal break-words text-sm pl-1 w-2/3 ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-700"}`}
               class:bg-highlight-300={itemKey in $selectionDisplay &&
                 shouldHighlight(
                   itemValue,
@@ -165,7 +166,7 @@
                 )}
             >
               <div>
-                {formatValue(itemValue, { type: itemType })}
+                {formatValue(itemValue, { type: itemType, colName: itemKey })}
               </div>
             </div>
           </div>
