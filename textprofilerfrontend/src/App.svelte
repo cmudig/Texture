@@ -6,7 +6,6 @@
     mosaicSelection,
     datasetInfo,
     showBackgroundDist,
-    filteredCount,
     databaseConnection,
     compareSimilarID,
   } from "./stores";
@@ -14,23 +13,12 @@
   import DataDisplay from "./components/table/DataDisplay.svelte";
   import Search from "./components/Search.svelte";
   import SimilarView from "./components/SimilarView.svelte";
-  import FilterBar from "./components/FilterBar.svelte";
   import StopwordEditor from "./components/settings/StopwordEditor.svelte";
   import ColumnTransformModal from "./components/addColumn/ColumnTransformModal.svelte";
   import SaveTableToFile from "./components/SaveTableToFile.svelte";
-  import {
-    Select,
-    Popover,
-    Toggle,
-    Label,
-    Tooltip,
-    Spinner,
-  } from "flowbite-svelte";
-  import {
-    AdjustmentsHorizontalOutline,
-    CirclePlusSolid,
-  } from "flowbite-svelte-icons";
-  import { formatNumber } from "./shared/format";
+  import { Select, Popover, Toggle, Label, Spinner } from "flowbite-svelte";
+  import { AdjustmentsHorizontalOutline } from "flowbite-svelte-icons";
+  import OptionsBar from "./components/OptionsBar.svelte";
 
   // Locals
   let datasets: Record<string, DatasetInfo>;
@@ -97,16 +85,6 @@
       .map((col) => col.name)}
     tableName={$datasetInfo?.name}
   />
-
-  <CirclePlusSolid
-    id="addColIcon"
-    size="md"
-    class="mx-1 self-center text-white hover:text-gray-300"
-    on:click={() => (showAddColModal = true)}
-  />
-  <Tooltip class="z-10" triggeredBy="#addColIcon" type="light"
-    >Derive new column</Tooltip
-  >
 
   <!-- <FilePlusSolid
     id="addDatasetIcon"
@@ -198,27 +176,13 @@
     <Spinner />
   </div>
 {:then}
-  <!-- Dataset info -->
-  <div
-    class="flex gap-2 justify-end pr-7 py-2 text-gray-500 bg-gray-100 min-h-14"
-  >
-    <div class="grow px-2 self-center">
-      <FilterBar />
-    </div>
-    <div class="text-md self-center">
-      {formatNumber($filteredCount)} / {formatNumber(datasetSize)} rows
-    </div>
-
-    <div class="text-md self-center font-semibold">
-      {currentDatasetName}
-    </div>
-  </div>
-
   <div class="flex flex-row">
-    <div class="h-screen w-[450px] shrink-0 overflow-scroll">
+    <div
+      class="h-screen w-[450px] shrink-0 overflow-scroll border-r border-gray-300"
+    >
       <Sidebar {datasetColSummaries} />
     </div>
-    <div class="h-screen grow overflow-scroll border-l-2 border-slate-50">
+    <div class="h-screen grow overflow-scroll pt-2 bg-gray-50">
       {#if $compareSimilarID !== undefined}
         <SimilarView
           similarDocID={$compareSimilarID}
@@ -227,7 +191,15 @@
           }}
         />
       {:else}
-        <DataDisplay {currentColToggleStates} />
+        <DataDisplay {currentColToggleStates}>
+          <svelte:fragment slot="navBar">
+            <OptionsBar
+              bind:showAddColModal
+              {datasetSize}
+              {currentDatasetName}
+            />
+          </svelte:fragment>
+        </DataDisplay>
       {/if}
     </div>
   </div>
