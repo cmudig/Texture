@@ -219,8 +219,8 @@ def get_server() -> FastAPI:
 
         # Step 3: format with correct indices transform
         processed_results = [r[new_col_name] for r in results]
-        processed_df = pd.DataFrame({new_col_name: processed_results}).set_index(
-            pd.Index(request.applyToIndices)
+        processed_df = pd.DataFrame(
+            {new_col_name: list(processed_results), "id": transform_data["id"]}
         )
 
         colType = get_type_from_response(request.taskFormat.type)
@@ -241,9 +241,11 @@ def get_server() -> FastAPI:
         else:
             if colType == "number":
                 processed_df[new_col_name] = pd.to_numeric(processed_df[new_col_name])
-            processed_df = processed_df.reindex(all_data_df.index)
+
+            all_merged = pd.merge(all_data_df, processed_df, on="id", how="left")
+
             duckdb_conn.add_column(
-                request.tableName, new_col_name, processed_df[new_col_name]
+                request.tableName, new_col_name, all_merged[new_col_name]
             )
             newColSchema = Column(
                 name=new_col_name,
@@ -276,6 +278,8 @@ def get_server() -> FastAPI:
     def commit_code_transform_result(request: CodeTransformCommit):
         new_col_name = request.taskFormat.name
 
+        print("request is: ", request)
+
         # Step 1: get data
         all_data_df = duckdb_conn.connection.execute(
             f'SELECT "id", "{request.columnName}" from "{request.tableName}"'
@@ -295,9 +299,11 @@ def get_server() -> FastAPI:
             print("Exception running user code: ", e)
             return TransformResponse(success=False, result={"error": str(e)})
 
+        print("results are: ", results)
+
         # Step 3: format with correct indices transform
-        processed_df = pd.DataFrame({new_col_name: list(results)}).set_index(
-            pd.Index(request.applyToIndices)
+        processed_df = pd.DataFrame(
+            {new_col_name: list(results), "id": transform_data["id"]}
         )
         colType = get_type_from_response(request.taskFormat.type)
 
@@ -318,9 +324,10 @@ def get_server() -> FastAPI:
             if colType == "number":
                 processed_df[new_col_name] = pd.to_numeric(processed_df[new_col_name])
 
-            processed_df = processed_df.reindex(all_data_df.index)
+            all_merged = pd.merge(all_data_df, processed_df, on="id", how="left")
+
             duckdb_conn.add_column(
-                request.tableName, new_col_name, processed_df[new_col_name]
+                request.tableName, new_col_name, all_merged[new_col_name]
             )
             newColSchema = Column(
                 name=new_col_name,
