@@ -1,11 +1,10 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import type { ColumnSummary } from "./shared/types";
-  import type { DatasetInfo } from "./backendapi/models/DatasetInfo";
+  import type { DatasetInfo } from "./backendapi";
   import {
     mosaicSelection,
     datasetInfo,
-    showBackgroundDist,
     databaseConnection,
     compareSimilarID,
   } from "./stores";
@@ -13,12 +12,11 @@
   import DataDisplay from "./components/table/DataDisplay.svelte";
   import Search from "./components/Search.svelte";
   import SimilarView from "./components/SimilarView.svelte";
-  import StopwordEditor from "./components/settings/StopwordEditor.svelte";
   import ColumnTransformModal from "./components/addColumn/ColumnTransformModal.svelte";
-  import SaveTableToFile from "./components/SaveTableToFile.svelte";
-  import { Select, Popover, Toggle, Label, Spinner } from "flowbite-svelte";
+  import { Popover, Spinner } from "flowbite-svelte";
   import { AdjustmentsHorizontalOutline } from "flowbite-svelte-icons";
   import OptionsBar from "./components/OptionsBar.svelte";
+  import SettingsPanel from "./components/settings/SettingsPanel.svelte";
 
   // Locals
   let datasets: Record<string, DatasetInfo>;
@@ -65,10 +63,6 @@
     datasetSize = await databaseConnection.getCount(info.name);
     datasetColSummaries = await databaseConnection.getColSummaries(info.name);
   }
-
-  function updateData() {
-    dataPromise = setDataset();
-  }
 </script>
 
 <div class="h-screen flex flex-col">
@@ -106,54 +100,14 @@
       class="z-10 w-80 bg-white text-sm font-light text-gray-500"
       title="Settings"
     >
-      <div class="flex flex-col gap-4 p-3">
-        <div class="flex flex-col gap-2 pb-2 border-b-2 border-grey-300">
-          <h3>Dataset</h3>
-
-          <Select
-            size="sm"
-            items={Object.values(datasets).map((k) => ({
-              value: k.name,
-              name: k.origin === "example" ? `${k.name} (example)` : k.name,
-            }))}
-            placeholder="Select dataset"
-            bind:value={currentDatasetName}
-            on:change={updateData}
-          />
-
-          <SaveTableToFile />
-        </div>
-
-        <div class="flex flex-col gap-2 pb-2 border-b-2 border-grey-300">
-          <h3>Stopwords</h3>
-          <StopwordEditor />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <h3>Display Settings</h3>
-
-          <div>
-            <Label>Background distributions</Label>
-
-            <Toggle class="mt-2" bind:checked={$showBackgroundDist}
-              >Show in plot</Toggle
-            >
-          </div>
-
-          <div>
-            <Label>Display in table</Label>
-            <div class="mt-2 flex flex-col gap-1">
-              {#each $datasetInfo.columns as col}
-                <Toggle bind:checked={currentColToggleStates[col.name]}>
-                  <span class="overflow-hidden text-ellipsis">
-                    {col.name}
-                  </span>
-                </Toggle>
-              {/each}
-            </div>
-          </div>
-        </div>
-      </div>
+      <SettingsPanel
+        {datasets}
+        updateData={() => {
+          dataPromise = setDataset();
+        }}
+        bind:currentDatasetName
+        bind:currentColToggleStates
+      />
     </Popover>
 
     <!-- <UploadDataModal
