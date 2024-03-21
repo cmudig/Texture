@@ -7,7 +7,6 @@
 
   export let showAddColModal;
   export let datasetSize;
-  export let currentDatasetName;
 </script>
 
 <Button class="shrink-0" on:click={() => (showAddColModal = true)} size="sm">
@@ -19,8 +18,4 @@
 </div>
 <div class="text-md self-center">
   {formatNumber($filteredCount)} / {formatNumber(datasetSize)} rows
-</div>
-
-<div class="text-md self-center font-semibold">
-  {currentDatasetName}
 </div>
