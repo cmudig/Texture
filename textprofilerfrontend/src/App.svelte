@@ -133,7 +133,7 @@
   {:then}
     <div class="flex flex-1 overflow-hidden">
       <div class="w-[450px] shrink-0 overflow-auto border-r border-gray-300">
-        <Sidebar {datasetColSummaries} />
+        <Sidebar bind:showAddColModal {datasetColSummaries} />
       </div>
       <div class="flex-1 min-w-[450px] overflow-auto pt-2 bg-gray-50">
         {#if $compareSimilarID !== undefined}
@@ -146,7 +146,7 @@
         {:else}
           <DataDisplay {currentColToggleStates}>
             <svelte:fragment slot="navBar">
-              <OptionsBar bind:showAddColModal {datasetSize} />
+              <OptionsBar {datasetSize} />
             </svelte:fragment>
           </DataDisplay>
         {/if}

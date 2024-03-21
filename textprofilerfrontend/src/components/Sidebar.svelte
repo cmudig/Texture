@@ -1,13 +1,27 @@
 <script lang="ts">
+  import { Button } from "flowbite-svelte";
+  import { PlusSolid } from "flowbite-svelte-icons";
   import type { ColumnSummary } from "../shared/types";
   import ColumnProfile from "./ColumnProfile.svelte";
   import ProjectionOverview from "./ProjectionOverview.svelte";
   import { datasetInfo } from "../stores";
 
   export let datasetColSummaries: Map<string, ColumnSummary>;
+  export let showAddColModal;
 </script>
 
-<div>
+<div class="flex flex-col">
+  <div class="flex justify-center py-2">
+    <Button
+      class="w-48 text-white bg-secondary-500 hover:bg-secondary-600 focus-within:ring-secondary-100"
+      on:click={() => (showAddColModal = true)}
+      size="sm"
+    >
+      <PlusSolid size="sm" class="mr-2" />
+      Derive New Column
+    </Button>
+  </div>
+
   <ProjectionOverview />
 
   {#each $datasetInfo.columns as col}
