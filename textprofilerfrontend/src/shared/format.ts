@@ -51,8 +51,12 @@ type FormatOptions = {
 
 export function formatValue(value: any, options: FormatOptions = {}) {
   const { type, ...otherOptions } = options;
-
   if (value === undefined || value === null) return "null";
+
+  let maybeColName = otherOptions?.colName?.toLowerCase();
+  if (maybeColName === "id") return String(value);
+  if (maybeColName === "year") return String(Math.floor(Number(value)));
+
   if (type === "date" || value instanceof Date) return formatDate(value);
   if (type === "number" || typeof value === "number")
     return formatNumber(value, otherOptions);

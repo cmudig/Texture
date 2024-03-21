@@ -75,35 +75,39 @@
   }, {});
 </script>
 
-<div class="bg-gray-100 h-full">
+<div class="h-full">
   {#if ready}
     {#if $schema}
-      <div class="flex gap-1 justify-end items-center text-gray-500 px-4 pb-1">
-        <Select
-          class="max-w-40"
-          size="sm"
-          items={[
-            { value: undefined, name: "Not sorted" },
-            ...Object.keys(colTypeMap).map((k) => ({ value: k, name: k })),
-          ]}
-          bind:value={$sortColumn}
-          placeholder="Sort by..."
-        />
+      <div class="flex gap-2 justify-end items-center text-gray-500 px-4 pb-1">
+        <slot name="navBar" />
 
-        <button
-          class={`hover:bg-gray-200 bg-gray-100 text-gray-500 p-1 rounded ${
-            !$sortColumn && "cursor-not-allowed !text-gray-300"
-          }`}
-          on:click={() => ($sortDesc = !$sortDesc)}
-          title={"Toggle sort order"}
-          disabled={!$sortColumn}
-        >
-          {#if $sortDesc}
-            <ArrowUpSolid size="xs" />
-          {:else}
-            <ArrowDownSolid size="xs" />
-          {/if}
-        </button>
+        <div class="flex gap-1 items-center">
+          <Select
+            class="max-w-40"
+            size="sm"
+            items={[
+              { value: undefined, name: "Not sorted" },
+              ...Object.keys(colTypeMap).map((k) => ({ value: k, name: k })),
+            ]}
+            bind:value={$sortColumn}
+            placeholder="Sort by..."
+          />
+
+          <button
+            class={`hover:bg-gray-200 bg-gray-50 text-gray-500 p-1 rounded ${
+              !$sortColumn && "cursor-not-allowed !text-gray-300"
+            }`}
+            on:click={() => ($sortDesc = !$sortDesc)}
+            title={"Toggle sort order"}
+            disabled={!$sortColumn}
+          >
+            {#if $sortDesc}
+              <ArrowUpSolid size="xs" />
+            {:else}
+              <ArrowDownSolid size="xs" />
+            {/if}
+          </button>
+        </div>
       </div>
       <div
         class="max-h-screen overflow-auto"

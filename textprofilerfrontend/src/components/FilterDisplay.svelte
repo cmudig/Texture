@@ -28,6 +28,7 @@
       <span
         >{formatValue(filterRange[0], {
           range: filterRange[1] - filterRange[0],
+          colName,
         })}
         {"<="}
       </span>
@@ -37,6 +38,7 @@
         >{"<="}
         {formatValue(filterRange[1], {
           range: filterRange[1] - filterRange[0],
+          colName,
         })}</span
       >
     {/if}
