@@ -5,10 +5,9 @@
     mosaicSelection,
     clearColumnSelections,
     derivedViewNames,
-    databaseConnection,
   } from "../../stores";
   import { getDatasetName, getUUID, getCacheKey } from "../../shared/utils";
-  import { getPlot } from "./chartUtils";
+  import { getPlot, getColCountStore } from "./chartUtils";
   import { formatInt } from "../../shared/format";
 
   export let columnName: string;
@@ -23,10 +22,22 @@
   let plotWrapper;
   let thisSelection = vg.Selection.single();
   let uuid = getUUID();
-  let colCount: number;
   $: saveSelectionToCache(thisSelection, columnName);
 
-  $: remainingRows = colCount - limit;
+  $: plotTableNamePromise = calculateDatasetName(
+    mainDatasetName,
+    columnName,
+    plotNulls,
+    excludeList,
+    isDerivedTable,
+  );
+
+  $: colCountStore = getColCountStore(
+    plotTableNamePromise,
+    columnName,
+    showBackground,
+    mosaicSelection,
+  );
 
   function resetSelection(s) {
     s.clauses.forEach((clause) => {
@@ -49,41 +60,47 @@
     ];
   }
 
-  async function renderChart(
-    mainDsName: string,
-    cName: string,
-    pltNullsFlag: boolean,
-    selection: any,
-    _excludeList?: string[],
-  ) {
+  async function calculateDatasetName(
+    _mainDatasetName,
+    _colName,
+    _plotNulls,
+    _excludeList,
+    _isDerived,
+  ): Promise<string> {
     let datasetName = await getDatasetName(
-      mainDsName,
-      cName,
-      pltNullsFlag,
+      _mainDatasetName,
+      _colName,
+      _plotNulls,
       _excludeList,
     );
-    let fromClause: any = datasetName;
 
-    if (isDerivedTable) {
+    if (_isDerived) {
       $derivedViewNames.set(
-        getCacheKey({ table: mainDsName, col: cName }),
+        getCacheKey({ table: _mainDatasetName, col: _colName }),
         datasetName,
       );
     }
 
-    colCount = await databaseConnection.getColCount(
-      mainDatasetName,
-      columnName,
-    );
+    return datasetName;
+  }
 
-    if (showBackground) {
-      plotWrapper = getPlot(
+  async function renderChart(
+    pltNamePromise: Promise<string>,
+    cName: string,
+    _showBackground: boolean,
+    selection: any,
+  ) {
+    let _tableName: string = await pltNamePromise;
+    // console.log("rendering cat chart for ", { table: _tableName, cName });
+
+    if (_showBackground) {
+      return getPlot(
         // including this breaks the click interation and doesnt cut off text?
         // vg.axisY({
         //   textOverflow: "ellipsis",
         //   lineWidth: 50,
         // }),
-        vg.barX(vg.from(fromClause), {
+        vg.barX(vg.from(_tableName), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -91,7 +108,7 @@
           fillOpacity: 0.4,
           sort: { y: "-x", limit },
         }),
-        vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
+        vg.barX(vg.from(_tableName, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -101,35 +118,7 @@
         vg.highlight({ by: selection }),
         vg.toggleY({ as: selection }),
         vg.toggleY({ as: $mosaicSelection }),
-        vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
-          x: vg.count(),
-          y: cName,
-          order: cName,
-          sort: { y: "-x", limit },
-          text: vg.count(),
-          dx: -3,
-          textAnchor: "end",
-          textOverflow: "ellipsis",
-          fill: "white",
-        }),
-        vg.margins({ left: 80, bottom: 0, top: 0, right: 0 }),
-        vg.width(400),
-        vg.axis(null),
-        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7, label: null }),
-      );
-    } else {
-      plotWrapper = getPlot(
-        vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
-          x: vg.count(),
-          y: cName,
-          order: cName,
-          fill: "steelblue",
-          sort: { y: "-x", limit },
-        }),
-        vg.highlight({ by: selection }),
-        vg.toggleY({ as: selection }),
-        vg.toggleY({ as: $mosaicSelection }),
-        vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
+        vg.text(vg.from(_tableName, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
           order: cName,
@@ -146,18 +135,43 @@
         vg.axisY({ textOverflow: "ellipsis", lineWidth: 7, label: null }),
       );
     }
-
-    el.replaceChildren(plotWrapper.element);
+    return getPlot(
+      vg.barX(vg.from(_tableName, { filterBy: $mosaicSelection }), {
+        x: vg.count(),
+        y: cName,
+        order: cName,
+        fill: "steelblue",
+        sort: { y: "-x", limit },
+      }),
+      vg.highlight({ by: selection }),
+      vg.toggleY({ as: selection }),
+      vg.toggleY({ as: $mosaicSelection }),
+      vg.text(vg.from(_tableName, { filterBy: $mosaicSelection }), {
+        x: vg.count(),
+        y: cName,
+        order: cName,
+        sort: { y: "-x", limit },
+        text: vg.count(),
+        dx: -3,
+        textAnchor: "end",
+        textOverflow: "ellipsis",
+        fill: "white",
+      }),
+      vg.margins({ left: 80, bottom: 0, top: 0, right: 0 }),
+      vg.width(400),
+      vg.axis(null),
+      vg.axisY({ textOverflow: "ellipsis", lineWidth: 7, label: null }),
+    );
   }
 
-  afterUpdate(() => {
-    renderChart(
-      mainDatasetName,
+  afterUpdate(async () => {
+    plotWrapper = await renderChart(
+      plotTableNamePromise,
       columnName,
-      plotNulls,
+      showBackground,
       thisSelection,
-      excludeList,
     );
+    el.replaceChildren(plotWrapper.element);
   });
 
   onDestroy(() => {
@@ -175,14 +189,14 @@
   <div bind:this={el} />
 </div>
 <div class="mt-1 flex justify-center gap-1">
-  {#if remainingRows > 0}
+  {#if $colCountStore - limit > 0}
     <button
       class="hover:bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded"
       on:click={() => {
         limit += 10;
       }}
     >
-      +{formatInt(remainingRows)} values. Click to load more.
+      +{formatInt($colCountStore - limit)} values. Click to load more.
     </button>
   {/if}
 
