@@ -26,8 +26,6 @@
   let colCount: number;
   $: saveSelectionToCache(thisSelection, columnName);
 
-  $: remainingRows = colCount - limit;
-
   function resetSelection(s) {
     s.clauses.forEach((clause) => {
       s.update({
@@ -54,8 +52,11 @@
     cName: string,
     pltNullsFlag: boolean,
     selection: any,
+    _showBackground: boolean,
     _excludeList?: string[],
   ) {
+    console.log("rendering chart...");
+
     let datasetName = await getDatasetName(
       mainDsName,
       cName,
@@ -71,12 +72,23 @@
       );
     }
 
+    // calculate col count initially
     colCount = await databaseConnection.getColCount(
       mainDatasetName,
       columnName,
+      _showBackground ? undefined : $mosaicSelection,
     );
 
-    if (showBackground) {
+    // and sub to updates when mosaic selection updates
+    $mosaicSelection.addEventListener("value", async () => {
+      colCount = await databaseConnection.getColCount(
+        datasetName,
+        cName,
+        _showBackground ? undefined : $mosaicSelection,
+      );
+    });
+
+    if (_showBackground) {
       plotWrapper = getPlot(
         // including this breaks the click interation and doesnt cut off text?
         // vg.axisY({
@@ -156,6 +168,7 @@
       columnName,
       plotNulls,
       thisSelection,
+      showBackground,
       excludeList,
     );
   });
@@ -175,14 +188,14 @@
   <div bind:this={el} />
 </div>
 <div class="mt-1 flex justify-center gap-1">
-  {#if remainingRows > 0}
+  {#if colCount - limit > 0}
     <button
       class="hover:bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded"
       on:click={() => {
         limit += 10;
       }}
     >
-      +{formatInt(remainingRows)} values. Click to load more.
+      +{formatInt(colCount - limit)} more values. Click to load.
     </button>
   {/if}
 
