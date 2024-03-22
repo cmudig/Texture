@@ -6,6 +6,10 @@ dataset_vis_papers = DatasetInfo(
     origin="example",
     columns=[
         {
+            "name": "Title",
+            "type": "text",
+        },
+        {
             "name": "Abstract",
             "type": "text",
         },
@@ -14,10 +18,6 @@ dataset_vis_papers = DatasetInfo(
             "type": "categorical",
             "table_name": "vis_papers_words",
             "derived_from": "Abstract",
-        },
-        {
-            "name": "Title",
-            "type": "categorical",
         },
         {
             "name": "Conference",
