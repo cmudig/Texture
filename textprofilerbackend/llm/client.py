@@ -431,6 +431,7 @@ def coerce_result(json_result, response_format: TaskFormat):
 
 def parse_instance_by_type(result, type):
     """Force results into appropriate type."""
+    # TODO: if result type is bool and we get a null, then just return False
     if result is None:
         return None
 

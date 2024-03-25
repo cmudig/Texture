@@ -33,6 +33,7 @@
   let transformType: "llm" | "code" = "code";
 
   // example data
+  // TODO: make this dynamic becuase if the id is not 0 indexed won't work
   let example_idxs = [0, 1, 2];
   let preview_idxs = [3, 4, 5, 6, 7];
 
