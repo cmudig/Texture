@@ -154,8 +154,56 @@ dataset_vis_papers = DatasetInfo(
     ],
 )
 
+dataset_airline_reviews = DatasetInfo(
+    name="airline_reviews",
+    primary_key={"name": "id", "type": "number"},
+    origin="example",
+    columns=[
+        # {"name": "id", "type": "categorical"},
+        {
+            "name": "tweet_num_characters",
+            "type": "number",
+            "derived_from": "tweet",
+            "derived_how": "code",
+        },
+        {
+            "name": "twitter_handle",
+            "type": "categorical",
+            "derived_from": "tweet",
+            "derived_how": "code",
+        },
+        {
+            "name": "is_on_hold",
+            "type": "categorical",
+            "derived_from": "tweet",
+            "derived_how": "model",
+        },
+        {
+            "name": "word",
+            "type": "categorical",
+            "table_name": "tweet_words",
+            "derived_from": "tweet",
+        },
+        {"name": "airline_sentiment", "type": "categorical"},
+        {"name": "airline_sentiment_confidence", "type": "number"},
+        {"name": "negativereason", "type": "categorical"},
+        {"name": "negativereason_confidence", "type": "number"},
+        {"name": "airline", "type": "categorical"},
+        # {"name": "airline_sentiment_gold", "type": "categorical"},  # mostly null
+        {"name": "name", "type": "categorical"},
+        # {"name": "negativereason_gold", "type": "categorical"}, # mostly null
+        {"name": "retweet_count", "type": "number"},
+        {"name": "tweet", "type": "text"},
+        # {"name": "tweet_coord", "type": "categorical"}, # x, y coords I think
+        {"name": "tweet_created", "type": "date"},
+        {"name": "tweet_location", "type": "categorical"},
+        {"name": "user_timezone", "type": "categorical"},
+    ],
+)
+
 
 EXAMPLE_DATASET_INFO = {
+    "airline_reviews": dataset_airline_reviews,
     "vis_papers": dataset_vis_papers,
 }
 
@@ -168,5 +216,12 @@ EXAMPLE_DATA_PATHS = {
             "vis_papers_keywords": "raw_data/vis_papers/vis_papers_keywords_span.parquet",
         },
         "embeddings": {"vis_papers": "raw_data/vis_papers/vis_papers_embeddings.pt"},
-    }
+    },
+    "airline_reviews": {
+        "datasets": {
+            "airline_reviews": "raw_data/airline_reviews/airlines.parquet",
+            "tweet_words": "raw_data/airline_reviews/tweet_words.parquet",
+        },
+        "embeddings": {"airline_reviews": "raw_data/airline_reviews/embeddings.pt"},
+    },
 }
