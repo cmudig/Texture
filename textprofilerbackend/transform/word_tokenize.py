@@ -57,10 +57,22 @@ def get_words_w_span_batch(arr: list[str], num_threads=8) -> list[list[str]]:
         return list(executor.map(get_words_w_span, arr))
 
 
-def get_df_words_w_span(arr: list):
+def get_df_words_w_span(arr: list, id_col: list, lower_case=True):
+    """
+    Calculate the words and their location.
+
+    Args:
+        arr (list): List of strings to tokenize.
+        id_col (list): List of document ids (must be same size as arr)
+    """
     r = get_words_w_span_batch(arr)
 
-    for i, _mydf in enumerate(r):
-        _mydf["id"] = i
+    for idx, _mydf in zip(id_col, r):
+        _mydf["id"] = idx
 
-    return pd.concat(r, ignore_index=True)
+    df_all = pd.concat(r, ignore_index=True)
+
+    if lower_case:
+        df_all["word"] = df_all["word"].str.lower()
+
+    return df_all
