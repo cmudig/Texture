@@ -8,6 +8,7 @@
   import NullDisplay from "./NullDisplay.svelte";
   import { datasetInfo, showBackgroundDist } from "../stores";
   import { stopwords } from "../shared/stopwords";
+  import { WandMagicSparklesOutline, CodeOutline } from "flowbite-svelte-icons";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
@@ -16,8 +17,9 @@
 </script>
 
 <div>
+  <!-- shadow is green-600 -->
   <button
-    class={`space-between flex h-9 w-full items-center justify-between gap-2 px-2 ${displayCol.derived_how ? "bg-gradient-to-r from-highlight-300/40 to-gray-50" : "hover:bg-gray-100"}`}
+    class={`space-between flex h-9 w-full items-center justify-between gap-2 px-2 hover:bg-gray-100 ${displayCol.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
     class:bg-gray-50={active}
     on:click={() => {
       active = !active;
@@ -32,8 +34,14 @@
       {displayCol.name}
     </p>
     {#if displayCol.derived_from}
-      <p class="text-gray-400 italic">
-        (derived from {displayCol.derived_from})
+      <p class="text-gray-400">
+        (from {displayCol.derived_from}
+
+        {#if displayCol.derived_how === "model"}
+          <WandMagicSparklesOutline class="ml-1 inline" size="sm" />
+        {:else if displayCol.derived_how === "code"}
+          <CodeOutline class="ml-1 inline" size="sm" />
+        {/if})
       </p>
     {/if}
 
