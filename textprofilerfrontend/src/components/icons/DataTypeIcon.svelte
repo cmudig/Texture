@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { Column } from "../backendapi/models/Column";
+  import type { Column } from "../../backendapi/models/Column";
   import { Tooltip } from "flowbite-svelte";
-  import { getUUID } from "../shared/utils";
+  import { getUUID } from "../../shared/utils";
 
   export let type: Column.type;
-  export let id: string;
+  export let id: string | undefined = undefined;
 
   $: if (!id) id = getUUID();
 
