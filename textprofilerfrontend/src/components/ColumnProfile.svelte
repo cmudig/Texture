@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ColumnSummary } from "../shared/types";
   import type { Column } from "../backendapi/models/Column";
-  import DataTypeIcon from "./DataTypeIcon.svelte";
+  import DataTypeIcon from "./icons/DataTypeIcon.svelte";
   import Histogram from "./charts/Histogram.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";
   import DateChart from "./charts/DateChart.svelte";
@@ -9,7 +9,7 @@
   import { datasetInfo, showBackgroundDist } from "../stores";
   import { stopwords } from "../shared/stopwords";
   import { getUUID } from "../shared/utils";
-  import { WandMagicSparklesOutline, CodeOutline } from "flowbite-svelte-icons";
+  import DerivedIcon from "./icons/DerivedIcon.svelte";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
@@ -37,15 +37,13 @@
       {displayCol.name}
     </p>
     {#if displayCol.derived_from}
-      <p class="text-gray-400">
-        (from {displayCol.derived_from}
-
-        {#if displayCol.derived_how === "model"}
-          <WandMagicSparklesOutline class="ml-1 inline" size="sm" />
-        {:else if displayCol.derived_how === "code"}
-          <CodeOutline class="ml-1 inline" size="sm" />
-        {/if})
-      </p>
+      <div class="text-gray-400 flex items-center">
+        <span>(from {displayCol.derived_from}</span>
+        <span class="ml-1">
+          <DerivedIcon derived_how={displayCol.derived_how} />
+        </span>
+        <span>)</span>
+      </div>
     {/if}
 
     <div class="grow" />
