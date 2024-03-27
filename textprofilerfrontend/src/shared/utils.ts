@@ -3,8 +3,8 @@ import * as vg from "@uwdata/vgplot";
 import { v4 as uuidv4 } from "uuid";
 import type { Column } from "../backendapi";
 
-export function getUUID() {
-  return uuidv4();
+export function getUUID(): string {
+  return String(uuidv4());
 }
 
 const randomSixDigitInt = () => Math.floor(Math.random() * 900000) + 100000;

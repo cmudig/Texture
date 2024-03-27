@@ -4,6 +4,9 @@
   import { getUUID } from "../shared/utils";
 
   export let type: Column.type;
+  export let id: string;
+
+  $: if (!id) id = getUUID();
 
   function getIcon(type: Column.type) {
     switch (type) {
@@ -17,8 +20,6 @@
         return "C";
     }
   }
-
-  let id = getUUID();
 </script>
 
 <p id="data-icon-{id}" class="font-serif font-medium text-gray-500">

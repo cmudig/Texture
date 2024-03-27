@@ -8,10 +8,13 @@
   import NullDisplay from "./NullDisplay.svelte";
   import { datasetInfo, showBackgroundDist } from "../stores";
   import { stopwords } from "../shared/stopwords";
+  import { getUUID } from "../shared/utils";
   import { WandMagicSparklesOutline, CodeOutline } from "flowbite-svelte-icons";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
+
+  let id = getUUID();
 
   let active = true;
 </script>
@@ -25,7 +28,7 @@
       active = !active;
     }}
   >
-    <DataTypeIcon type={displayCol.type} />
+    <DataTypeIcon {id} type={displayCol.type} />
 
     <p
       class:font-medium={active}
