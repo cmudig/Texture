@@ -22,7 +22,7 @@
 <div>
   <!-- shadow is green-600 -->
   <button
-    class={`space-between flex h-9 w-full items-center justify-between gap-2 px-2 hover:bg-gray-100 ${displayCol.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
+    class={`space-between flex h-9 w-full items-center justify-between border-t-2 border-gray-100 gap-2 px-2 hover:bg-gray-100 ${displayCol.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
     class:bg-gray-50={active}
     on:click={() => {
       active = !active;
