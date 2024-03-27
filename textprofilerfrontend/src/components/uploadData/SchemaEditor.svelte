@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Listgroup, ListgroupItem, Select, Input } from "flowbite-svelte";
-  import DataTypeIcon from "../DataTypeIcon.svelte";
+  import DataTypeIcon from "../icons/DataTypeIcon.svelte";
 
   import type { DatasetInfo } from "../../backendapi";
   import { Column } from "../../backendapi";
