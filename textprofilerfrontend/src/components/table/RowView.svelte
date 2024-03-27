@@ -103,41 +103,44 @@
     <slot name="title" />
 
     {#await wordSpans}
-      {#each textData as [textColName, textColData] (textColName)}
-        <div>
-          <div class="border-b border-gray-300 font-light text-secondary-700">
-            {textColName}
-            <Spinner class="ml-1" size="4" />
+      {#each textData as [textColName, textColData], idx (textColName)}
+        <div
+          class={idx !== textData.length - 1 ? "border-b border-gray-300" : ""}
+        >
+          <div class="font-light text-secondary-600 inline animate-pulse">
+            {textColName}:
           </div>
 
-          <div>
+          <div class="text-gray-800 inline animate-pulse">
             {formatValue(textColData, { type: "text" })}
           </div>
         </div>
       {/each}
     {:then wordSpanMap}
-      {#each textData as [textColName, textColData] (textColName)}
-        <div>
-          <div class="border-b border-gray-300 font-light text-secondary-700">
-            {textColName}
+      {#each textData as [textColName, textColData], idx (textColName)}
+        <div
+          class={idx !== textData.length - 1 ? "border-b border-gray-300" : ""}
+        >
+          <div class="font-light text-secondary-600 inline">
+            {textColName}:
           </div>
 
-          <!-- TODO: can be both, but right now only doing one at a time -->
-          {#if wordSpanMap && textColName in wordSpanMap}
-            <SpanIndexHighlight
-              highlights={wordSpanMap[textColName]}
-              value={textColData}
-            />
-          {:else if textColName in $selectionDisplay}
-            <SubstringHighlight
-              highlights={$selectionDisplay[textColName]}
-              value={textColData}
-            />
-          {:else}
-            <div class="text-gray-800">
+          <div class="text-gray-800 inline">
+            <!-- TODO: can be both, but right now only doing one at a time -->
+            {#if wordSpanMap && textColName in wordSpanMap}
+              <SpanIndexHighlight
+                highlights={wordSpanMap[textColName]}
+                value={textColData}
+              />
+            {:else if textColName in $selectionDisplay}
+              <SubstringHighlight
+                highlights={$selectionDisplay[textColName]}
+                value={textColData}
+              />
+            {:else}
               {formatValue(textColData, { type: "text" })}
-            </div>
-          {/if}
+            {/if}
+          </div>
         </div>
       {/each}
     {/await}
@@ -153,7 +156,7 @@
         )?.type}
         <div class="flex px-2">
           <div
-            class="whitespace-normal text-ellipsis overflow-hidden text-sm font-light text-secondary-700 w-1/3"
+            class="whitespace-normal text-ellipsis overflow-hidden text-sm font-light text-secondary-600 w-1/3"
             title={String(itemKey)}
           >
             {itemKey}

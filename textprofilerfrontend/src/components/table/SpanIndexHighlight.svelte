@@ -23,4 +23,4 @@
   $: processedText = processText(String(value), highlights);
 </script>
 
-<div>{@html processedText}</div>
+<span>{@html processedText}</span>

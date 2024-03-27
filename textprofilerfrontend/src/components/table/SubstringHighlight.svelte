@@ -71,10 +71,12 @@
 </script>
 
 <!-- TODO: use different colors for different highlights? -->
-{#each annotatedSpans as s}
-  {#if s.included}
-    <span class="bg-highlight-300">{s.span}</span>
-  {:else}
-    {s.span}
-  {/if}
-{/each}
+<span>
+  {#each annotatedSpans as s}
+    {#if s.included}
+      <span class="bg-highlight-300">{s.span}</span>
+    {:else}
+      {s.span}
+    {/if}
+  {/each}
+</span>
