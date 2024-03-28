@@ -71,7 +71,7 @@ For example, "Derive 3 - 5 keywords per article"`;
 
 <div class="flex flex-col gap-4">
   <Textarea
-    class="min-h-40"
+    class="min-h-14"
     rows="5"
     placeholder={INSTRUCTION}
     bind:value={userPrompt}
