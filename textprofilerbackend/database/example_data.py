@@ -20,6 +20,16 @@ dataset_vis_papers = DatasetInfo(
             "derived_from": "Abstract",
         },
         {
+            "name": "Year",
+            "type": "number",
+        },
+        {
+            "name": "Abstract_num_words",
+            "type": "number",
+            "derived_from": "Abstract",
+            "derived_how": "code",
+        },
+        {
             "name": "Conference",
             "type": "categorical",
         },
@@ -34,10 +44,6 @@ dataset_vis_papers = DatasetInfo(
             "type": "categorical",
             "table_name": "vis_papers_keywords",
             "derived_from": "AuthorKeywords",
-        },
-        {
-            "name": "Year",
-            "type": "number",
         },
         {
             "name": "PaperType",
@@ -58,11 +64,6 @@ dataset_vis_papers = DatasetInfo(
         {
             "name": "Award",
             "type": "categorical",
-        },
-        {
-            "name": "Abstract_num_words",
-            "type": "number",
-            "derived_from": "Abstract",
         },
         {
             "name": "id",
