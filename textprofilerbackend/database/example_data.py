@@ -20,14 +20,14 @@ dataset_vis_papers = DatasetInfo(
             "derived_from": "Abstract",
         },
         {
-            "name": "Year",
-            "type": "number",
-        },
-        {
             "name": "Abstract_num_words",
             "type": "number",
             "derived_from": "Abstract",
             "derived_how": "code",
+        },
+        {
+            "name": "Year",
+            "type": "number",
         },
         {
             "name": "Conference",
@@ -204,8 +204,8 @@ dataset_airline_reviews = DatasetInfo(
 
 
 EXAMPLE_DATASET_INFO = {
-    "airline_reviews": dataset_airline_reviews,
     "vis_papers": dataset_vis_papers,
+    "airline_reviews": dataset_airline_reviews,
 }
 
 EXAMPLE_DATA_PATHS = {
