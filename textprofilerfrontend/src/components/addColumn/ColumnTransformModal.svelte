@@ -25,8 +25,6 @@
   export let panelOpen: boolean;
   export let finishedCommitHandler: () => void;
 
-  console.log("Rendering the ColumnTransformModal");
-
   $: textCols = $datasetInfo?.columns.filter((col) => col.type === "text");
   $: allColNames = $datasetInfo?.columns.map((col) => col.name);
   $: idColName = $datasetInfo?.primary_key.name;
@@ -172,10 +170,8 @@
     }
   }
 
+  // reset state when modal closes
   function handleModalClose() {
-    // reset state when modal closes
-    console.log("Closing modal");
-
     responseSchema = {
       name: "",
       type: TaskFormat.type.STRING,
