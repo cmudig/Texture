@@ -9,7 +9,7 @@
   export let targetColName: string;
   export let responseSchema: TaskFormat;
   export let columnData: any[];
-  export let resultData: any[];
+  export let resultData: any[] | undefined;
   export let queryStatus: QueryStatus;
   export let deleteResult: ((index: number) => void) | undefined = undefined;
   export let allowEdits = true;
@@ -23,12 +23,12 @@
       {idColName ?? ""}
     </div>
     <div
-      class="w-1/2 shrink-0 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
+      class="w-[70%] shrink-0 whitespace-normal break-words p-2 bg-gray-50 border-l border-y border-gray-200"
     >
       {targetColName}
     </div>
     <div
-      class="grow whitespace-normal break-words p-2 border-l border-y border-gray-200 text-black bg-gray-50"
+      class={`grow whitespace-normal break-words p-2 border-l border-y border-gray-200 text-black bg-gray-50 ${deleteResult ? "" : "border-r"}`}
     >
       {#if responseSchema}
         {`${responseSchema.name} (${responseSchema?.type}${responseSchema.num_replies === "single" ? "" : "[]"})`}
@@ -36,7 +36,9 @@
         <Spinner />
       {/if}
     </div>
-    <div class="w-8 shrink-0 border-l border-gray-200" />
+    {#if deleteResult}
+      <div class="w-8 shrink-0 border-l border-gray-200" />
+    {/if}
   </div>
 
   {#each columnData as cd, index}
@@ -47,17 +49,17 @@
         {idColName ? cd[idColName] : ""}
       </div>
       <div
-        class="w-1/2 shrink-0 whitespace-normal break-words align-top p-2 overflow-auto max-h-32 border-b border-l border-gray-200 bg-white"
+        class="w-[70%] shrink-0 whitespace-normal break-words align-top p-2 overflow-auto max-h-20 border-b border-l border-gray-200 bg-white"
       >
         {cd[targetColName]}
       </div>
       <div
-        class="grow whitespace-normal break-words border-l border-b border-gray-200 bg-green-50 text-black align-top p-2 overflow-auto max-h-32"
+        class={`grow whitespace-normal break-words border-l border-b border-gray-200 bg-green-50 text-black align-top p-2 overflow-auto max-h-20 ${deleteResult ? "" : "border-r"}`}
       >
         {#if queryStatus === QueryStatus.COMPLETED}
-          {#if allowEdits}
+          {#if allowEdits && resultData}
             <Textarea
-              rows="3"
+              rows="2"
               bind:value={resultData[index]}
               class="bg-white/50"
             />
@@ -73,8 +75,8 @@
         {/if}
       </div>
 
-      <div class="w-8 shrink-0 border-l border-gray-200">
-        {#if deleteResult}
+      {#if deleteResult}
+        <div class="w-8 shrink-0 border-l border-gray-200">
           <button
             class="hover:bg-gray-100 text-gray-500 p-1 rounded m-1"
             on:click={() => {
@@ -84,8 +86,8 @@
           >
             <TrashBinOutline size="sm" />
           </button>
-        {/if}
-      </div>
+        </div>
+      {/if}
     </div>
   {/each}
 </div>

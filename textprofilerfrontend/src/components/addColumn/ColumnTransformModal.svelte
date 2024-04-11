@@ -19,6 +19,7 @@
   import SchemaEditor from "./SchemaEditor.svelte";
   import LLMExtract from "./LLMTransform/LLMExtract.svelte";
   import CodeExtract from "./CodeTransform/CodeExtract.svelte";
+  import { sampleTransforms } from "./CodeTransform/sampleCodeTransforms";
 
   // props
   export let panelOpen: boolean;
@@ -60,7 +61,7 @@
   // specify transform
   let userPrompt: string;
   let columnExampleData: any[];
-  let exampleResult: any[];
+  let exampleResult: any[] | undefined;
   let userTransformCode: string;
 
   // preview transform
@@ -68,14 +69,16 @@
   let columnPreviewData: any[];
   let finalPreviewStatus: QueryStatus = QueryStatus.NOT_STARTED;
   let previewProcessingError;
-  let finalPreview: any[];
+  let finalPreview: any[] | undefined;
 
   // apply to final result
   let commitResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
   let commitError;
 
   async function init(_textCols) {
-    targetColName = _textCols?.[0].name;
+    if (targetColName === undefined) {
+      targetColName = _textCols?.[0].name;
+    }
     fetchColData();
   }
 
@@ -106,7 +109,7 @@
         taskFormat: responseSchema,
         columnData: columnPreviewData.map((cd) => cd[targetColName]),
         exampleData: columnExampleData.map((cd) => cd[targetColName]),
-        exampleResponse: exampleResult.map((item) => ({
+        exampleResponse: exampleResult?.map((item) => ({
           [responseSchema.name]: item,
         })),
       });
@@ -135,19 +138,19 @@
     commitResultStatus = QueryStatus.PENDING;
     let r;
 
-    if (transformType === "llm") {
+    if (transformType === "llm" && exampleResult) {
       r = await databaseConnection.api.commitLlmTransformResult({
         userPrompt,
         taskFormat: responseSchema,
         columnName: targetColName,
         tableName: $datasetInfo.name,
         exampleData: columnExampleData.map((cd) => cd[targetColName]),
-        exampleResponse: exampleResult.map((item) => ({
+        exampleResponse: exampleResult?.map((item) => ({
           [responseSchema.name]: item,
         })),
         applyToIndices: $filteredIndices,
       });
-    } else {
+    } else if (transformType === "code") {
       r = await databaseConnection.api.commitCodeTransformResult({
         codeString: userTransformCode,
         taskFormat: responseSchema,
@@ -158,12 +161,32 @@
     }
 
     commitResultStatus = QueryStatus.COMPLETED;
-    if (r.success) {
+    if (r?.success) {
+      console.log("finished with success, calling finish handler");
       commitError = undefined;
       finishedCommitHandler();
     } else {
-      commitError = r.result?.error;
+      commitError = r?.result?.error;
     }
+  }
+
+  // reset state when modal closes
+  function handleModalClose() {
+    responseSchema = {
+      name: "",
+      type: TaskFormat.type.STRING,
+      num_replies: TaskFormat.num_replies.SINGLE,
+    };
+    schemaResultStatus = QueryStatus.NOT_STARTED;
+    userPrompt = "";
+    exampleResult = undefined;
+    userTransformCode = sampleTransforms["Empty"].code;
+    readyToGenPreview = false;
+    finalPreviewStatus = QueryStatus.NOT_STARTED;
+    previewProcessingError = undefined;
+    finalPreview = undefined;
+    commitResultStatus = QueryStatus.NOT_STARTED;
+    commitError = undefined;
   }
 
   $: initPromise = init(textCols);
@@ -172,7 +195,13 @@
     responseSchema?.name && allColNames.includes(responseSchema.name);
 </script>
 
-<Modal bind:open={panelOpen} title="Derive new column" size="xl" outsideclose>
+<Modal
+  bind:open={panelOpen}
+  title="Derive new column"
+  size="xl"
+  outsideclose
+  on:close={handleModalClose}
+>
   {#await initPromise}
     <div class="p-2">
       <Spinner />
@@ -228,8 +257,7 @@
               {/if}
               {#if namingErrorExists}
                 <div class="text-red-500">
-                  Column {responseSchema.name} is already in the dataset, try another
-                  name!
+                  Column {responseSchema.name} already exists, try another name!
                 </div>
               {/if}
             </div>

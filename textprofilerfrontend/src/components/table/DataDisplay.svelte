@@ -102,9 +102,9 @@
             disabled={!$sortColumn}
           >
             {#if $sortDesc}
-              <ArrowUpSolid size="xs" />
-            {:else}
               <ArrowDownSolid size="xs" />
+            {:else}
+              <ArrowUpSolid size="xs" />
             {/if}
           </button>
         </div>

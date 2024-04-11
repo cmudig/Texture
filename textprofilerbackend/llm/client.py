@@ -431,13 +431,16 @@ def coerce_result(json_result, response_format: TaskFormat):
 
 def parse_instance_by_type(result, type):
     """Force results into appropriate type."""
-    # TODO: if result type is bool and we get a null, then just return False
-    if result is None:
+    if result is None and type == "bool":
+        return False
+    elif result is None:
         return None
 
     try:
         # check if default value
         if str(result).strip().lower() in ["n/a", "", "none"]:
+            if type == "bool":
+                return False
             return None
 
         if type == "number":
@@ -468,11 +471,13 @@ def generate_batches(system_prompt: str, user_prompts: List[str]):
     batches = []
     current_batch = []
     current_batch_tokens = 0
+    total_tokens = 0
 
     system_prompt_tokens = get_num_tokens(system_prompt)
 
     for user_prompt in user_prompts:
         i_tokens = system_prompt_tokens + get_num_tokens(user_prompt)
+        total_tokens += i_tokens
         if (
             len(current_batch) >= MAX_BATCH_SIZE
             or current_batch_tokens + i_tokens >= MAX_TPM
@@ -486,6 +491,10 @@ def generate_batches(system_prompt: str, user_prompts: List[str]):
 
     if current_batch:
         batches.append(current_batch)
+
+    print(
+        f"Batches generated. \nTotal documents: {len(user_prompts)}. \nTotal tokens: {total_tokens}. \nTotal batches: {len(batches)}."
+    )
 
     return batches
 

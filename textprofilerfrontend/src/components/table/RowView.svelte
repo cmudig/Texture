@@ -148,7 +148,7 @@
 
   {#if plotMetadata.length}
     <div
-      class={`w-80 shrink-0 pt-2 ${toggle ? "overflow-auto" : "overflow-hidden"}`}
+      class={`w-[300px] shrink-0 pt-2 ${toggle ? "overflow-auto" : "overflow-hidden"}`}
     >
       {#each plotMetadata as [itemKey, itemValue] (itemKey)}
         {@const itemType = $datasetInfo?.columns.find(
@@ -156,13 +156,13 @@
         )?.type}
         <div class="flex px-2">
           <div
-            class="whitespace-normal text-ellipsis overflow-hidden text-sm font-light text-secondary-600 w-1/3"
+            class="whitespace-normal text-ellipsis overflow-hidden text-sm font-light text-secondary-600 shrink-0 w-[165px]"
             title={String(itemKey)}
           >
             {itemKey}
           </div>
           <div
-            class={`whitespace-normal break-words text-sm pl-1 w-2/3 ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-800"}`}
+            class={`whitespace-normal break-words text-sm pl-1 grow ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-800"}`}
             class:bg-highlight-300={itemKey in $selectionDisplay &&
               shouldHighlight(itemValue, $selectionDisplay[itemKey], itemType)}
           >

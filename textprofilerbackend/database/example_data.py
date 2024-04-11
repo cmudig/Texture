@@ -19,6 +19,16 @@ dataset_vis_papers = DatasetInfo(
             "table_name": "vis_papers_words",
             "derived_from": "Abstract",
         },
+        # {
+        #     "name": "Abstract_num_words",
+        #     "type": "number",
+        #     "derived_from": "Abstract",
+        #     "derived_how": "code",
+        # },
+        {
+            "name": "Year",
+            "type": "number",
+        },
         {
             "name": "Conference",
             "type": "categorical",
@@ -34,10 +44,6 @@ dataset_vis_papers = DatasetInfo(
             "type": "categorical",
             "table_name": "vis_papers_keywords",
             "derived_from": "AuthorKeywords",
-        },
-        {
-            "name": "Year",
-            "type": "number",
         },
         {
             "name": "PaperType",
@@ -59,21 +65,16 @@ dataset_vis_papers = DatasetInfo(
             "name": "Award",
             "type": "categorical",
         },
-        {
-            "name": "Abstract_num_words",
-            "type": "number",
-            "derived_from": "Abstract",
-        },
-        {
-            "name": "id",
-            "type": "number",
-        },
-        {
-            "name": "MODEL_sport",
-            "type": "categorical",
-            "derived_from": "Abstract",
-            "derived_how": "model",
-        },
+        # {
+        #     "name": "id",
+        #     "type": "number",
+        # },
+        # {
+        #     "name": "MODEL_sport",
+        #     "type": "categorical",
+        #     "derived_from": "Abstract",
+        #     "derived_how": "model",
+        # },
         # {
         #     "name": "AuthorNames-Deduped",
         #     "type": "categorical",
@@ -160,35 +161,35 @@ dataset_airline_reviews = DatasetInfo(
     origin="example",
     columns=[
         # {"name": "id", "type": "categorical"},
-        {
-            "name": "tweet_num_characters",
-            "type": "number",
-            "derived_from": "tweet",
-            "derived_how": "code",
-        },
-        {
-            "name": "twitter_handle",
-            "type": "categorical",
-            "derived_from": "tweet",
-            "derived_how": "code",
-        },
-        {
-            "name": "is_on_hold",
-            "type": "categorical",
-            "derived_from": "tweet",
-            "derived_how": "model",
-        },
+        # {
+        #     "name": "tweet_num_characters",
+        #     "type": "number",
+        #     "derived_from": "tweet",
+        #     "derived_how": "code",
+        # },
+        # {
+        #     "name": "twitter_handle",
+        #     "type": "categorical",
+        #     "derived_from": "tweet",
+        #     "derived_how": "code",
+        # },
+        # {
+        #     "name": "is_on_hold",
+        #     "type": "categorical",
+        #     "derived_from": "tweet",
+        #     "derived_how": "model",
+        # },
         {
             "name": "word",
             "type": "categorical",
             "table_name": "tweet_words",
             "derived_from": "tweet",
         },
+        {"name": "airline", "type": "categorical"},
         {"name": "airline_sentiment", "type": "categorical"},
         {"name": "airline_sentiment_confidence", "type": "number"},
         {"name": "negativereason", "type": "categorical"},
         {"name": "negativereason_confidence", "type": "number"},
-        {"name": "airline", "type": "categorical"},
         # {"name": "airline_sentiment_gold", "type": "categorical"},  # mostly null
         {"name": "name", "type": "categorical"},
         # {"name": "negativereason_gold", "type": "categorical"}, # mostly null
@@ -203,8 +204,8 @@ dataset_airline_reviews = DatasetInfo(
 
 
 EXAMPLE_DATASET_INFO = {
-    "airline_reviews": dataset_airline_reviews,
     "vis_papers": dataset_vis_papers,
+    "airline_reviews": dataset_airline_reviews,
 }
 
 EXAMPLE_DATA_PATHS = {
