@@ -5,5 +5,5 @@
 
 export type TransformResponse = {
   success: boolean;
-  result: Record<string, any>;
+  result: Record<string, unknown> | Array<unknown>;
 };

@@ -9,7 +9,7 @@
   export let targetColName: string;
   export let responseSchema: TaskFormat;
   export let columnData: any[];
-  export let resultData: any[];
+  export let resultData: any[] | undefined;
   export let queryStatus: QueryStatus;
   export let deleteResult: ((index: number) => void) | undefined = undefined;
   export let allowEdits = true;
@@ -57,7 +57,7 @@
         class={`grow whitespace-normal break-words border-l border-b border-gray-200 bg-green-50 text-black align-top p-2 overflow-auto max-h-20 ${deleteResult ? "" : "border-r"}`}
       >
         {#if queryStatus === QueryStatus.COMPLETED}
-          {#if allowEdits}
+          {#if allowEdits && resultData}
             <Textarea
               rows="2"
               bind:value={resultData[index]}

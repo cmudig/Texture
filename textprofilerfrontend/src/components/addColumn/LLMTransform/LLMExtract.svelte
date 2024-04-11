@@ -18,7 +18,7 @@ For example, "Derive 3 - 5 keywords per article"`;
   export let responseSchema: TaskFormat;
   export let schemaResultStatus: QueryStatus = QueryStatus.NOT_STARTED;
   export let columnExampleData: any[];
-  export let exampleResult;
+  export let exampleResult: any[] | undefined;
   export let setPreviewReady: (status: boolean) => void;
 
   // need to wait until have prompt with examples
@@ -53,16 +53,16 @@ For example, "Derive 3 - 5 keywords per article"`;
 
     if (r.success) {
       exampleProcessingError = undefined;
-      exampleResult = r.result;
+      exampleResult = r.result as Array<any>;
       setPreviewReady(true);
     } else {
-      exampleProcessingError = r.result?.error;
+      exampleProcessingError = (r.result as Record<string, unknown>)?.error;
     }
   }
 
   function deleteResult(index) {
     columnExampleData.splice(index, 1);
-    exampleResult.splice(index, 1);
+    exampleResult?.splice(index, 1);
 
     columnExampleData = columnExampleData; // trigger reactivity
     exampleResult = exampleResult; // trigger reactivity
