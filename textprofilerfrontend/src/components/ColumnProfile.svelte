@@ -52,47 +52,45 @@
       <NullDisplay nullPercentage={parseFloat(colSummary.null_percentage)} />
     {/if}
   </button>
-  <div class="w-full">
-    <div class="ml-4 my-1" class:hidden={!active}>
-      {#if displayCol.table_name && displayCol.table_name !== $datasetInfo.name}
-        {#if displayCol.type === "categorical" || displayCol.type === "text"}
-          <CategoricalChart
-            mainDatasetName={displayCol.table_name}
-            columnName={displayCol.name}
-            excludeList={$datasetInfo.columns.find(
-              (c) => c.name === displayCol.derived_from,
-            )?.type === "text"
-              ? $stopwords
-              : undefined}
-            plotNulls={true}
-            isDerivedTable={true}
-            showBackground={false}
-          />
-        {:else}
-          Not currently supporting quantitative columns from another table...
-        {/if}
-      {:else if displayCol.type === "number"}
-        <Histogram
-          mainDatasetName={$datasetInfo.name}
-          showBackground={$showBackgroundDist}
-          columnName={displayCol.name}
-        />
-      {:else if displayCol.type === "categorical"}
+  <div class="w-full pl-4 py-1" class:hidden={!active}>
+    {#if displayCol.table_name && displayCol.table_name !== $datasetInfo.name}
+      {#if displayCol.type === "categorical" || displayCol.type === "text"}
         <CategoricalChart
-          mainDatasetName={$datasetInfo.name}
-          showBackground={$showBackgroundDist}
+          mainDatasetName={displayCol.table_name}
           columnName={displayCol.name}
-        />
-      {:else if displayCol.type === "date"}
-        <DateChart
-          mainDatasetName={$datasetInfo.name}
-          columnName={displayCol.name}
+          excludeList={$datasetInfo.columns.find(
+            (c) => c.name === displayCol.derived_from,
+          )?.type === "text"
+            ? $stopwords
+            : undefined}
+          plotNulls={true}
+          isDerivedTable={true}
+          showBackground={false}
         />
       {:else}
-        <div>
-          {displayCol.name}: Unsupported column type ({displayCol.type})
-        </div>
+        Not currently supporting quantitative columns from another table...
       {/if}
-    </div>
+    {:else if displayCol.type === "number"}
+      <Histogram
+        mainDatasetName={$datasetInfo.name}
+        showBackground={$showBackgroundDist}
+        columnName={displayCol.name}
+      />
+    {:else if displayCol.type === "categorical"}
+      <CategoricalChart
+        mainDatasetName={$datasetInfo.name}
+        showBackground={$showBackgroundDist}
+        columnName={displayCol.name}
+      />
+    {:else if displayCol.type === "date"}
+      <DateChart
+        mainDatasetName={$datasetInfo.name}
+        columnName={displayCol.name}
+      />
+    {:else}
+      <div>
+        {displayCol.name}: Unsupported column type ({displayCol.type})
+      </div>
+    {/if}
   </div>
 </div>
