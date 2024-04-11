@@ -148,7 +148,7 @@
 
   {#if plotMetadata.length}
     <div
-      class={`w-64 shrink-0 pt-2 ${toggle ? "overflow-auto" : "overflow-hidden"}`}
+      class={`w-[300px] shrink-0 pt-2 ${toggle ? "overflow-auto" : "overflow-hidden"}`}
     >
       {#each plotMetadata as [itemKey, itemValue] (itemKey)}
         {@const itemType = $datasetInfo?.columns.find(
@@ -156,7 +156,7 @@
         )?.type}
         <div class="flex px-2">
           <div
-            class="whitespace-normal text-ellipsis overflow-hidden text-sm font-light text-secondary-600 w-[165px]"
+            class="whitespace-normal text-ellipsis overflow-hidden text-sm font-light text-secondary-600 shrink-0 w-[165px]"
             title={String(itemKey)}
           >
             {itemKey}
