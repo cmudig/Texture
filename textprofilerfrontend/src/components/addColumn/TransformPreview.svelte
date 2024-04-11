@@ -37,7 +37,7 @@
       {/if}
     </div>
     {#if deleteResult}
-      <div class="w-8 shrink-0 border-l border-y border-gray-200" />
+      <div class="w-8 shrink-0 border-l border-gray-200" />
     {/if}
   </div>
 
