@@ -76,9 +76,7 @@
   let commitError;
 
   async function init(_textCols) {
-    if (targetColName === undefined) {
-      targetColName = _textCols?.[0].name;
-    }
+    targetColName = _textCols?.[0].name;
     fetchColData();
   }
 
@@ -172,21 +170,24 @@
 
   // reset state when modal closes
   function handleModalClose() {
-    responseSchema = {
-      name: "",
-      type: TaskFormat.type.STRING,
-      num_replies: TaskFormat.num_replies.SINGLE,
-    };
-    schemaResultStatus = QueryStatus.NOT_STARTED;
-    userPrompt = "";
-    exampleResult = undefined;
-    userTransformCode = sampleTransforms["Empty"].code;
-    readyToGenPreview = false;
-    finalPreviewStatus = QueryStatus.NOT_STARTED;
-    previewProcessingError = undefined;
-    finalPreview = undefined;
-    commitResultStatus = QueryStatus.NOT_STARTED;
-    commitError = undefined;
+    // if pending query then dont clear
+    if (commitResultStatus !== QueryStatus.PENDING) {
+      responseSchema = {
+        name: "",
+        type: TaskFormat.type.STRING,
+        num_replies: TaskFormat.num_replies.SINGLE,
+      };
+      schemaResultStatus = QueryStatus.NOT_STARTED;
+      userPrompt = "";
+      exampleResult = undefined;
+      userTransformCode = sampleTransforms["Empty"].code;
+      readyToGenPreview = false;
+      finalPreviewStatus = QueryStatus.NOT_STARTED;
+      previewProcessingError = undefined;
+      finalPreview = undefined;
+      commitResultStatus = QueryStatus.NOT_STARTED;
+      commitError = undefined;
+    }
   }
 
   $: initPromise = init(textCols);
