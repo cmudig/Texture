@@ -29,7 +29,8 @@ export const compareSimilarID: Writable<number | undefined> = writable();
 export const derivedViewNames: Writable<Map<any, string>> = writable(new Map());
 export const mosaicSelection: Writable<any> = writable(); // vg.Selection crossfilter
 export const datasetInfo: Writable<DatasetInfo> = writable();
-export const showBackgroundDist: Writable<boolean> = writable(true);
+export const showBackgroundDistMap: Writable<Record<string, boolean>> =
+  writable();
 export const clearColumnSelections: Writable<
   {
     clearFunc: () => void;

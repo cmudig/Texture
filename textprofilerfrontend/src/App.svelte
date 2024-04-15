@@ -7,6 +7,7 @@
     datasetInfo,
     databaseConnection,
     compareSimilarID,
+    showBackgroundDistMap,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import DataDisplay from "./components/table/DataDisplay.svelte";
@@ -50,6 +51,19 @@
     currentColToggleStates = $datasetInfo.columns.reduce(
       (acc: Record<string, boolean>, col) => {
         acc[col.name] = true;
+
+        return acc;
+      },
+      {},
+    );
+
+    $showBackgroundDistMap = $datasetInfo.columns.reduce(
+      (acc: Record<string, boolean>, col) => {
+        if (col.name === "word") {
+          acc[col.name] = false;
+        } else {
+          acc[col.name] = true;
+        }
 
         return acc;
       },
