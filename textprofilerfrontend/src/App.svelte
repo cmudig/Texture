@@ -136,6 +136,7 @@
       bind:panelOpen={showAddColModal}
       finishedCommitHandler={() => {
         dataPromise = populateDataTables(currentDatasetName, false);
+        showAddColModal = false; // close modal when complete
       }}
     />
   </div>
