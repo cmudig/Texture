@@ -9,6 +9,8 @@ import { Plot } from "@uwdata/mosaic-plot";
 export function getPlot(...directives) {
   const p = new Plot();
   directives.flat().forEach((dir) => dir(p));
-  p.marks.forEach((mark) => vg.coordinator().connect(mark));
+  // @ts-ignore
+  vg.connect(this, ...p.marks);
+  p.update();
   return p;
 }

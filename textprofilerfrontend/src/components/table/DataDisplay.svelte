@@ -18,21 +18,21 @@
   let previousClient: TableClient;
   let ready = false;
 
-  function createClient(_mainDatasetName, _currentColToggleStates, filter) {
-    let fromClause = _mainDatasetName;
-
+  function createClient(_dsInfo, _currentColToggleStates, filter) {
     // only get columns with toggle on; remove duplicate pk
     let plotcols = Object.keys(_currentColToggleStates).filter(
       (col) =>
-        _currentColToggleStates[col] && col !== $datasetInfo.primary_key.name,
+        _currentColToggleStates[col] &&
+        col !== _dsInfo.primary_key.name &&
+        _dsInfo.columns.find((c) => c.name === col).table_name == null, // dont include cols from another table bc breaks mosaic client
     );
 
     // always include pk
-    plotcols.push($datasetInfo.primary_key.name);
+    plotcols.push(_dsInfo.primary_key.name);
 
     let client = new TableClient({
       filterBy: filter,
-      from: fromClause,
+      from: _dsInfo.name,
       columns: plotcols,
     });
 
@@ -49,7 +49,7 @@
 
   $: {
     myTableClient = createClient(
-      $datasetInfo.name,
+      $datasetInfo,
       currentColToggleStates,
       $mosaicSelection,
     );
@@ -87,7 +87,10 @@
             size="sm"
             items={[
               { value: undefined, name: "Not sorted" },
-              ...Object.keys(colTypeMap).map((k) => ({ value: k, name: k })),
+              ...$schema.map((colInfo) => ({
+                value: colInfo.column,
+                name: colInfo.column,
+              })),
             ]}
             bind:value={$sortColumn}
             placeholder="Sort by..."
