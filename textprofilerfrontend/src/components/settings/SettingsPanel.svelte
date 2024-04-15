@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Select, Toggle, Label } from "flowbite-svelte";
+  import { Select, Toggle, Label, Button } from "flowbite-svelte";
   import type { DatasetInfo } from "../../backendapi";
 
-  import { datasetInfo, showBackgroundDist } from "../../stores";
+  import { datasetInfo, showBackgroundDistMap } from "../../stores";
   import StopwordEditor from "./StopwordEditor.svelte";
   import SaveTableToFile from "../SaveTableToFile.svelte";
 
@@ -10,6 +10,16 @@
   export let currentDatasetName: string;
   export let updateData: () => void;
   export let currentColToggleStates: Record<string, boolean>;
+
+  function setBackgroundDist(val: boolean) {
+    $showBackgroundDistMap = Object.keys($showBackgroundDistMap).reduce(
+      (acc, key) => {
+        acc[key] = val;
+        return acc;
+      },
+      {},
+    );
+  }
 </script>
 
 <div class="flex flex-col gap-4 p-3">
@@ -41,9 +51,10 @@
     <div>
       <Label>Background distributions</Label>
 
-      <Toggle class="mt-2" bind:checked={$showBackgroundDist}
-        >Show in plot</Toggle
-      >
+      <Button on:click={() => setBackgroundDist(true)} size="sm">All on</Button>
+      <Button on:click={() => setBackgroundDist(false)} size="sm">
+        All off
+      </Button>
     </div>
 
     <div>
