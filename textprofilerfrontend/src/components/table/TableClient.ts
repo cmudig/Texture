@@ -31,6 +31,7 @@ export class TableClient extends vg.MosaicClient {
   public sortDesc: Writable<boolean>;
   public sortHeader: any;
 
+  // NOTE: the table client only supports fields from a single table right now, must be filtered out before passing to the client
   constructor({ filterBy, from, columns }: TableProps) {
     super(filterBy);
 
