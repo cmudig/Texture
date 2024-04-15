@@ -263,7 +263,7 @@
               {/if}
             </div>
 
-            {#if transformType === "llm"}
+            <div class:hidden={transformType !== "llm"}>
               <LLMExtract
                 {targetColName}
                 {idColName}
@@ -274,14 +274,15 @@
                 bind:columnExampleData
                 bind:exampleResult
               />
-            {:else}
+            </div>
+            <div class:hidden={transformType !== "code"}>
               <CodeExtract
                 {targetColName}
                 bind:userTransformCode
                 bind:responseSchema
                 setPreviewReady={(v) => (readyToGenPreview = v)}
               />
-            {/if}
+            </div>
           </div>
         </div>
 
