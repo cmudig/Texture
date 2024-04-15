@@ -86,7 +86,6 @@
         vg.barX(vg.from(fromClause), {
           x: vg.count(),
           y: cName,
-          order: cName,
           fill: "#ccc",
           fillOpacity: 0.4,
           sort: { y: "-x", limit },
@@ -94,7 +93,6 @@
         vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
-          order: cName,
           fill: "steelblue",
           sort: { y: "-x", limit },
         }),
@@ -104,7 +102,6 @@
         vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
-          order: cName,
           sort: { y: "-x", limit },
           text: vg.count(),
           dx: -3,
@@ -122,7 +119,6 @@
         vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
-          order: cName,
           fill: "steelblue",
           sort: { y: "-x", limit },
         }),
@@ -132,7 +128,6 @@
         vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
-          order: cName,
           sort: { y: "-x", limit },
           text: vg.count(),
           dx: -3,
