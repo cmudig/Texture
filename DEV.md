@@ -1,19 +1,3 @@
-# TL;DR
-
-Terminal 1: Backend python server
-
-```bash
-cd textprofilerbackend
-uvicorn --factory server:get_server --reload
-```
-
-Terminal 2: frontend svelte / vite UI
-
-```bash
-cd textprofilerfrontend
-npm run dev
-```
-
 # Dev loop for python package `textprofilerbackend`
 
 The backend hosts a FastAPI server and data processing functions along with the in process duckdb database for storing and filtering data.
