@@ -5,8 +5,8 @@ from fastapi.responses import ORJSONResponse
 from typing import Dict, Literal
 
 
-from textprofilerbackend.database import init_db
-from textprofilerbackend.models import (
+from texturebackend.database import init_db
+from texturebackend.models import (
     DatasetInfo,
     DuckQueryData,
     DuckQueryResult,
@@ -21,11 +21,11 @@ from textprofilerbackend.models import (
     CodeTransformRequest,
     CodeTransformCommit,
 )
-from textprofilerbackend.process_data import process_new_file
-from textprofilerbackend.transform import word_tokenize
-from textprofilerbackend.llm.client import LLMClient
-from textprofilerbackend.utils import get_type_from_response, flatten
-from textprofilerbackend.userCodeTransform.transform import (
+from texturebackend.process_data import process_new_file
+from texturebackend.transform import word_tokenize
+from texturebackend.llm.client import LLMClient
+from texturebackend.utils import get_type_from_response, flatten
+from texturebackend.userCodeTransform.transform import (
     execute_code_and_apply_function,
 )
 
@@ -49,7 +49,7 @@ def get_server() -> FastAPI:
     )
 
     api_app = FastAPI(
-        title="Text Profiler API",
+        title="Texture API",
         generate_unique_id_function=custom_generate_unique_id,
         # TODO: unsure if this is necessary...
         default_response_class=ORJSONResponse,

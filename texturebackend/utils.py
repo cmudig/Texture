@@ -1,6 +1,6 @@
 from functools import wraps
 import time
-from textprofilerbackend.models import DataType
+from texturebackend.models import DataType
 import pandas as pd
 
 

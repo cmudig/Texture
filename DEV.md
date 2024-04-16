@@ -1,4 +1,4 @@
-# Dev loop for python package `textprofilerbackend`
+# Dev loop for python package `texturebackend`
 
 The backend hosts a FastAPI server and data processing functions along with the in process duckdb database for storing and filtering data.
 
@@ -12,7 +12,7 @@ Pre-requisites
 Make a new conda environment, can be called whatever
 
 ```bash
-conda create -n text-profiler python=3.10 # python 3.10 recommended for some package compatability
+conda create -n texture python=3.10 # python 3.10 recommended for some package compatability
 ```
 
 Installs dependencies AND builds in dev mode in current conda env
@@ -26,7 +26,7 @@ poetry install
 To start server:
 
 ```bash
-cd textprofilerbackend
+cd texturebackend
 uvicorn --factory server:get_server --reload
 ```
 
@@ -35,16 +35,16 @@ If you add a new python package, do it with poetry since will also install in cu
 If you add a new route or model to the backend, you can re-generate the api client in the frontend automatically (server must be running when this happens!).
 
 ```bash
-cd textprofilerfrontend
+cd texturefrontend
 npm run gen-api
 ```
 
 **NOTE:** be careful about what files get changed since some like the request handling and some types are manually edited. The following files should probably NOT be changed:
 
-- `textprofilerfrontend/src/backendapi/core/request.ts`: manual changes made to process blobs
-- `textprofilerfrontend/src/backendapi/models/ErrorResponse.ts`: changed type to not be any
-- `textprofilerfrontend/src/backendapi/models/ExecResponse.ts`: changed type to not be any
-- `textprofilerfrontend/src/backendapi/models/JsonResponse.ts`: changed type to not be any
+- `texturefrontend/src/backendapi/core/request.ts`: manual changes made to process blobs
+- `texturefrontend/src/backendapi/models/ErrorResponse.ts`: changed type to not be any
+- `texturefrontend/src/backendapi/models/ExecResponse.ts`: changed type to not be any
+- `texturefrontend/src/backendapi/models/JsonResponse.ts`: changed type to not be any
 
 You can run the following commands to unset these files from git automatically after you regenerate the API (N.B this will remove other changes to these files):
 
@@ -67,7 +67,7 @@ This will install the python package in the current conda env so can be imported
 import textclean
 ```
 
-# Dev loop for UI `textprofilerfrontend`
+# Dev loop for UI `texturefrontend`
 
 The frontend is a svelte / vite app that uses the generated api client to communicate with the backend.
 
@@ -80,7 +80,7 @@ Pre-requisites
 First time
 
 ```bash
-cd textprofilerfrontend
+cd texturefrontend
 npm install # install packages
 ```
 
@@ -89,7 +89,7 @@ npm install # install packages
 Will start local server and hot re-load changes
 
 ```bash
-cd textctextprofilerfrontendleanui
+cd texturefrontend
 npm run dev
 ```
 

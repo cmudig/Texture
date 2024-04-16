@@ -1,7 +1,7 @@
 from pathlib import Path
 import duckdb
 import pyarrow as pa
-from textprofilerbackend.models import (
+from texturebackend.models import (
     DuckQueryData,
     DuckQueryResult,
     ExecResponse,
@@ -9,7 +9,7 @@ from textprofilerbackend.models import (
     ErrorResponse,
 )
 from fastapi.responses import Response
-from textprofilerbackend.database.example_data import (
+from texturebackend.database.example_data import (
     EXAMPLE_DATASET_INFO,
     EXAMPLE_DATA_PATHS,
 )
@@ -19,8 +19,8 @@ import lancedb
 import torch
 import sentence_transformers
 
-# NOTE: this path is affected by where the server is run from, assuming it is run in textprofilerbackend for now
-CACHE_DIR = ".textprofiler_cache/"
+# NOTE: this path is affected by where the server is run from, assuming it is run in texturebackend for now
+CACHE_DIR = ".texture_cache/"
 CACHE_PATH = Path(CACHE_DIR)
 CACHE_PATH.mkdir(parents=True, exist_ok=True)
 
