@@ -1,4 +1,4 @@
-# Texture
+# Texture: Structured Text Analytics
 
 Texture is a system for exploring and creating structured insights with your text datasets.
 
