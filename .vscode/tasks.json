@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Backend",
+      "type": "shell",
+      "command": "source ~/.zshrc; conda activate texture && cd texturebackend && uvicorn --factory server:get_server --reload",
+      "group": "build",
+      "presentation": {
+        "group": "runner",
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Start Frontend",
+      "type": "shell",
+      "command": "source ~/.zshrc; conda activate texture && cd texturefrontend && npm run dev",
+      "group": "build",
+      "presentation": {
+        "group": "runner",
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Launch Texture",
+      "group": "build",
+      "dependsOn": ["Start Backend", "Start Frontend"],
+      "dependsOrder": "parallel"
+    }
+  ]
+}

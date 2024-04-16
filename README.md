@@ -16,6 +16,8 @@ Pip installation coming soon!
 
 tl;dr below, see [DEV.md](DEV.md) for more details about dev workflows and setup.
 
+If using VSCode (recommended), launching the servers below is configured as a build task you can launch with `Cmd+Shift+P` > `Tasks: Run Build Task` > `Launch Texture`; otherwise you can launch manually:
+
 Terminal 1: Backend python server
 
 ```bash
