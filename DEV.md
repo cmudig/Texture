@@ -12,7 +12,7 @@ Pre-requisites
 Make a new conda environment, can be called whatever
 
 ```bash
-conda create -n text-profiler python=3.10 # python 3.10 recommended for some package compatability
+conda create -n texture python=3.10 # python 3.10 recommended for some package compatability
 ```
 
 Installs dependencies AND builds in dev mode in current conda env

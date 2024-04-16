@@ -49,7 +49,7 @@ def get_server() -> FastAPI:
     )
 
     api_app = FastAPI(
-        title="Text Profiler API",
+        title="Texture API",
         generate_unique_id_function=custom_generate_unique_id,
         # TODO: unsure if this is necessary...
         default_response_class=ORJSONResponse,
