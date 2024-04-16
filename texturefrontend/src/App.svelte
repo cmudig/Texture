@@ -169,6 +169,6 @@
       </div>
     </div>
   {:catch error}
-    <div>Error: {error.message}</div>
+    <div class="p-4">Error with backend: {error.message}</div>
   {/await}
 </div>
