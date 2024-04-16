@@ -66,7 +66,7 @@
       });
   }
 
-  $: ({ schema, data, sortColumn, sortDesc } = myTableClient);
+  $: ({ schema, data, sortColumn, sortDesc, loaded } = myTableClient);
 
   $: colTypeMap = $datasetInfo.columns.reduce((acc, col) => {
     acc[col.name] = col.type;
@@ -145,6 +145,17 @@
                 </div>
               </RowView>
             {/each}
+
+            {#if !$loaded}
+              <button
+                class="hover:bg-gray-100 text-gray-500 text-sm px-2 py-1 rounded"
+                on:click={() => {
+                  myTableClient.loadMoreData();
+                }}
+              >
+                Load more rows
+              </button>
+            {/if}
           </div>
         {:else}
           <div class="p-4">

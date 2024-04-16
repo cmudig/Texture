@@ -22,7 +22,7 @@ export class TableClient extends vg.MosaicClient {
   public from: any;
   public data: Writable<any[]>;
   public limit: number;
-  public loaded: boolean;
+  public loaded: Writable<boolean>;
   public offset: number;
   public pending: boolean;
   public prevScrollTop: number;
@@ -40,7 +40,7 @@ export class TableClient extends vg.MosaicClient {
     this.from = from;
     this.data = writable();
     this.limit = 50;
-    this.loaded = false;
+    this.loaded = writable(false);
     this.offset = 0;
     this.pending = false;
     this.prevScrollTop = -1;
@@ -121,7 +121,7 @@ export class TableClient extends vg.MosaicClient {
   queryResult(newData: any) {
     if (!this.pending) {
       // data is not from an internal request, so reset table
-      this.loaded = false;
+      this.loaded.set(false);
       this.data.set([]);
     }
 
@@ -131,7 +131,7 @@ export class TableClient extends vg.MosaicClient {
 
       if (thisData.length < this.limit) {
         // data table has been fully loaded
-        this.loaded = true;
+        this.loaded.set(true);
       }
     }
 
@@ -151,13 +151,17 @@ export class TableClient extends vg.MosaicClient {
 
     const back = scrollTop < this.prevScrollTop;
     this.prevScrollTop = scrollTop;
-    if (back || this.pending || this.loaded) {
+    if (back || this.pending || get(this.loaded)) {
       return;
     }
 
     if (scrollHeight - scrollTop < 2 * clientHeight) {
-      this.pending = true;
-      this.requestData(this.offset + this.limit);
+      this.loadMoreData();
     }
+  }
+
+  loadMoreData() {
+    this.pending = true;
+    this.requestData(this.offset + this.limit);
   }
 }
