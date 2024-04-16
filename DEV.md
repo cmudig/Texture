@@ -93,6 +93,18 @@ cd texturefrontend
 npm run dev
 ```
 
+## Deploy
+
+Deploy the built frontend to the `gh-pages` branch. Is served at [https://dig.cmu.edu/Texture/](https://dig.cmu.edu/Texture/).
+
+```bash
+npm run build
+# npm run preview # preview the built version locally
+npm run deploy
+```
+
+In the future, this can be done with a github action but right now we have dependencies on our mosaic mod so easier to build locally then just upload the result.
+
 # Notes
 
 - Right now manually linking mosaic (all packages) in `package.json` but can only do one install later
