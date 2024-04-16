@@ -6,8 +6,8 @@ from tqdm.asyncio import tqdm_asyncio
 from typing import List
 import tiktoken
 
-from textprofilerbackend.utils import timeit
-from textprofilerbackend.models import TaskFormat
+from texturebackend.utils import timeit
+from texturebackend.models import TaskFormat
 
 # Note - json mode only works with these two model names
 # MODEL_NAME = "gpt-4-turbo-preview"
@@ -511,7 +511,7 @@ def mainTesting():
     llm_client = LLMClient()
 
     df = pd.read_parquet(
-        "/Users/wepperso/workspaces/Research/TextProfileAll/TextProfiler/textprofilerbackend/.textprofiler_cache/raw_data/vis_papers/vis_papers.parquet"
+        "/Users/wepperso/workspaces/Research/TextProfileAll/TextProfiler/texturebackend/.texture_cache/raw_data/vis_papers/vis_papers.parquet"
     )
 
     # prompt 1: extract sports

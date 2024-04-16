@@ -19,13 +19,13 @@ tl;dr below, see [DEV.md](DEV.md) for more details about dev workflows and setup
 Terminal 1: Backend python server
 
 ```bash
-cd textprofilerbackend
+cd texturebackend
 uvicorn --factory server:get_server --reload
 ```
 
 Terminal 2: frontend svelte UI
 
 ```bash
-cd textprofilerfrontend
+cd texturefrontend
 npm run dev
 ```

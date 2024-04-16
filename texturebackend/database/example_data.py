@@ -1,4 +1,4 @@
-from textprofilerbackend.models import DatasetInfo
+from texturebackend.models import DatasetInfo
 
 dataset_vis_papers = DatasetInfo(
     name="vis_papers",
