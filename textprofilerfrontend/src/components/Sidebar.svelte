@@ -12,11 +12,7 @@
 
 <div class="flex flex-col">
   <div class="flex justify-center py-2">
-    <Button
-      class="w-48 text-white bg-secondary-500 hover:bg-secondary-600 focus-within:ring-secondary-100"
-      on:click={() => (showAddColModal = true)}
-      size="sm"
-    >
+    <Button on:click={() => (showAddColModal = true)} size="sm">
       <PlusSolid size="sm" class="mr-2" />
       Derive New Column
     </Button>
