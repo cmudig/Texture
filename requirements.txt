@@ -1,3 +1,4 @@
+# NOTE: this is only used for the docker image since poetry is PITA with docker
 pandas==2.1.0
 sentence-transformers==2.2.2
 pyod==1.1.0
