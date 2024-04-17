@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from typing import Dict, Literal
 
-
 from texturebackend.database import init_db
 from texturebackend.models import (
     DatasetInfo,
@@ -46,6 +45,21 @@ def custom_generate_unique_id(route: APIRoute):
 def get_server() -> FastAPI:
     app = FastAPI(
         title="Backend server",
+    )
+
+    # TODO: use env variables in future for this?
+    origins = [
+        "http://localhost:5173",  # default vite dev
+        "http://localhost:4173",  # default vite preview
+        "https://dig.cmu.edu",  # deployed url
+    ]
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     api_app = FastAPI(
@@ -371,17 +385,6 @@ def get_server() -> FastAPI:
     #     )
 
     #     return duckdb_conn._handle_arrow_message(data)
-
-    # this needs to be equal to frontend port vite hosts on...
-    origins = ["http://localhost:5173"]
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
 
     app.mount("/api", api_app)
 
