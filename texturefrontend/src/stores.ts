@@ -15,8 +15,8 @@ import { DatabaseConnection } from "./database/db";
 import { updateSelectionMap } from "./shared/selection";
 
 // ~~~~~~~~~~~~~~~  Database init ~~~~~~~~~~~~~~~
-// This needs to match API url
-const API_URL = "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL;
+console.log("API_URL: ", API_URL);
 const backendService: DefaultService = new TextProfileClient({
   BASE: API_URL,
 }).default;
