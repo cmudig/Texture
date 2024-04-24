@@ -44,7 +44,7 @@ def custom_generate_unique_id(route: APIRoute):
 
 def get_server() -> FastAPI:
     app = FastAPI(
-        title="Backend server",
+        title="Texture server",
     )
 
     # TODO: use env variables in future for this?
@@ -63,7 +63,7 @@ def get_server() -> FastAPI:
     )
 
     api_app = FastAPI(
-        title="Texture API",
+        title="Texture Backend API",
         generate_unique_id_function=custom_generate_unique_id,
         # TODO: unsure if this is necessary...
         default_response_class=ORJSONResponse,
