@@ -7,7 +7,7 @@ readme = "README.md"
 repository = "https://github.com/cmudig/Texture"
 homepage = "https://github.com/cmudig/Texture"
 keywords = ["text", "nlp", "data profiling", "llm"]
-packages = [{ include = "texturebackend" }]
+packages = [{ include = "texture" }]
 
 [tool.poetry.dependencies]
 python = "3.10.*"

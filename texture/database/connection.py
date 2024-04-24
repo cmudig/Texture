@@ -1,7 +1,7 @@
 from pathlib import Path
 import duckdb
 import pyarrow as pa
-from texturebackend.models import (
+from texture.models import (
     DuckQueryData,
     DuckQueryResult,
     ExecResponse,
@@ -9,7 +9,7 @@ from texturebackend.models import (
     ErrorResponse,
 )
 from fastapi.responses import Response
-from texturebackend.database.example_data import (
+from texture.database.example_data import (
     EXAMPLE_DATASET_INFO,
     EXAMPLE_DATA_PATHS,
 )

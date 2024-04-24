@@ -4,8 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from typing import Dict, Literal
 
-from texturebackend.database import init_db
-from texturebackend.models import (
+from texture.database import init_db
+from texture.models import (
     DatasetInfo,
     DuckQueryData,
     DuckQueryResult,
@@ -20,11 +20,11 @@ from texturebackend.models import (
     CodeTransformRequest,
     CodeTransformCommit,
 )
-from texturebackend.process_data import process_new_file
-from texturebackend.transform import word_tokenize
-from texturebackend.llm.client import LLMClient
-from texturebackend.utils import get_type_from_response, flatten
-from texturebackend.userCodeTransform.transform import (
+from texture.process_data import process_new_file
+from texture.transform import word_tokenize
+from texture.llm.client import LLMClient
+from texture.utils import get_type_from_response, flatten
+from texture.userCodeTransform.transform import (
     execute_code_and_apply_function,
 )
 

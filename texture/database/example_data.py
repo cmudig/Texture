@@ -1,4 +1,4 @@
-from texturebackend.models import DatasetInfo
+from texture.models import DatasetInfo
 
 dataset_vis_papers = DatasetInfo(
     name="vis_papers",
