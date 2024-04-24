@@ -4,6 +4,9 @@ version = "0.0.1"
 description = "Process and profile text datasets interactively"
 authors = ["Will Epperson <willepp@live.com>"]
 readme = "README.md"
+repository = "https://github.com/cmudig/Texture"
+homepage = "https://github.com/cmudig/Texture"
+keywords = ["text", "nlp", "data profiling", "llm"]
 packages = [{ include = "texturebackend" }]
 
 [tool.poetry.dependencies]
