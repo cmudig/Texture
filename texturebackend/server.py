@@ -371,21 +371,6 @@ def get_server() -> FastAPI:
 
         return True
 
-    # @api_app.get("/example_arrow")
-    # async def example_arrow():
-    #     """
-    #     Execute a query on the database
-    #     """
-
-    #     data = DuckQueryData(
-    #         uuid="test",
-    #         sql="select * from 'vast2021' limit 10;",
-    #         type="arrow",
-    #         buffers=[],
-    #     )
-
-    #     return duckdb_conn._handle_arrow_message(data)
-
     app.mount("/api", api_app)
 
     return app
