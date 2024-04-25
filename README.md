@@ -12,6 +12,13 @@ Texture is a system for exploring and creating structured insights with your tex
 
 Pip installation coming soon!
 
+```python
+import texture
+
+texture.run({}) # launch texture app
+
+```
+
 ## Dev install
 
 tl;dr below, see [DEV.md](DEV.md) for more details about dev workflows and setup.
