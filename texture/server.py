@@ -1,8 +1,10 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.routing import APIRoute
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from typing import Dict, Literal
+import os
 
 from texture.database import init_db
 from texture.models import (
@@ -72,15 +74,26 @@ def get_server() -> FastAPI:
     duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
     llm_client = LLMClient()
 
+    app.mount("/api", api_app)
+
+    app.mount(
+        "/",
+        StaticFiles(
+            directory=os.path.dirname(os.path.realpath(__file__)) + "/frontend",
+            html=True,
+        ),
+        name="base",
+    )
+
     # TODO this is prob need to use actual cache here rather than just in memory
     datasetUploadCache = {}
 
     @api_app.get(
-        "/",
+        "/status",
         response_model=str,
     )
     def root_status():
-        return "hello"
+        return "hello from backend server"
 
     @api_app.get(
         "/all_dataset_info",
@@ -370,7 +383,5 @@ def get_server() -> FastAPI:
             duckdb_conn.write_table_to_file(t_name, file_path)
 
         return True
-
-    app.mount("/api", api_app)
 
     return app

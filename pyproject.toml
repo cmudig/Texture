@@ -32,3 +32,6 @@ openai = "^1.20.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+run_server = "texture:run"

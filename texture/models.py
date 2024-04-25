@@ -1,5 +1,21 @@
 from typing import List, Dict, Union, Literal, Any, Optional
 from pydantic import BaseModel
+import pandas as pd
+
+#### public API for running
+
+
+class TextureInitArgs(BaseModel):
+    # args to run
+    # df: pd.DataFrame
+
+    # config
+    host: str = "localhost"
+    frontend_port: int = 3000
+    backend_port: int = 8000
+
+
+#### Internal API models between frontend and backend
 
 DataType = Literal["text", "number", "date", "categorical"]
 
