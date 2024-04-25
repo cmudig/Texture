@@ -21,8 +21,7 @@ If using VSCode (recommended), launching the servers below is configured as a bu
 Terminal 1: Backend python server
 
 ```bash
-cd texturebackend
-uvicorn --factory server:get_server --reload
+poetry run run_server
 ```
 
 Terminal 2: frontend svelte UI

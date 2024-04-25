@@ -23,11 +23,10 @@ poetry install
 
 ## Backend dev loop
 
-To start server:
+To launch the server. This will host the built frontend at `http://localhost:3000` and the api at `http://localhost:3000/api`. Be sure to build frontend below or nothing will show up!
 
 ```bash
-cd texturebackend
-uvicorn --factory server:get_server --reload
+poetry run run_server
 ```
 
 If you add a new python package, do it with poetry since will also install in current conda env with `poetry add name`.
@@ -91,6 +90,12 @@ Will start local server and hot re-load changes
 ```bash
 cd texturefrontend
 npm run dev
+```
+
+To see on same port as backend server, frontend must be built
+
+```bash
+npm run build
 ```
 
 # Notes
