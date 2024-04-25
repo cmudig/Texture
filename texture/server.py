@@ -1,11 +1,13 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.routing import APIRoute
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from typing import Dict, Literal
+import os
 
-from texturebackend.database import init_db
-from texturebackend.models import (
+from texture.database import init_db
+from texture.models import (
     DatasetInfo,
     DuckQueryData,
     DuckQueryResult,
@@ -20,11 +22,11 @@ from texturebackend.models import (
     CodeTransformRequest,
     CodeTransformCommit,
 )
-from texturebackend.process_data import process_new_file
-from texturebackend.transform import word_tokenize
-from texturebackend.llm.client import LLMClient
-from texturebackend.utils import get_type_from_response, flatten
-from texturebackend.userCodeTransform.transform import (
+from texture.process_data import process_new_file
+from texture.transform import word_tokenize
+from texture.llm.client import LLMClient
+from texture.utils import get_type_from_response, flatten
+from texture.userCodeTransform.transform import (
     execute_code_and_apply_function,
 )
 
@@ -44,7 +46,7 @@ def custom_generate_unique_id(route: APIRoute):
 
 def get_server() -> FastAPI:
     app = FastAPI(
-        title="Backend server",
+        title="Texture server",
     )
 
     # TODO: use env variables in future for this?
@@ -63,7 +65,7 @@ def get_server() -> FastAPI:
     )
 
     api_app = FastAPI(
-        title="Texture API",
+        title="Texture Backend API",
         generate_unique_id_function=custom_generate_unique_id,
         # TODO: unsure if this is necessary...
         default_response_class=ORJSONResponse,
@@ -72,15 +74,26 @@ def get_server() -> FastAPI:
     duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
     llm_client = LLMClient()
 
+    app.mount("/api", api_app)
+
+    app.mount(
+        "/",
+        StaticFiles(
+            directory=os.path.dirname(os.path.realpath(__file__)) + "/frontend",
+            html=True,
+        ),
+        name="base",
+    )
+
     # TODO this is prob need to use actual cache here rather than just in memory
     datasetUploadCache = {}
 
     @api_app.get(
-        "/",
+        "/status",
         response_model=str,
     )
     def root_status():
-        return "hello"
+        return "hello from backend server"
 
     @api_app.get(
         "/all_dataset_info",
@@ -370,22 +383,5 @@ def get_server() -> FastAPI:
             duckdb_conn.write_table_to_file(t_name, file_path)
 
         return True
-
-    # @api_app.get("/example_arrow")
-    # async def example_arrow():
-    #     """
-    #     Execute a query on the database
-    #     """
-
-    #     data = DuckQueryData(
-    #         uuid="test",
-    #         sql="select * from 'vast2021' limit 10;",
-    #         type="arrow",
-    #         buffers=[],
-    #     )
-
-    #     return duckdb_conn._handle_arrow_message(data)
-
-    app.mount("/api", api_app)
 
     return app

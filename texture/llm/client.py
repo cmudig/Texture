@@ -6,8 +6,8 @@ from tqdm.asyncio import tqdm_asyncio
 from typing import List
 import tiktoken
 
-from texturebackend.utils import timeit
-from texturebackend.models import TaskFormat
+from texture.utils import timeit
+from texture.models import TaskFormat
 
 # Note - json mode only works with these two model names
 # MODEL_NAME = "gpt-4-turbo-preview"

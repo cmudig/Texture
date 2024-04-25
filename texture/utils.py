@@ -1,6 +1,6 @@
 from functools import wraps
 import time
-from texturebackend.models import DataType
+from texture.models import DataType
 import pandas as pd
 
 

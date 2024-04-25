@@ -1,6 +1,6 @@
 import pandas as pd
 
-from texturebackend.models import Column, DatasetInfo
+from texture.models import Column, DatasetInfo
 
 
 def process_new_file(df: pd.DataFrame, datasetName: str) -> DatasetInfo:

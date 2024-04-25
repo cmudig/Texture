@@ -12,6 +12,13 @@ Texture is a system for exploring and creating structured insights with your tex
 
 Pip installation coming soon!
 
+```python
+import texture
+
+texture.run({}) # launch texture app
+
+```
+
 ## Dev install
 
 tl;dr below, see [DEV.md](DEV.md) for more details about dev workflows and setup.
@@ -21,8 +28,7 @@ If using VSCode (recommended), launching the servers below is configured as a bu
 Terminal 1: Backend python server
 
 ```bash
-cd texturebackend
-uvicorn --factory server:get_server --reload
+poetry run run_server
 ```
 
 Terminal 2: frontend svelte UI

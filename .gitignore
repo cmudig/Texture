@@ -10,3 +10,5 @@ analysis/_scratch.ipynb
 .vite/
 dist/
 analysis/
+
+texture/frontend/
