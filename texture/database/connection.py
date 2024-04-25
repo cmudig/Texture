@@ -19,7 +19,7 @@ import lancedb
 import torch
 import sentence_transformers
 
-# NOTE: this path is affected by where the server is run from, assuming it is run in texturebackend for now
+# NOTE: this path is affected by where the server is run from, assuming it is run in the root for now
 CACHE_DIR = ".texture_cache/"
 CACHE_PATH = Path(CACHE_DIR)
 CACHE_PATH.mkdir(parents=True, exist_ok=True)
