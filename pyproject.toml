@@ -34,4 +34,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-run_server = "texture:run"
+run_server = "texture.runner_dev:dev_run"

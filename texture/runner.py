@@ -34,10 +34,14 @@ def run_server(args: Union[TextureInitArgs, Dict]):
 
     app = get_server()
 
-    print(
-        f"\n\033[1mTexture\033[0m running on http://{args.host}:{args.frontend_port}\n"
+    print(f"\n\033[1mTexture\033[0m running on http://{args.host}:{args.port}\n")
+    uvicorn.run(
+        app,
+        host=args.host,
+        port=args.port,
+        log_level="info",
+        # reload=True,
     )
-    uvicorn.run(app, host=args.host, port=args.frontend_port, log_level="info")
 
 
 def is_notebook() -> bool:

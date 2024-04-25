@@ -11,8 +11,7 @@ class TextureInitArgs(BaseModel):
 
     # config
     host: str = "localhost"
-    frontend_port: int = 3000
-    backend_port: int = 8000
+    port: int = 3000
 
 
 #### Internal API models between frontend and backend
