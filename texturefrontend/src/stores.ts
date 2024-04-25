@@ -15,9 +15,8 @@ import { DatabaseConnection } from "./database/db";
 import { updateSelectionMap } from "./shared/selection";
 
 // ~~~~~~~~~~~~~~~  Database init ~~~~~~~~~~~~~~~
-// const API_URL = import.meta.env.VITE_API_URL;
-const API_URL = "http://localhost:3000/api"; // TODO make this dynamic from python somehow
-console.log("API_URL: ", API_URL);
+const API_URL = import.meta.env.DEV ? "http://localhost:3000/api" : undefined;
+console.log("API_URL: ", API_URL ?? "/api");
 const backendService: DefaultService = new TextProfileClient({
   BASE: API_URL,
 }).default;
