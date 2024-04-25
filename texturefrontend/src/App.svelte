@@ -95,16 +95,6 @@
       tableName={$datasetInfo?.name}
     />
 
-    <!-- <FilePlusSolid
-    id="addDatasetIcon"
-    size="md"
-    class="mx-1 self-center text-white hover:text-primary-700"
-    on:click={() => (showAddDataModal = true)}
-  />
-  <Tooltip class="z-10" triggeredBy="#addDatasetIcon" type="light"
-    >Add new dataset</Tooltip
-  > -->
-
     <AdjustmentsHorizontalOutline
       id="settingsToggle"
       size="md"
@@ -124,13 +114,6 @@
         bind:currentColToggleStates
       />
     </Popover>
-
-    <!-- <UploadDataModal
-    bind:panelOpen={showAddDataModal}
-    finishedUploadHandler={(name) => {
-      dataPromise = populateDataTables(name);
-    }}
-  /> -->
 
     <ColumnTransformModal
       bind:panelOpen={showAddColModal}
