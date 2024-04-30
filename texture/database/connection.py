@@ -43,7 +43,7 @@ def load_embeddings(vectordbconn, dsGroup):
             CACHE_PATH / EXAMPLE_DATA_PATHS[dsGroup]["datasets"][dsName]
         )
 
-        df["vector"] = list(embeddings.numpy())
+        df["vector"] = list(embeddings.cpu().numpy())
         embed_func = lambda x: get_embedding(x, "all-mpnet-base-v2")
 
         vectordbconn.add_table(dsName, df, "id", embed_func)

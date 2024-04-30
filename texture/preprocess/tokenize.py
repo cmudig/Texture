@@ -6,6 +6,9 @@ twt_tokenizer = twt()
 
 
 def get_words_w_span(text):
+    if not text:
+        return pd.DataFrame(columns=["span_start", "span_end", "word"])
+
     token_idx = twt_tokenizer.span_tokenize(text)
     _df = pd.DataFrame(token_idx, columns=["span_start", "span_end"])
     _df["word"] = _df.apply(lambda x: text[x.span_start : x.span_end], axis=1)
@@ -26,11 +29,11 @@ def get_df_words_w_span(arr: list, id_col: list):
         arr (list): List of strings to tokenize.
         id_col (list): List of document ids (must be same size as arr)
     """
-    r = get_words_w_span_batch(arr)
+    result_list = get_words_w_span_batch(arr)
 
-    for idx, _mydf in zip(id_col, r):
+    for idx, _mydf in zip(id_col, result_list):
         _mydf["id"] = idx
 
-    all_d = pd.concat(r, ignore_index=True)
+    all_d = pd.concat(result_list, ignore_index=True)
     all_d["word"] = all_d["word"].str.lower()
     return all_d
