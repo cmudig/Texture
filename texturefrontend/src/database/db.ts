@@ -97,7 +97,15 @@ export class DatabaseConnection {
   ) {
     await this.whenReady();
 
-    const uuid = globalThis.crypto.randomUUID();
+    let uuid = "1234";
+
+    try {
+      uuid =
+        globalThis?.crypto?.randomUUID() ??
+        Math.random().toString(36).substring(2, 15); // in case not served in https
+    } catch (e) {
+      uuid = Math.random().toString(36).substring(2, 15);
+    }
 
     // console.log(`[SEND] query (uuid=${uuid})`, queryInfo);
 
