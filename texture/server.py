@@ -8,7 +8,7 @@ import os
 import pandas as pd
 import datetime
 
-from texture.database import init_db
+from texture.database import init_db, populate_example_datasets, populate_dataset
 from texture.models import (
     DatasetInfo,
     DuckQueryData,
@@ -20,6 +20,7 @@ from texture.models import (
     Column,
     CodeTransformRequest,
     CodeTransformCommit,
+    DatasetInitArgs,
 )
 from texture.userTransformLLM.client import LLMClient
 from texture.utils import get_type_from_response, flatten
@@ -37,7 +38,22 @@ def custom_generate_unique_id(route: APIRoute):
     return route.name
 
 
-def get_server() -> FastAPI:
+def get_server(
+    ds_init_info: DatasetInitArgs = None,
+    load_example_data: bool = True,
+) -> FastAPI:
+
+    ### Database set up
+    duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
+    llm_client = LLMClient()
+
+    if load_example_data:
+        populate_example_datasets(duckdb_conn, vectordb_conn, datasetMetadataCache)
+
+    if ds_init_info:
+        populate_dataset(duckdb_conn, vectordb_conn, datasetMetadataCache, ds_init_info)
+
+    ### Web server set up
     app = FastAPI(
         title="Texture server",
     )
@@ -63,9 +79,6 @@ def get_server() -> FastAPI:
         # TODO: unsure if this is necessary...
         default_response_class=ORJSONResponse,
     )
-
-    duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
-    llm_client = LLMClient()
 
     app.mount("/api", api_app)
 

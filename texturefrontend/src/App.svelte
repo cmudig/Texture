@@ -22,7 +22,7 @@
   // Locals
   let datasets: Record<string, DatasetInfo>;
   let currentDatasetName: string;
-  let currentColToggleStates: Record<string, boolean> = {};
+  let currentColToggleStates: Record<string, boolean> = {}; // TODO create ignore list by name to not plot columns with umap_x, umap_y, or id
   let datasetSize: number;
   let showAddColModal = false;
   let datasetColSummaries: Map<string, ColumnSummary>;

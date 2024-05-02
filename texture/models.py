@@ -2,17 +2,6 @@ from typing import List, Dict, Union, Literal, Any, Optional
 from pydantic import BaseModel
 import pandas as pd
 
-#### public API for running
-
-
-class TextureInitArgs(BaseModel):
-    # args to run
-    # df: pd.DataFrame
-
-    # config
-    host: str = "localhost"
-    port: int = 3000
-
 
 #### Internal API models between frontend and backend
 
@@ -142,3 +131,40 @@ class CodeTransformCommit(BaseModel):
     columnName: str
     tableName: str
     applyToIndices: List[int]
+
+
+#### public API for running
+
+
+DataFrameType = Any  # Future: make sure this is pd.DataFrame or huggingface dataset
+
+
+class DatasetInitArgs(BaseModel):
+    datasetInfo: DatasetInfo
+    load_tables: Dict[str, DataFrameType]
+    load_embeddings: Optional[Dict[str, Any]] = None
+
+
+class ColumnInputTable(BaseModel):
+    name: str
+    derived_from: Optional[str] = None
+    # needs [id, column_name, span_start, span_end]
+    # TODO: make spans optional
+    table_data: DataFrameType
+
+
+class TextureInitArgs(BaseModel):
+    # args to run
+    data: DataFrameType  # TODO: also support huggingface dataset
+    name: Optional[str] = None
+    embeddings: Optional[Any] = (
+        None  # torch.tensor or np.ndarray -- will convert to np.ndarray
+    )
+    primary_key: Optional[str] = None  # will make new column called "id"
+    column_tables: Optional[List[ColumnInputTable]] = None
+
+    # config
+    host: Optional[str] = "localhost"
+    port: Optional[int] = 8080
+    api_key: Optional[str] = None
+    load_example_data: Optional[bool] = False

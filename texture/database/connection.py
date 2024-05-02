@@ -39,26 +39,55 @@ def load_datasets(duckdbconn, dsGroup):
 def load_embeddings(vectordbconn, dsGroup):
     for dsName, embeddingPath in EXAMPLE_DATA_PATHS[dsGroup]["embeddings"].items():
         embeddings = torch.load(CACHE_PATH / embeddingPath)
+        embeddings = embeddings.cpu().numpy()
         df = pd.read_parquet(
             CACHE_PATH / EXAMPLE_DATA_PATHS[dsGroup]["datasets"][dsName]
         )
 
-        df["vector"] = list(embeddings.cpu().numpy())
-        embed_func = lambda x: get_embedding(x, "all-mpnet-base-v2")
+        embed_func = lambda x: get_embedding(
+            x, "all-mpnet-base-v2"
+        )  # TODO change this model to be the same one used for making embedding
 
-        vectordbconn.add_table(dsName, df, "id", embed_func)
+        vectordbconn.add_table(dsName, df, embeddings, "id", embed_func)
+
+
+def populate_example_datasets(duckdbconn, vectordbconn, metadataCache):
+    print("Loading example datasets...")
+    for dsGroupName in EXAMPLE_DATASET_INFO:
+        print(f"Loading data for {dsGroupName}...")
+        load_datasets(duckdbconn, dsGroupName)
+        load_embeddings(vectordbconn, dsGroupName)
+        metadataCache[dsGroupName] = EXAMPLE_DATASET_INFO[dsGroupName]
+
+
+def populate_dataset(duckdb_conn, vectordb_conn, datasetMetadataCache, ds_init_info):
+    print("Loading dataset: ", ds_init_info.datasetInfo.name)
+    datasetMetadataCache[ds_init_info.datasetInfo.name] = ds_init_info.datasetInfo
+    for table_name, table_df in ds_init_info.load_tables.items():
+        duckdb_conn.load_dataframe(table_name, table_df)
+
+    if ds_init_info.load_embeddings:
+        for table_name, embedding_matrix in ds_init_info.load_embeddings.items():
+
+            table_df = ds_init_info.load_tables[table_name]
+
+            embed_func = lambda x: get_embedding(
+                x, "all-mpnet-base-v2"
+            )  # TODO change this model to be the same one used for making embedding
+
+            vectordb_conn.add_table(
+                table_name,
+                table_df,
+                embedding_matrix,
+                ds_init_info.datasetInfo.primary_key.name,
+                embed_func,
+            )
 
 
 def init_db():
     duckdbconn = DatabaseConnection()
     vectordbconn = VectorDBConnection()
     metadataCache = {}
-
-    for dsGroupName in EXAMPLE_DATASET_INFO:
-        print(f"Loading data for {dsGroupName}...")
-        load_datasets(duckdbconn, dsGroupName)
-        load_embeddings(vectordbconn, dsGroupName)
-        metadataCache[dsGroupName] = EXAMPLE_DATASET_INFO[dsGroupName]
 
     print("Finished Database init.")
     return duckdbconn, vectordbconn, metadataCache
@@ -114,7 +143,7 @@ class DatabaseConnection:
             dataset_name: name of the dataset
             df: DataFrame to load
         """
-        q = f"CREATE TABLE {table_name} AS SELECT * FROM df"
+        q = f"CREATE TABLE '{table_name}' AS SELECT * FROM df"
         self.execute(q)
 
     def add_column(self, tableName, columnName, data):
@@ -231,7 +260,12 @@ class VectorDBConnection:
             raise ValueError(f"Table {table_name} does not have an embedding function.")
 
     def add_table(
-        self, table_name: str, data: pd.DataFrame, id_col_name: str, embed_func
+        self,
+        table_name: str,
+        data: pd.DataFrame,
+        embeddings: np.ndarray,
+        id_col_name: str,
+        embed_func,
     ):
         """
         Add a table to the database.
@@ -245,6 +279,7 @@ class VectorDBConnection:
         Returns:
             None
         """
+        data["vector"] = list(embeddings)
         self.table = self.connection.create_table(
             table_name, data=data, mode="overwrite"
         )
