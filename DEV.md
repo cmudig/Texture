@@ -23,6 +23,12 @@ poetry install
 
 ## Backend dev loop
 
+To launch dev server with reload:
+
+```bash
+uvicorn --factory texture.server:get_server --port 8080 --reload
+```
+
 To launch the server. This will host the built frontend at `http://localhost:3000` and the api at `http://localhost:3000/api`. Be sure to build frontend below or nothing will show up!
 
 ```bash
