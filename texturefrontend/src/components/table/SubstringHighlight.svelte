@@ -71,7 +71,7 @@
 </script>
 
 <!-- TODO: use different colors for different highlights? -->
-<span>
+<span class="whitespace-pre-wrap">
   {#each annotatedSpans as s}
     {#if s.included}
       <span class="bg-highlight-300">{s.span}</span>
