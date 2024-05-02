@@ -42,13 +42,13 @@ def get_embeddings_and_projection(
 ):
     embeddings = calculate_embeddings(col_matrix, model_name)
 
-    if base_path:
-        embed_path = Path(base_path) / "embeddings.pt"
-        save_embeddings(embeddings, embed_path)
-
     local_embeds = (
         embeddings.cpu().numpy() if isinstance(embeddings, torch.Tensor) else embeddings
     )
+
+    if base_path:
+        embed_path = Path(base_path) / "embeddings.pt"
+        save_embeddings(local_embeds, embed_path)
 
     projection = get_projection(local_embeds)
     return embeddings, projection
