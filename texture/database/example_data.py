@@ -4,6 +4,8 @@ dataset_vis_papers = DatasetInfo(
     name="vis_papers",
     primary_key={"name": "id", "type": "number"},
     origin="example",
+    has_embeddings=True,
+    has_projection=True,
     columns=[
         {
             "name": "Title",
@@ -159,6 +161,8 @@ dataset_airline_reviews = DatasetInfo(
     name="airline_reviews",
     primary_key={"name": "id", "type": "number"},
     origin="example",
+    has_embeddings=True,
+    has_projection=True,
     columns=[
         # {"name": "id", "type": "categorical"},
         # {

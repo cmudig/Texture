@@ -60,6 +60,8 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
     df = args.data
     name = args.name
     sanitized_embeddings = None
+    has_embeddings = False
+    has_projection = False
 
     if not name:
         name = "dataset_" + str(random.randint(1000, 9999))
@@ -83,6 +85,7 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
     if args.embeddings is not None:
 
         sanitized_embeddings = verify_embeddings(args.embeddings)
+        has_embeddings = True
 
         if not ("umap_x" in df.columns and "umap_y" in df.columns):
             print(
@@ -92,6 +95,7 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
 
             df["umap_x"] = projection[:, 0]
             df["umap_y"] = projection[:, 1]
+            has_projection = True
 
     # validate that the column tables correspond to real columns
     if args.column_tables:
@@ -112,7 +116,12 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
 
     # populate dataset Info
     dsInfo, load_tables = create_ds_info(
-        name, inferred_data_types, pk_name, args.column_tables
+        name,
+        inferred_data_types,
+        pk_name,
+        args.column_tables,
+        has_embeddings,
+        has_projection,
     )
     load_tables[name] = df
     load_embeddings = None
@@ -133,11 +142,13 @@ def verify_embeddings(e) -> np.ndarray:
         return e.cpu().numpy()
 
     raise ValueError(
-        "Embeddings must be a numpy array or torch tensor. Received:", type(e)
+        "Embeddings must be a numpy.ndarray or torch.Tensor. Received: ", type(e)
     )
 
 
-def create_ds_info(name, inferred_data_types, pk_name, column_tables):
+def create_ds_info(
+    name, inferred_data_types, pk_name, column_tables, has_embeddings, has_projection
+):
 
     pk_info = next(
         (entry for entry in inferred_data_types if entry["name"] == pk_name),
@@ -167,6 +178,8 @@ def create_ds_info(name, inferred_data_types, pk_name, column_tables):
             primary_key=pk_info,
             origin="uploaded",
             columns=[*derived_cols, *inferred_data_types],
+            has_embeddings=has_embeddings,
+            has_projection=has_projection,
         ),
         load_tables,
     )

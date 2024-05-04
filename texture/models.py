@@ -20,8 +20,10 @@ class Column(BaseModel):
 class DatasetInfo(BaseModel):
     name: str
     columns: List[Column]
-    origin: Literal["example", "uploaded"]
     primary_key: Column
+    origin: Literal["example", "uploaded"]
+    has_embeddings: bool = False
+    has_projection: bool = False
 
 
 class ColumnSummary(BaseModel):

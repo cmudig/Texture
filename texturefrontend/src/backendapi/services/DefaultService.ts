@@ -2,13 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Body_upload_dataset } from "../models/Body_upload_dataset";
 import type { CodeTransformCommit } from "../models/CodeTransformCommit";
 import type { CodeTransformRequest } from "../models/CodeTransformRequest";
 import type { DatasetInfo } from "../models/DatasetInfo";
-import type { DatasetTokenizeResponse } from "../models/DatasetTokenizeResponse";
-import type { DatasetUploadResponse } from "../models/DatasetUploadResponse";
-import type { DatasetVerifyResponse } from "../models/DatasetVerifyResponse";
 import type { DuckQueryData } from "../models/DuckQueryData";
 import type { ErrorResponse } from "../models/ErrorResponse";
 import type { ExecResponse } from "../models/ExecResponse";
@@ -32,7 +28,7 @@ export class DefaultService {
   public rootStatus(): CancelablePromise<string> {
     return this.httpRequest.request({
       method: "GET",
-      url: "/",
+      url: "/status",
     });
   }
 
@@ -83,78 +79,6 @@ export class DefaultService {
       url: "/duckdb_query_arrow",
       body: requestBody,
       mediaType: "application/json",
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-
-  /**
-   * Upload Dataset
-   * @param formData
-   * @returns DatasetUploadResponse Successful Response
-   * @throws ApiError
-   */
-  public uploadDataset(
-    formData: Body_upload_dataset,
-  ): CancelablePromise<DatasetUploadResponse> {
-    return this.httpRequest.request({
-      method: "POST",
-      url: "/upload_dataset",
-      formData: formData,
-      mediaType: "multipart/form-data",
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-
-  /**
-   * Verify Schema
-   * @param originalName
-   * @param requestBody
-   * @returns DatasetVerifyResponse Successful Response
-   * @throws ApiError
-   */
-  public verifySchema(
-    originalName: string,
-    requestBody: DatasetInfo,
-  ): CancelablePromise<DatasetVerifyResponse> {
-    return this.httpRequest.request({
-      method: "POST",
-      url: "/verify_schema",
-      query: {
-        originalName: originalName,
-      },
-      body: requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-
-  /**
-   * Tokenize Dataset
-   * @param datasetName
-   * @param columnName
-   * @param tokenType
-   * @returns DatasetTokenizeResponse Successful Response
-   * @throws ApiError
-   */
-  public tokenizeDataset(
-    datasetName: string,
-    columnName: string,
-    tokenType: "word" | "token",
-  ): CancelablePromise<DatasetTokenizeResponse> {
-    return this.httpRequest.request({
-      method: "POST",
-      url: "/tokenize_dataset",
-      query: {
-        datasetName: datasetName,
-        columnName: columnName,
-        tokenType: tokenType,
-      },
       errors: {
         422: `Validation Error`,
       },
