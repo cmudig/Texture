@@ -133,6 +133,7 @@
                   slot="optionButtons"
                   class="hover:bg-gray-100 text-gray-500 p-1 rounded"
                   title="Show similar"
+                  class:hidden={!$datasetInfo.has_embeddings}
                 >
                   <FilterOutline
                     title="filter me"
