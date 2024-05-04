@@ -33,6 +33,13 @@
     resetCrossfilter = true,
   ): Promise<void> {
     let d = await databaseConnection.api.readDatasetInfo();
+
+    if (Object.keys(d).length === 0) {
+      throw new Error(
+        "No datasets found! Please pass a dataset to texture.run()",
+      );
+    }
+
     datasets = d;
 
     if (datasetName && datasetName in datasets) {
@@ -152,6 +159,9 @@
       </div>
     </div>
   {:catch error}
-    <div class="p-4">Error with backend: {error.message}</div>
+    <div class="p-4">
+      <span class="italic text-red-600">Error fetching data:</span>
+      {error.message}
+    </div>
   {/await}
 </div>
