@@ -3,12 +3,7 @@ import torch
 import numpy as np
 
 from texture import preprocess
-from texture.models import TextureInitArgs, DatasetInfo, ColumnInputTable
-
-# from texture.preprocess.utils import save_embeddings
-# from texture.preprocess.tokenize import get_df_words_w_span
-# from texture.preprocess.utils import get_data_types
-# from texture.preprocess.embeddings import get_embeddings_and_projection
+from texture.models import TextureInitArgs, DatasetInfo
 
 
 def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict)
@@ -22,7 +17,7 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
         name = "dataset_" + str(random.randint(1000, 9999))
 
     inferred_data_types = preprocess.get_data_types(df)
-    print("Inferred data types:", inferred_data_types)
+    # print("Inferred data types:", inferred_data_types)
 
     # make primary key if none provided (if provided make sure is unique)
     pk_name = args.primary_key
@@ -30,7 +25,7 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
         if "id" in df.columns and df["id"].is_unique:
             pk_name = "id"
         else:
-            print("No valid primary key found, creating a new one...")
+            # print("No valid primary key found, creating a new one...")
             df = df.reset_index(drop=True)
             df = df.reset_index().rename(columns={"index": "id"})
             pk_name = "id"
@@ -86,10 +81,6 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
     load_embeddings = None
     if sanitized_embeddings is not None:
         load_embeddings = {name: sanitized_embeddings}
-
-    print("Created DS_INFO:", dsInfo)
-    print("Created Load Tables:", load_tables)
-    print("Created Load embeddings:", load_embeddings)
 
     return dsInfo, load_tables, load_embeddings
 
