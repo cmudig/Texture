@@ -2,7 +2,14 @@
   import { datasetInfo } from "../stores";
   import ScatterProjection from "./charts/ScatterProjection.svelte";
 
-  let active = true;
+  let active = getInitialToggle();
+
+  function getInitialToggle() {
+    if ($datasetInfo.has_projection) {
+      return true;
+    }
+    return false;
+  }
 </script>
 
 <div>
@@ -22,10 +29,21 @@
   </button>
   <div class="w-full">
     <div class="ml-4 mt-2" class:hidden={!active}>
-      <ScatterProjection
-        mainDatasetName={$datasetInfo.name}
-        columnName="projection_xy"
-      />
+      {#if $datasetInfo.has_projection}
+        <ScatterProjection
+          mainDatasetName={$datasetInfo.name}
+          columnName="projection_xy"
+        />
+      {:else}
+        <div class="text-gray-500 mb-2">
+          No projection uploaded! Try uploading <span class="font-bold"
+            >embeddings</span
+          >
+          or columns
+          <span class="font-bold">umap_x</span>
+          and <span class="font-bold">umap_y</span>.
+        </div>
+      {/if}
     </div>
   </div>
 </div>

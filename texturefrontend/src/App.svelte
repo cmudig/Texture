@@ -22,7 +22,7 @@
   // Locals
   let datasets: Record<string, DatasetInfo>;
   let currentDatasetName: string;
-  let currentColToggleStates: Record<string, boolean> = {};
+  let currentColToggleStates: Record<string, boolean> = {}; // TODO create ignore list by name to not plot columns with umap_x, umap_y, or id
   let datasetSize: number;
   let showAddColModal = false;
   let datasetColSummaries: Map<string, ColumnSummary>;
@@ -33,6 +33,13 @@
     resetCrossfilter = true,
   ): Promise<void> {
     let d = await databaseConnection.api.readDatasetInfo();
+
+    if (Object.keys(d).length === 0) {
+      throw new Error(
+        "No datasets found! Please pass a dataset to texture.run()",
+      );
+    }
+
     datasets = d;
 
     if (datasetName && datasetName in datasets) {
@@ -95,16 +102,6 @@
       tableName={$datasetInfo?.name}
     />
 
-    <!-- <FilePlusSolid
-    id="addDatasetIcon"
-    size="md"
-    class="mx-1 self-center text-white hover:text-primary-700"
-    on:click={() => (showAddDataModal = true)}
-  />
-  <Tooltip class="z-10" triggeredBy="#addDatasetIcon" type="light"
-    >Add new dataset</Tooltip
-  > -->
-
     <AdjustmentsHorizontalOutline
       id="settingsToggle"
       size="md"
@@ -124,13 +121,6 @@
         bind:currentColToggleStates
       />
     </Popover>
-
-    <!-- <UploadDataModal
-    bind:panelOpen={showAddDataModal}
-    finishedUploadHandler={(name) => {
-      dataPromise = populateDataTables(name);
-    }}
-  /> -->
 
     <ColumnTransformModal
       bind:panelOpen={showAddColModal}
@@ -169,6 +159,9 @@
       </div>
     </div>
   {:catch error}
-    <div class="p-4">Error with backend: {error.message}</div>
+    <div class="p-4">
+      <span class="italic text-red-600">Error fetching data:</span>
+      {error.message}
+    </div>
   {/await}
 </div>

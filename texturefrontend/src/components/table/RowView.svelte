@@ -111,7 +111,7 @@
             {textColName}:
           </div>
 
-          <div class="text-gray-800 inline animate-pulse">
+          <div class="text-gray-800 inline animate-pulse whitespace-pre-wrap">
             {formatValue(textColData, { type: "text" })}
           </div>
         </div>
@@ -138,7 +138,9 @@
                 value={textColData}
               />
             {:else}
-              {formatValue(textColData, { type: "text" })}
+              <span class="whitespace-pre-wrap">
+                {formatValue(textColData, { type: "text" })}
+              </span>
             {/if}
           </div>
         </div>

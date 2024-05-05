@@ -1,19 +1,18 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
-from typing import Dict, Literal
+from typing import Dict
 import os
+import pandas as pd
+import datetime
 
-from texture.database import init_db
+from texture.database import init_db, populate_example_datasets, populate_dataset
 from texture.models import (
     DatasetInfo,
     DuckQueryData,
     DuckQueryResult,
-    DatasetUploadResponse,
-    DatasetVerifyResponse,
-    DatasetTokenizeResponse,
     VectorSearchResponse,
     TransformResponse,
     LLMTransformRequest,
@@ -21,18 +20,13 @@ from texture.models import (
     Column,
     CodeTransformRequest,
     CodeTransformCommit,
+    DatasetInitArgs,
 )
-from texture.process_data import process_new_file
-from texture.transform import word_tokenize
-from texture.llm.client import LLMClient
+from texture.userTransformLLM.client import LLMClient
 from texture.utils import get_type_from_response, flatten
-from texture.userCodeTransform.transform import (
+from texture.userTransformCode.transform import (
     execute_code_and_apply_function,
 )
-
-from io import BytesIO
-import pandas as pd
-import datetime
 
 
 def custom_generate_unique_id(route: APIRoute):
@@ -44,7 +38,22 @@ def custom_generate_unique_id(route: APIRoute):
     return route.name
 
 
-def get_server() -> FastAPI:
+def get_server(
+    ds_init_info: DatasetInitArgs = None,
+    load_example_data: bool = False,
+) -> FastAPI:
+
+    ### Database set up
+    duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
+    llm_client = LLMClient()
+
+    if load_example_data:
+        populate_example_datasets(duckdb_conn, vectordb_conn, datasetMetadataCache)
+
+    if ds_init_info:
+        populate_dataset(duckdb_conn, vectordb_conn, datasetMetadataCache, ds_init_info)
+
+    ### Web server set up
     app = FastAPI(
         title="Texture server",
     )
@@ -71,9 +80,6 @@ def get_server() -> FastAPI:
         default_response_class=ORJSONResponse,
     )
 
-    duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
-    llm_client = LLMClient()
-
     app.mount("/api", api_app)
 
     app.mount(
@@ -84,9 +90,6 @@ def get_server() -> FastAPI:
         ),
         name="base",
     )
-
-    # TODO this is prob need to use actual cache here rather than just in memory
-    datasetUploadCache = {}
 
     @api_app.get(
         "/status",
@@ -119,75 +122,6 @@ def get_server() -> FastAPI:
         Execute a query on the database
         """
         return duckdb_conn._handle_arrow_message(data)
-
-    @api_app.post("/upload_dataset", response_model=DatasetUploadResponse)
-    async def upload_dataset(file: UploadFile = File(...)):
-        # TODO: support huggingface datasets
-        if file.filename.endswith(".csv"):
-            df = pd.read_csv(BytesIO(await file.read()))
-            datasetName = file.filename[:-4]
-        elif file.filename.endswith(".parquet"):
-            df = pd.read_parquet(BytesIO(await file.read()))
-            datasetName = file.filename[:-8]
-        else:
-            return DatasetUploadResponse(
-                success=False,
-                message=f"Unsupported file type for '{file.filename}'. Only CSV and Parquet files are supported.",
-            )
-
-        # Process the DataFrame
-        initial_dataset_info = process_new_file(df, datasetName)
-        datasetUploadCache[datasetName] = df
-
-        return DatasetUploadResponse(
-            success=True,
-            message="File processed successfully",
-            datasetSchema=initial_dataset_info,
-        )
-
-    @api_app.post("/verify_schema", response_model=DatasetVerifyResponse)
-    async def verify_schema(new_schema: DatasetInfo, originalName: str):
-        if originalName in datasetUploadCache:
-            new_name = new_schema.name
-            datasetMetadataCache[new_name] = new_schema
-            duckdb_conn.load_dataframe(new_name, datasetUploadCache[originalName])
-
-            # clear out cache once put in duckdb
-            del datasetUploadCache[originalName]
-
-            return DatasetVerifyResponse(
-                success=True, message="Schema verified and uploaded."
-            )
-
-        return DatasetVerifyResponse(
-            success=False,
-            message=f"Failed to update schema for unknown dataset: {originalName}",
-        )
-
-    @api_app.post("/tokenize_dataset", response_model=DatasetTokenizeResponse)
-    async def tokenize_dataset(
-        datasetName: str, columnName: str, tokenType: Literal["word", "token"]
-    ):
-        if datasetName in datasetMetadataCache:
-            table = duckdb_conn.get_table(datasetName)
-
-            col = table[columnName]
-
-            if tokenType == "word":
-                word_tokens = word_tokenize.get_word_tokens_batch(col)
-            else:
-                word_tokens = word_tokenize.get_byte_encoding_batch(col)
-
-            # TODO load word_tokens into duckdb table
-
-            return DatasetTokenizeResponse(
-                success=True, message="Dataset tokenized successfully."
-            )
-
-        return DatasetTokenizeResponse(
-            success=False,
-            message=f"Failed to tokenize, unkown dataset: {datasetName}.",
-        )
 
     @api_app.get("/query_embed_from_id", response_model=VectorSearchResponse)
     async def query_embed_from_id(datasetName: str, id: int):

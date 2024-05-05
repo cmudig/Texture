@@ -33,3 +33,18 @@ def flatten(col: pd.Series, idColName="id"):
     col = col.rename(columns={"index": idColName})
 
     return col
+
+
+def is_notebook() -> bool:
+    try:
+        from IPython.core.getipython import get_ipython
+
+        shell = get_ipython().__class__.__name__
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except (NameError, ImportError):
+        return False  # Probably standard Python interpreter

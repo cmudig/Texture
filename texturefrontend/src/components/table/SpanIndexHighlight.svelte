@@ -23,4 +23,4 @@
   $: processedText = processText(String(value), highlights);
 </script>
 
-<span>{@html processedText}</span>
+<span class="whitespace-pre-wrap">{@html processedText}</span>

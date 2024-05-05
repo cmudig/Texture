@@ -1,20 +1,47 @@
 import uvicorn
-from typing import Dict, Union
+from typing import Dict, Union, Any, List
 from multiprocessing import Process
+import pandas as pd
 
-from texture.models import TextureInitArgs
+from texture.models import (
+    TextureInitArgs,
+    DatasetInitArgs,
+    ColumnInputTable,
+)
 from texture.server import get_server
+from texture.utils import is_notebook
+from texture import preprocess
 
 TEXTURE_SERVER_PROCESS = None
 
 
-def run(args: Union[TextureInitArgs, Dict]):
+def run(
+    data: pd.DataFrame,
+    name: str = None,
+    embeddings: Any = None,
+    primary_key: str = None,
+    column_tables: List[ColumnInputTable] = None,
+    host: str = "localhost",
+    port: int = 8080,
+    load_example_data: bool = False,
+):
+    args = TextureInitArgs(
+        data=data,
+        name=name,
+        embeddings=embeddings,
+        primary_key=primary_key,
+        column_tables=column_tables,
+        host=host,
+        port=port,
+        load_example_data=load_example_data,
+    )
 
     if is_notebook():
         print("Running from a notebook, starting a new process")
 
         global TEXTURE_SERVER_PROCESS
         if TEXTURE_SERVER_PROCESS is not None:
+            print("Terminating existing server process")
             TEXTURE_SERVER_PROCESS.terminate()
 
         TEXTURE_SERVER_PROCESS = Process(
@@ -29,10 +56,16 @@ def run(args: Union[TextureInitArgs, Dict]):
 
 
 def run_server(args: Union[TextureInitArgs, Dict]):
-    # TODO process data if necessary
     args = TextureInitArgs(**args) if isinstance(args, dict) else args
 
-    app = get_server()
+    dsInfo, load_tables, load_embeddings = preprocess.validate_and_run_preprocess(args)
+
+    app = get_server(
+        DatasetInitArgs(
+            datasetInfo=dsInfo, load_tables=load_tables, load_embeddings=load_embeddings
+        ),
+        load_example_data=args.load_example_data,
+    )
 
     print(f"\n\033[1mTexture\033[0m running on http://{args.host}:{args.port}\n")
     uvicorn.run(
@@ -42,18 +75,3 @@ def run_server(args: Union[TextureInitArgs, Dict]):
         log_level="info",
         # reload=True,
     )
-
-
-def is_notebook() -> bool:
-    try:
-        from IPython.core.getipython import get_ipython
-
-        shell = get_ipython().__class__.__name__
-        if shell == "ZMQInteractiveShell":
-            return True  # Jupyter notebook or qtconsole
-        elif shell == "TerminalInteractiveShell":
-            return False  # Terminal running IPython
-        else:
-            return False  # Other type (?)
-    except (NameError, ImportError):
-        return False  # Probably standard Python interpreter

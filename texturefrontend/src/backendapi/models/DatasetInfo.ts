@@ -8,8 +8,10 @@ import type { Column } from "./Column";
 export type DatasetInfo = {
   name: string;
   columns: Array<Column>;
-  origin: DatasetInfo.origin;
   primary_key: Column;
+  origin: DatasetInfo.origin;
+  has_embeddings?: boolean;
+  has_projection?: boolean;
 };
 
 export namespace DatasetInfo {
