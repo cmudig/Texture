@@ -41,7 +41,7 @@
           >
           or columns
           <span class="font-bold">umap_x</span>
-          and <span class="font-bold">umap_y</span> to see overview projection.
+          and <span class="font-bold">umap_y</span>.
         </div>
       {/if}
     </div>
