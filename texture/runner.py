@@ -41,6 +41,7 @@ def run(
 
         global TEXTURE_SERVER_PROCESS
         if TEXTURE_SERVER_PROCESS is not None:
+            print("Terminating existing server process")
             TEXTURE_SERVER_PROCESS.terminate()
 
         TEXTURE_SERVER_PROCESS = Process(
