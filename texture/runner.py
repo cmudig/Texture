@@ -1,10 +1,16 @@
 import uvicorn
-from typing import Dict, Union
+from typing import Dict, Union, Any, List
 from multiprocessing import Process
 import torch
 import numpy as np
+import pandas as pd
 
-from texture.models import TextureInitArgs, DatasetInfo, DatasetInitArgs
+from texture.models import (
+    TextureInitArgs,
+    DatasetInfo,
+    DatasetInitArgs,
+    ColumnInputTable,
+)
 from texture.server import get_server
 from texture.utils import is_notebook
 from texture import preprocess
@@ -13,7 +19,26 @@ import random
 TEXTURE_SERVER_PROCESS = None
 
 
-def run(args: Union[TextureInitArgs, Dict]):
+def run(
+    data: pd.DataFrame,
+    name: str = None,
+    embeddings: Any = None,
+    primary_key: str = None,
+    column_tables: List[ColumnInputTable] = None,
+    host: str = "localhost",
+    port: int = 8080,
+    load_example_data: bool = False,
+):
+    args = TextureInitArgs(
+        data=data,
+        name=name,
+        embeddings=embeddings,
+        primary_key=primary_key,
+        column_tables=column_tables,
+        host=host,
+        port=port,
+        load_example_data=load_example_data,
+    )
 
     if is_notebook():
         print("Running from a notebook, starting a new process")
@@ -34,7 +59,6 @@ def run(args: Union[TextureInitArgs, Dict]):
 
 
 def run_server(args: Union[TextureInitArgs, Dict]):
-    # TODO process data if necessary
     args = TextureInitArgs(**args) if isinstance(args, dict) else args
 
     dsInfo, load_tables, load_embeddings = validate_and_run_preprocess(args)
@@ -75,13 +99,13 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
         if "id" in df.columns and df["id"].is_unique:
             pk_name = "id"
         else:
-            print("Not valid primary key found, creating a new one...")
+            print("No valid primary key found, creating a new one...")
             df = df.reset_index(drop=True)
             df = df.reset_index().rename(columns={"index": "id"})
             pk_name = "id"
             inferred_data_types.append({"name": pk_name, "type": "number"})
 
-    # check if projection of embeddings
+    # check if embeddings
     if args.embeddings is not None:
 
         sanitized_embeddings = verify_embeddings(args.embeddings)
@@ -96,6 +120,10 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
             df["umap_x"] = projection[:, 0]
             df["umap_y"] = projection[:, 1]
             has_projection = True
+
+    # or just projection of embeddings
+    if "umap_x" in df.columns and "umap_y" in df.columns:
+        has_projection = True
 
     # validate that the column tables correspond to real columns
     if args.column_tables:
