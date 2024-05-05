@@ -156,16 +156,11 @@ class ColumnInputTable(BaseModel):
 
 
 class TextureInitArgs(BaseModel):
-    # args to run
     data: DataFrameType  # TODO: also support huggingface dataset
     name: Optional[str] = None
-    embeddings: Optional[Any] = (
-        None  # torch.tensor or np.ndarray -- will convert to np.ndarray
-    )
-    primary_key: Optional[str] = None  # will make new column called "id"
+    embeddings: Optional[Any] = None  # torch.tensor or np.ndarray
+    primary_key: Optional[str] = None
     column_tables: Optional[List[ColumnInputTable]] = None
-
-    # config
     host: Optional[str] = "localhost"
     port: Optional[int] = 8080
     api_key: Optional[str] = None
