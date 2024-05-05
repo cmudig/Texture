@@ -5,3 +5,4 @@ from texture.preprocess.embeddings import (
     calculate_embeddings,
 )
 from texture.preprocess.tokenize import get_df_words_w_span
+from texture.preprocess.pipeline import validate_and_run_preprocess
