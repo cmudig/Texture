@@ -15,8 +15,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "format": "npx prettier -w .",
     "gen-api": "npx openapi-typescript-codegen --input http://127.0.0.1:8080/api/openapi.json --output ./src/backendapi --name TextProfileClient; npx prettier -w ./src/backendapi",
-    "rectify-gen-api": "git restore src/backendapi/models/ErrorResponse.ts; git restore src/backendapi/models/JsonResponse.ts; git restore src/backendapi/models/ExecResponse.ts; git restore src/backendapi/core/request.ts",
-    "deploy": "gh-pages -d dist"
+    "rectify-gen-api": "git restore src/backendapi/models/ErrorResponse.ts; git restore src/backendapi/models/JsonResponse.ts; git restore src/backendapi/models/ExecResponse.ts; git restore src/backendapi/core/request.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.2",
@@ -26,7 +25,6 @@
     "flowbite": "^2.2.0",
     "flowbite-svelte": "^0.44.19",
     "flowbite-svelte-icons": "^0.4.5",
-    "gh-pages": "^6.1.1",
     "isoformat": "^0.2.1",
     "monaco-editor": "^0.47.0",
     "openapi-typescript-codegen": "^0.25.0",
