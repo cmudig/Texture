@@ -1,5 +1,7 @@
 # Texture: Structured Text Analytics
 
+[![PyPi](https://img.shields.io/pypi/v/texture-viz.svg)](https://pypi.org/project/texture-viz/)
+
 Texture is a system for exploring and creating structured insights with your text datasets.
 
 1. Texture visualizes structured attributes alongside your text datasets in interactive, cross-filterable charts.
@@ -27,19 +29,4 @@ texture.run(df) # launch texture app
 
 ## Dev install
 
-tl;dr below, see [DEV.md](DEV.md) for more details about dev workflows and setup.
-
-If using VSCode (recommended), launching the servers below is configured as a build task you can launch with `Cmd+Shift+P` > `Tasks: Run Build Task` > `Launch Texture`; otherwise you can launch manually:
-
-Terminal 1: Backend python server
-
-```bash
-poetry run run_server
-```
-
-Terminal 2: frontend svelte UI
-
-```bash
-cd texturefrontend
-npm run dev
-```
+See [DEV.md](DEV.md) for dev workflows and setup.

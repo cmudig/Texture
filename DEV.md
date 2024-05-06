@@ -21,84 +21,42 @@ Installs dependencies AND builds in dev mode in current conda env
 poetry install
 ```
 
-## Backend dev loop
+## Backend dev loop [`texture`](./texture/)
 
-To launch dev server with reload:
+The backend can be run in two ways. We recommend running the uvicorn server directly for development since it has hot reloading and is faster. The `run_server` command is a wrapper around this runs the `texture.run()` command.
 
-```bash
-uvicorn --factory texture.server:get_server --port 8080 --reload
-```
+1. `uvicorn --factory texture.server:get_server --port 8080 --reload`
+   OR
+2. `poetry run run_server`
 
-To launch the server. This will host the built frontend at `http://localhost:3000` and the api at `http://localhost:3000/api`. Be sure to build frontend below or nothing will show up!
+This will launch the server to whatever port is specified with the frontend hosted at the root and api. To launch the server. Be sure to build frontend first or nothing will show up!
 
-```bash
-poetry run run_server
-```
+Other notes:
 
-If you add a new python package, do it with poetry since will also install in current conda env with `poetry add name`.
+- If you add a new python package, do it with poetry since will also install in current conda env with `poetry add name`.
+- If you add a new route or model to the backend, you can re-generate the api client in the frontend automatically (server must be running when this happens!). This overwrites some files that we edited manually so be careful (this is why we have a rectify step): `npm run gen-api && npm run rectify-gen-api`
 
-If you add a new route or model to the backend, you can re-generate the api client in the frontend automatically (server must be running when this happens!).
-
-```bash
-cd texturefrontend
-npm run gen-api
-```
-
-**NOTE:** be careful about what files get changed since some like the request handling and some types are manually edited. The following files should probably NOT be changed:
-
-- `texturefrontend/src/backendapi/core/request.ts`: manual changes made to process blobs
-- `texturefrontend/src/backendapi/models/ErrorResponse.ts`: changed type to not be any
-- `texturefrontend/src/backendapi/models/ExecResponse.ts`: changed type to not be any
-- `texturefrontend/src/backendapi/models/JsonResponse.ts`: changed type to not be any
-
-You can run the following commands to unset these files from git automatically after you regenerate the API (N.B this will remove other changes to these files):
-
-```bash
-npm run gen-api && npm run rectify-gen-api
-```
-
-## Release
-
-To publish (only do this if you know you want to):
-
-```bash
-poetry build
-poetry publish
-```
-
-This will install the python package in the current conda env so can be imported as:
-
-```python
-import textclean
-```
-
-# Dev loop for UI `texturefrontend`
+## Frontend dev loop [`texturefrontend`](./texturefrontend/)
 
 The frontend is a svelte / vite app that uses the generated api client to communicate with the backend.
 
-## First time
-
-Pre-requisites
-
-1. install node / npm
-
-First time
+**First time**
 
 ```bash
 cd texturefrontend
-npm install # install packages
+npm install
 ```
 
-## Dev loop
+**Dev loop**
 
-Will start local server and hot re-load changes
+Will start local server and hot re-load changes. This will try to connect to the backend server at `localhost:8080` by default so make sure one of the server commands is running.
 
 ```bash
 cd texturefrontend
 npm run dev
 ```
 
-To see on same port as backend server, frontend must be built
+To see on same port as backend server, frontend must be built. The frontend build command outputs to [`texture/frontend/`](./texture/frontend/) but this folder is not git synced.
 
 ```bash
 npm run build
@@ -108,3 +66,32 @@ npm run build
 
 - Right now manually linking mosaic (all packages) in `package.json` but can only do one install later
 - IMPORTANT: need to have an envionment vaiable `OPENAI_API_KEY` set to use the openai api in the python environment
+
+# Publish
+
+First need to bump the version:
+
+```bash
+poetry version patch # bump version
+git commit -am "chore: bump version to $(poetry version -s)" # commit version
+git tag "v$(poetry version -s)" # tag version
+```
+
+Then build package:
+
+```bash
+# build frontend
+cd texturefrontend
+npm run build
+# build python package
+poetry build
+```
+
+Then release:
+
+```bash
+poetry publish
+git push && git push --tags
+```
+
+After, create release on github.
