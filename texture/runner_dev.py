@@ -18,7 +18,7 @@ def dev_run():
             "umap_y": [0.4, 0.5, 0.6],
         }
     )
-    run(df, load_example_data=False)
+    run(df, load_example_data=True)
 
 
 if __name__ == "__main__":

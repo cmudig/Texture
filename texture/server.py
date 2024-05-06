@@ -40,7 +40,7 @@ def custom_generate_unique_id(route: APIRoute):
 
 def get_server(
     ds_init_info: DatasetInitArgs = None,
-    load_example_data: bool = False,
+    load_example_data: bool = True,
 ) -> FastAPI:
 
     ### Database set up
