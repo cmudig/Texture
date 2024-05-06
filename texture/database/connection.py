@@ -39,7 +39,11 @@ def load_datasets(duckdbconn, dsGroup):
 def load_embeddings(vectordbconn, dsGroup):
     for dsName, embeddingPath in EXAMPLE_DATA_PATHS[dsGroup]["embeddings"].items():
         embeddings = torch.load(CACHE_PATH / embeddingPath)
-        embeddings = embeddings.cpu().numpy()
+        embeddings = (
+            embeddings.cpu().numpy()
+            if isinstance(embeddings, torch.Tensor)
+            else embeddings
+        )
         df = pd.read_parquet(
             CACHE_PATH / EXAMPLE_DATA_PATHS[dsGroup]["datasets"][dsName]
         )
@@ -56,7 +60,8 @@ def populate_example_datasets(duckdbconn, vectordbconn, metadataCache):
     for dsGroupName in EXAMPLE_DATASET_INFO:
         print(f"Loading data for {dsGroupName}...")
         load_datasets(duckdbconn, dsGroupName)
-        load_embeddings(vectordbconn, dsGroupName)
+        if "embeddings" in EXAMPLE_DATA_PATHS[dsGroupName]:
+            load_embeddings(vectordbconn, dsGroupName)
         metadataCache[dsGroupName] = EXAMPLE_DATASET_INFO[dsGroupName]
 
 
