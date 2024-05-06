@@ -15,7 +15,7 @@ Pip installation coming soon!
 ```python
 import texture
 
-texture.run({}) # launch texture app
+texture.run(df) # launch texture app
 
 ```
 
