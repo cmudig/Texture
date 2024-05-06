@@ -109,6 +109,7 @@
     />
     <Popover
       triggeredBy="#settingsToggle"
+      trigger="click"
       class="z-10 w-80 bg-white text-sm font-light text-gray-500"
       title="Settings"
     >
