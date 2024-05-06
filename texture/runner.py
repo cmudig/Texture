@@ -24,6 +24,7 @@ def run(
     host: str = "localhost",
     port: int = 8080,
     load_example_data: bool = False,
+    api_key: str = None,
 ):
     args = TextureInitArgs(
         data=data,
@@ -34,6 +35,7 @@ def run(
         host=host,
         port=port,
         load_example_data=load_example_data,
+        api_key=api_key,
     )
 
     if is_notebook():
@@ -65,6 +67,7 @@ def run_server(args: Union[TextureInitArgs, Dict]):
             datasetInfo=dsInfo, load_tables=load_tables, load_embeddings=load_embeddings
         ),
         load_example_data=args.load_example_data,
+        api_key=args.api_key,
     )
 
     print(f"\n\033[1mTexture\033[0m running on http://{args.host}:{args.port}\n")

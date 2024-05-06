@@ -41,11 +41,12 @@ def custom_generate_unique_id(route: APIRoute):
 def get_server(
     ds_init_info: DatasetInitArgs = None,
     load_example_data: bool = True,
+    api_key: str = None,
 ) -> FastAPI:
 
     ### Database set up
     duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
-    llm_client = LLMClient()
+    llm_client = LLMClient(api_key=api_key)
 
     if load_example_data:
         populate_example_datasets(duckdb_conn, vectordb_conn, datasetMetadataCache)
@@ -141,99 +142,112 @@ def get_server(
 
     @api_app.post("/fetch_llm_response_format", response_model=TransformResponse)
     def get_llm_response_format(userPrompt: str):
-        task_format = llm_client.get_response_format(userPrompt)
-        return TransformResponse(success=True, result=task_format)
+        try:
+            task_format = llm_client.get_response_format(userPrompt)
+            return TransformResponse(success=True, result=task_format)
+        except Exception as e:
+            print("Error in /fetch_llm_response_format::: ", str(e))
+            return TransformResponse(success=False, result={"error": str(e)})
 
     @api_app.post("/fetch_llm_transform_result", response_model=TransformResponse)
     def get_llm_transform_result(request: LLMTransformRequest):
-        results = llm_client.get_transformations(
-            request.userPrompt,
-            request.taskFormat,
-            request.columnData,
-            request.exampleData,
-            request.exampleResponse,
-        )
-        parsed_results = [r[request.taskFormat.name] for r in results]
-        print("[get_llm_transform_result] has results: ", parsed_results)
-        return TransformResponse(success=True, result=parsed_results)
+        try:
+            results = llm_client.get_transformations(
+                request.userPrompt,
+                request.taskFormat,
+                request.columnData,
+                request.exampleData,
+                request.exampleResponse,
+            )
+            parsed_results = [r[request.taskFormat.name] for r in results]
+            print("[get_llm_transform_result] has results: ", parsed_results)
+            return TransformResponse(success=True, result=parsed_results)
+        except Exception as e:
+            print("ERROR in /fetch_llm_transform_result ", str(e))
+            return TransformResponse(success=False, result={"error": str(e)})
 
     @api_app.post("/commit_llm_transform_result", response_model=TransformResponse)
     def commit_llm_transform_result(request: LLMTransformCommit):
-        new_col_name = request.taskFormat.name
+        try:
+            new_col_name = request.taskFormat.name
 
-        # Step 1: get data
-        all_data_df = duckdb_conn.connection.execute(
-            f'SELECT "id", "{request.columnName}" from "{request.tableName}"'
-        ).df()
-        transform_data = pd.merge(
-            all_data_df, pd.DataFrame({"id": request.applyToIndices}), on="id"
-        )
-
-        # Step 2: get results and turn into flat array
-        results = llm_client.get_transformations(
-            request.userPrompt,
-            request.taskFormat,
-            transform_data[request.columnName],
-            request.exampleData,
-            request.exampleResponse,
-        )
-
-        # Step 3: format with correct indices transform
-        processed_results = [r[new_col_name] for r in results]
-        processed_df = pd.DataFrame(
-            {new_col_name: list(processed_results), "id": transform_data["id"]}
-        )
-
-        colType = get_type_from_response(request.taskFormat.type)
-
-        if request.taskFormat.num_replies == "multiple":
-            newTableDf = flatten(processed_df[new_col_name], idColName="id")
-            if colType == "number":
-                newTableDf[new_col_name] = pd.to_numeric(newTableDf[new_col_name])
-            newTableName = new_col_name + "_table"
-            duckdb_conn.load_dataframe(newTableName, newTableDf)
-            newColSchema = Column(
-                name=new_col_name,
-                type=colType,
-                table_name=newTableName,
-                derived_from=request.columnName,
-                derived_how="model",
-            )
-        else:
-            if colType == "number":
-                processed_df[new_col_name] = pd.to_numeric(processed_df[new_col_name])
-
-            all_merged = pd.merge(all_data_df, processed_df, on="id", how="left")
-
-            duckdb_conn.add_column(
-                request.tableName, new_col_name, all_merged[new_col_name]
-            )
-            newColSchema = Column(
-                name=new_col_name,
-                type=colType,
-                derived_from=request.columnName,
-                derived_how="model",
+            # Step 1: get data
+            all_data_df = duckdb_conn.connection.execute(
+                f'SELECT "id", "{request.columnName}" from "{request.tableName}"'
+            ).df()
+            transform_data = pd.merge(
+                all_data_df, pd.DataFrame({"id": request.applyToIndices}), on="id"
             )
 
-        datasetMetadataCache[request.tableName].columns.insert(0, newColSchema)
+            # Step 2: get results and turn into flat array
+            results = llm_client.get_transformations(
+                request.userPrompt,
+                request.taskFormat,
+                transform_data[request.columnName],
+                request.exampleData,
+                request.exampleResponse,
+            )
 
-        return TransformResponse(success=True, result=[])
+            # Step 3: format with correct indices transform
+            processed_results = [r[new_col_name] for r in results]
+            processed_df = pd.DataFrame(
+                {new_col_name: list(processed_results), "id": transform_data["id"]}
+            )
+
+            colType = get_type_from_response(request.taskFormat.type)
+
+            if request.taskFormat.num_replies == "multiple":
+                newTableDf = flatten(processed_df[new_col_name], idColName="id")
+                if colType == "number":
+                    newTableDf[new_col_name] = pd.to_numeric(newTableDf[new_col_name])
+                newTableName = new_col_name + "_table"
+                duckdb_conn.load_dataframe(newTableName, newTableDf)
+                newColSchema = Column(
+                    name=new_col_name,
+                    type=colType,
+                    table_name=newTableName,
+                    derived_from=request.columnName,
+                    derived_how="model",
+                )
+            else:
+                if colType == "number":
+                    processed_df[new_col_name] = pd.to_numeric(
+                        processed_df[new_col_name]
+                    )
+
+                all_merged = pd.merge(all_data_df, processed_df, on="id", how="left")
+
+                duckdb_conn.add_column(
+                    request.tableName, new_col_name, all_merged[new_col_name]
+                )
+                newColSchema = Column(
+                    name=new_col_name,
+                    type=colType,
+                    derived_from=request.columnName,
+                    derived_how="model",
+                )
+
+            datasetMetadataCache[request.tableName].columns.insert(0, newColSchema)
+
+            return TransformResponse(success=True, result=[])
+
+        except Exception as e:
+            print("Error in /commit_llm_transform_result::: ", str(e))
+            return TransformResponse(success=False, result={"error": str(e)})
 
     @api_app.post("/fetch_code_transform_result", response_model=TransformResponse)
     def get_code_transform_result(request: CodeTransformRequest):
-
-        df = pd.DataFrame({"sample": request.columnData})
-
         try:
+            df = pd.DataFrame({"sample": request.columnData})
             results = execute_code_and_apply_function(request.codeString, df["sample"])
             if results is None:
                 raise Exception("No results returned from code execution")
 
+            return TransformResponse(success=True, result=list(results))
+
         except Exception as e:
             print("Exception running user code: ", e)
             return TransformResponse(success=False, result={"error": str(e)})
-
-        return TransformResponse(success=True, result=list(results))
 
     @api_app.post("/commit_code_transform_result", response_model=TransformResponse)
     def commit_code_transform_result(request: CodeTransformCommit):

@@ -152,11 +152,9 @@ def format_user_prompt(document):
 
 
 class LLMClient:
-    def __init__(
-        self,
-    ):
+    def __init__(self, api_key: str = None):
         print("Making new LLMClient")
-        self.client = AsyncOpenAI()  # reads API key from env
+        self.client = AsyncOpenAI(api_key=api_key)  # reads API key from env if None
 
     ##### ASYNC QUERY FUNCTIONS
     async def _get_format_async(self, instruction):
@@ -227,10 +225,6 @@ class LLMClient:
                     e,
                 )
                 await asyncio.sleep(sleepAmount[tryIdx])
-
-            except Exception as e:
-                print(f"[RQ {id}]\tTry {tryIdx}: ERROR: ", e)
-                return None
 
         print(f"[RQ {id}]\tFailed to get response after {len(sleepAmount)} tries")
         return None

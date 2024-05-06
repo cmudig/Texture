@@ -35,7 +35,14 @@ For example, "Derive 3 - 5 keywords per article"`;
 
     if (userPrompt) {
       let r = await databaseConnection.api.getLlmResponseFormat(userPrompt);
-      responseSchema = r.result as TaskFormat;
+
+      if (r.success) {
+        exampleProcessingError = undefined;
+        responseSchema = r.result as TaskFormat;
+      } else {
+        exampleProcessingError = (r.result as Record<string, unknown>)?.error;
+      }
+
       console.log("Schema is: ", responseSchema);
     }
     schemaResultStatus = QueryStatus.COMPLETED;
