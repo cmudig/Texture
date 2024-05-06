@@ -94,7 +94,7 @@ def init_db():
     vectordbconn = VectorDBConnection()
     metadataCache = {}
 
-    print("Finished Database init.")
+    # print("Texture: database initialized.")
     return duckdbconn, vectordbconn, metadataCache
 
 
@@ -102,8 +102,6 @@ class DatabaseConnection:
     def __init__(self, database_name="defaultDatabase.db"):
         # Path(CACHE_PATH).mkdir(parents=True, exist_ok=True)
         # p = Path(CACHE_PATH) / database_name
-
-        print("Making new DuckDB DatabaseConnection in memory")
 
         # NOTE: can save this to file, but potentially causes issues with old tables
         # so right now making new database on start up each time
@@ -248,7 +246,6 @@ class VectorDBConnection:
         embed_func: function that takes a string and returns a numpy array embedding.
         This MUST be same model as original embeddings or else comparison will not work
         """
-        print("Making new LanceDB connection")
 
         self.connection = lancedb.connect(CACHE_PATH / database_dir)
         self.id_cols = {}

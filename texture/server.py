@@ -160,7 +160,6 @@ def get_server(
                 request.exampleResponse,
             )
             parsed_results = [r[request.taskFormat.name] for r in results]
-            print("[get_llm_transform_result] has results: ", parsed_results)
             return TransformResponse(success=True, result=parsed_results)
         except Exception as e:
             print("ERROR in /fetch_llm_transform_result ", str(e))
@@ -253,8 +252,6 @@ def get_server(
     def commit_code_transform_result(request: CodeTransformCommit):
         new_col_name = request.taskFormat.name
 
-        print("request is: ", request)
-
         # Step 1: get data
         all_data_df = duckdb_conn.connection.execute(
             f'SELECT "id", "{request.columnName}" from "{request.tableName}"'
@@ -273,8 +270,6 @@ def get_server(
         except Exception as e:
             print("Exception running user code: ", e)
             return TransformResponse(success=False, result={"error": str(e)})
-
-        print("results are: ", results)
 
         # Step 3: format with correct indices transform
         processed_df = pd.DataFrame(

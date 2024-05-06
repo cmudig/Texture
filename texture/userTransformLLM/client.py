@@ -153,7 +153,6 @@ def format_user_prompt(document):
 
 class LLMClient:
     def __init__(self, api_key: str = None):
-        print("Making new LLMClient")
         self.client = AsyncOpenAI(api_key=api_key)  # reads API key from env if None
 
     ##### ASYNC QUERY FUNCTIONS

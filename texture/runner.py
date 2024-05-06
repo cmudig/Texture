@@ -75,6 +75,6 @@ def run_server(args: Union[TextureInitArgs, Dict]):
         app,
         host=args.host,
         port=args.port,
-        log_level="info",
+        log_level="warning",
         # reload=True,
     )

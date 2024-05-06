@@ -21,8 +21,6 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
     if not column_info:
         column_info = preprocess.get_data_types(df)
 
-    print("Column info is:", column_info)
-
     # make primary key if none provided (if provided make sure is unique)
     pk_name = args.primary_key
     if not (pk_name and pk_name in df.columns and df[pk_name].is_unique):
