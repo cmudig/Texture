@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "texture"
+name = "texture-viz"
 version = "0.0.1"
 description = "Process and profile text datasets interactively"
 authors = ["Will Epperson <willepp@live.com>"]
@@ -8,6 +8,7 @@ repository = "https://github.com/cmudig/Texture"
 homepage = "https://github.com/cmudig/Texture"
 keywords = ["text", "nlp", "data profiling", "llm"]
 packages = [{ include = "texture" }]
+include = ["texture/frontend/**/*"]
 
 [tool.poetry.dependencies]
 python = "3.10.*"

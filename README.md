@@ -8,9 +8,15 @@ Texture is a system for exploring and creating structured insights with your tex
 
 ![screenshot of Texture interface](.github/screenshots/texture_sc.png)
 
-## Installation
+## Install and run
 
-Pip installation coming soon!
+Install texture with pip:
+
+```bash
+pip install texture-viz
+```
+
+Then you can run in a python script or notebook. The run command takes in a pandas dataframe with a text column and optional metadata columns:
 
 ```python
 import texture
