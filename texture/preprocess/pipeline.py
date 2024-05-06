@@ -1,14 +1,16 @@
 import random
 import torch
 import numpy as np
+from typing import List
 
 from texture import preprocess
-from texture.models import TextureInitArgs, DatasetInfo
+from texture.models import TextureInitArgs, DatasetInfo, Column, ColumnInputInfo
 
 
 def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict)
     df = args.data
     name = args.name
+    column_info = args.column_info
     sanitized_embeddings = None
     has_embeddings = False
     has_projection = False
@@ -16,8 +18,10 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
     if not name:
         name = "dataset_" + str(random.randint(1000, 9999))
 
-    inferred_data_types = preprocess.get_data_types(df)
-    # print("Inferred data types:", inferred_data_types)
+    if not column_info:
+        column_info = preprocess.get_data_types(df)
+
+    print("Column info is:", column_info)
 
     # make primary key if none provided (if provided make sure is unique)
     pk_name = args.primary_key
@@ -29,7 +33,7 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
             df = df.reset_index(drop=True)
             df = df.reset_index().rename(columns={"index": "id"})
             pk_name = "id"
-            inferred_data_types.append({"name": pk_name, "type": "number"})
+            column_info.append(ColumnInputInfo(name=pk_name, type="number"))
 
     # check if embeddings
     if args.embeddings is not None:
@@ -51,29 +55,11 @@ def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict
     if "umap_x" in df.columns and "umap_y" in df.columns:
         has_projection = True
 
-    # validate that the column tables correspond to real columns
-    if args.column_tables:
-        for colTableInfo in args.column_tables:
-            cols = colTableInfo.table_data.columns
-
-            if pk_name not in cols:
-                raise ValueError(
-                    f"Primary key {pk_name} not found in column table:", colTableInfo
-                )
-            if colTableInfo.name not in cols:
-                raise ValueError(
-                    f"Column name {colTableInfo.name} not found in column table:",
-                    colTableInfo,
-                )
-
-            # TODO: check if span_start and span_end are in columns maybe
-
     # populate dataset Info
     dsInfo, load_tables = create_ds_info(
         name,
-        inferred_data_types,
+        column_info,
         pk_name,
-        args.column_tables,
         has_embeddings,
         has_projection,
     )
@@ -97,37 +83,66 @@ def verify_embeddings(e) -> np.ndarray:
 
 
 def create_ds_info(
-    name, inferred_data_types, pk_name, column_tables, has_embeddings, has_projection
+    name: str,
+    column_info: List[ColumnInputInfo],
+    pk_name: str,
+    has_embeddings: bool,
+    has_projection: bool,
 ):
 
-    pk_info = next(
-        (entry for entry in inferred_data_types if entry["name"] == pk_name),
-        {"name": pk_name, "type": "number"},  # backup if not found
-    )
+    pk_info = Column(name=pk_name, type="number")  # backup if not found
 
-    derived_cols = []
+    cleaned_cols = []
     load_tables = {}
-    if column_tables:
-        for colTableInfo in column_tables:
 
-            table_name = f"{colTableInfo.name}_{colTableInfo.derived_from}"  # hopefully this is unique
-            load_tables[table_name] = colTableInfo.table_data
+    for c_info in column_info:
+        if c_info.name == pk_name:
+            pk_info = c_info
 
-            derived_cols.append(
-                {
-                    "name": colTableInfo.name,
-                    "type": "categorical",  # is this accurate?
-                    "derived_from": colTableInfo.derived_from,
-                    "table_name": table_name,
-                }
-            )
+        if c_info.table_name is not None and c_info.table_data is None:
+            raise ValueError(f"Column {c_info.name} has table_name but no table_data")
+
+        table_name = None
+        if c_info.table_data is not None:
+
+            # validate the passsed dataframe
+            cols = c_info.table_data.columns
+            if pk_name not in cols:
+                raise ValueError(
+                    f"Primary key {pk_name} not found in column table:", c_info
+                )
+            if c_info.name not in cols:
+                raise ValueError(
+                    f"Column name {c_info.name} not found in column table:",
+                    c_info,
+                )
+
+            # TODO: check if span_start and span_end are in columns maybe
+
+            if c_info.table_name:
+                table_name = c_info.table_name
+            else:
+                table_name = f"{c_info.name}_{c_info.derived_from}"
+
+            load_tables[table_name] = c_info.table_data
+
+        # make Column without table_data from ColumnInputInfo
+        c = Column(
+            name=c_info.name,
+            type=c_info.type,
+            derived_from=c_info.derived_from,
+            table_name=table_name,
+            derived_how=c_info.derived_how,
+        )
+
+        cleaned_cols.append(c)
 
     return (
         DatasetInfo(
             name=name,
             primary_key=pk_info,
             origin="uploaded",
-            columns=[*derived_cols, *inferred_data_types],
+            columns=cleaned_cols,
             has_embeddings=has_embeddings,
             has_projection=has_projection,
         ),

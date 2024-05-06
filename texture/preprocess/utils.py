@@ -1,9 +1,10 @@
 import torch
 import pandas as pd
-from typing import List, Dict
+from typing import List
+from texture.models import ColumnInputInfo
 
 
-def get_data_types(_df: pd.DataFrame) -> List[Dict[str, str]]:
+def get_data_types(_df: pd.DataFrame) -> List[ColumnInputInfo]:
     """
     Get the data types of each column in the DataFrame.
     Maps each column to a semantic type: 'number', 'date', 'text', or 'categorical'
@@ -26,11 +27,8 @@ def get_data_types(_df: pd.DataFrame) -> List[Dict[str, str]]:
             else:
                 inferred_type = "categorical"
 
-        info = {
-            "name": col_name,
-            "type": inferred_type,
-        }
-        data_info.append(info)
+        c = ColumnInputInfo(name=col_name, type=inferred_type)
+        data_info.append(c)
     return data_info
 
 

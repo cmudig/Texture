@@ -147,12 +147,8 @@ class DatasetInitArgs(BaseModel):
     load_embeddings: Optional[Dict[str, Any]] = None
 
 
-class ColumnInputTable(BaseModel):
-    name: str
-    derived_from: Optional[str] = None
-    # needs [id, column_name, span_start, span_end]
-    # TODO: make spans optional
-    table_data: DataFrameType
+class ColumnInputInfo(Column):
+    table_data: Optional[DataFrameType] = None
 
 
 class TextureInitArgs(BaseModel):
@@ -160,7 +156,7 @@ class TextureInitArgs(BaseModel):
     name: Optional[str] = None
     embeddings: Optional[Any] = None  # torch.tensor or np.ndarray
     primary_key: Optional[str] = None
-    column_tables: Optional[List[ColumnInputTable]] = None
+    column_info: Optional[List[ColumnInputInfo]] = None
     host: Optional[str] = "localhost"
     port: Optional[int] = 8080
     api_key: Optional[str] = None

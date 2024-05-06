@@ -6,7 +6,7 @@ import pandas as pd
 from texture.models import (
     TextureInitArgs,
     DatasetInitArgs,
-    ColumnInputTable,
+    ColumnInputInfo,
 )
 from texture.server import get_server
 from texture.utils import is_notebook
@@ -20,7 +20,7 @@ def run(
     name: str = None,
     embeddings: Any = None,
     primary_key: str = None,
-    column_tables: List[ColumnInputTable] = None,
+    column_info: List[ColumnInputInfo] = None,
     host: str = "localhost",
     port: int = 8080,
     load_example_data: bool = False,
@@ -31,7 +31,7 @@ def run(
         name=name,
         embeddings=embeddings,
         primary_key=primary_key,
-        column_tables=column_tables,
+        column_info=column_info,
         host=host,
         port=port,
         load_example_data=load_example_data,
