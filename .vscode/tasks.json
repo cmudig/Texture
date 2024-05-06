@@ -4,7 +4,7 @@
     {
       "label": "Start Backend",
       "type": "shell",
-      "command": "source ~/.zshrc; conda activate texture && cd texturebackend && uvicorn --factory server:get_server --reload",
+      "command": "source ~/.zshrc; conda activate texture && uvicorn --factory texture.server:get_server --port 8080 --reload",
       "group": "build",
       "presentation": {
         "group": "runner",
