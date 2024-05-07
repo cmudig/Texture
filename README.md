@@ -27,10 +27,11 @@ texture.run(df)
 
 ## Texture Configuration
 
-You can optionally pass arguments to the `run` command to configure the interface. See the full list in the [`run`](./texture/runner.py) function. Notable configuration options are:
+You can optionally pass arguments to the [`run`](./texture/runner.py) command to configure the interface. Notable configuration options are:
 
 - `embeddings: np.ndarray`: embeddings of your text data can be provided to enable similarity search and a projection overview. If you already have a 2d projection of these embeddings, you must provide it as columns `umap_x` and `umap_y` in the dataframe.
 - `column_info: List[ColumnInputInfo]`: Used to override default column types and provide derived tables. Texture will automatically infer the types (text, categorical, number, date) of your columns, but you can override here. Additionally, you can provide column information for columns from another table like words.
+- `api_key`: Your OpenAI API key to enable LLM attribute derivation.
 
 We provide various preprocessing functions to calculate embeddings, projections, and word tables. You can use these functions to preprocess your data before launching the Texture app.
 
