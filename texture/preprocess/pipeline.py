@@ -7,7 +7,7 @@ from texture import preprocess
 from texture.models import TextureInitArgs, DatasetInfo, Column, ColumnInputInfo
 
 
-def validate_and_run_preprocess(args: TextureInitArgs):  # -> (DatasetInfo, Dict)
+def validate_and_run_preprocess(args: TextureInitArgs):
     df = args.data
     name = args.name
     column_info = args.column_info
