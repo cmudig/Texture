@@ -4,13 +4,13 @@
 
 Texture is a system for exploring and creating structured insights with your text datasets.
 
-1. Texture visualizes structured attributes alongside your text datasets in interactive, cross-filterable charts.
-2. Attribute charts can come from any level of a document such as words, sentences, or documents.
-3. Texture helps you derive new attributes during analysis with code and LLM transformations.
+1. **Interactive Attribute Profiles**: Texture visualizes structured attributes alongside your text data in interactive, cross-filterable charts.
+2. **Flexible attribute definitions**: Attribute charts can come from different tables and any level of a document such as words, sentences, or documents.
+3. **Derive new attributes**: Texture helps you derive new attributes during analysis with code and LLM transformations.
 
 ![screenshot of Texture interface](.github/screenshots/texture_sc.png)
 
-## Install
+## Install and run
 
 Install texture with pip:
 
@@ -18,21 +18,19 @@ Install texture with pip:
 pip install texture-viz
 ```
 
-Then you can run in a python script or notebook.
-
-## Analyze your text data + attributes
-
-To launch the Texture app, you only need to provide a pandas DataFrame with your text data and attributes.
+Then you can run in a python script or notebook by providing a dataframe with your text data and attributes.
 
 ```python
 import texture
 texture.run(df)
 ```
 
-You can optionally pass different arguments to the `run` command to configure the interface. See the full list in the [`run`](./texture/runner.py) function. Typical configuration options are:
+## Texture Configuration
 
-- `embeddings: np.ndarray` -- embeddings of your text data can be provided to enable similarity search and a projection overview. If you already have a 2d projection of these embeddings, you must provide it as columns `umap_x` and `umap_y` in the dataframe.
-- [`column_info: List[ColumnInputInfo]`](./texture/models.py): Used to override default column types and provide derived tables. Texture will automatically infer the types (text, categorical, number, date) of your columns, but you can override here. Additionally, if you have columns from another table like words, you can provide them here.
+You can optionally pass arguments to the `run` command to configure the interface. See the full list in the [`run`](./texture/runner.py) function. Notable configuration options are:
+
+- `embeddings: np.ndarray`: embeddings of your text data can be provided to enable similarity search and a projection overview. If you already have a 2d projection of these embeddings, you must provide it as columns `umap_x` and `umap_y` in the dataframe.
+- `column_info: List[ColumnInputInfo]`: Used to override default column types and provide derived tables. Texture will automatically infer the types (text, categorical, number, date) of your columns, but you can override here. Additionally, you can provide column information for columns from another table like words.
 
 We provide various preprocessing functions to calculate embeddings, projections, and word tables. You can use these functions to preprocess your data before launching the Texture app.
 
