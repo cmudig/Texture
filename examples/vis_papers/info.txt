@@ -1,1 +1,3 @@
 VIS abstracts dataset originally from https://sites.google.com/site/vispubdata/home
+
+We load a subset of the papers from 2014 onwards.
