@@ -28,6 +28,7 @@ tiktoken = "^0.5.2"
 lancedb = "^0.5.1"
 umap-learn = "^0.5.5"
 openai = "^1.20.0"
+multiprocess = "^0.70.16"
 
 
 [build-system]
