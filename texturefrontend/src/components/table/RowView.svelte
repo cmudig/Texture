@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { AngleRightOutline, AngleDownOutline } from "flowbite-svelte-icons";
+  import {
+    AngleRightOutline,
+    AngleDownOutline,
+    FilterOutline,
+  } from "flowbite-svelte-icons";
   import { formatValue } from "../../shared/format";
   import { type SelectionMap } from "../../shared/types";
   import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
@@ -8,9 +12,9 @@
     datasetInfo,
     selectionDisplay,
     databaseConnection,
+    compareSimilarID,
   } from "../../stores";
   import type { DatasetInfo } from "../../backendapi";
-  import { Spinner } from "flowbite-svelte";
   import { shouldHighlight } from "../../shared/utils";
 
   export let id: number;
@@ -85,6 +89,7 @@
     class="flex flex-col items-center border-r border-gray-300 p-1 gap-1 w-8 max-w-10 shrink-0"
   >
     <button
+      title="Toggle"
       class="hover:bg-gray-100 text-gray-500 p-1 rounded"
       on:click={() => (toggle = !toggle)}
     >
@@ -94,7 +99,16 @@
         <AngleRightOutline size="xs" />
       {/if}
     </button>
-    <slot name="optionButtons" />
+    <button
+      title="Show similar"
+      class="hover:bg-gray-100 text-gray-500 p-1 rounded"
+      on:click={() => {
+        $compareSimilarID = id;
+      }}
+      class:hidden={!$datasetInfo.has_embeddings}
+    >
+      <FilterOutline size="xs" />
+    </button>
   </div>
 
   <div
