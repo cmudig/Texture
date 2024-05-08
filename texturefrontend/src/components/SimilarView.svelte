@@ -10,6 +10,14 @@
   export let clearFunc: () => void;
 
   async function getData(_datasetInfo: DatasetInfo, _id: number) {
+    // set up
+    const colTypeMap = _datasetInfo.columns.reduce((acc, col) => {
+      acc[col.name] = col.type;
+      return acc;
+    }, {});
+    const pk_name = _datasetInfo.primary_key.name;
+
+    // get original doc
     let originalDocArr = await databaseConnection.getDocsByID(_datasetInfo, [
       _id,
     ]);
@@ -20,29 +28,24 @@
       _id,
     );
 
-    let relatedDocIDs = vsResponse.result.map(
-      (doc) => doc[_datasetInfo.primary_key.name],
+    const orderedMap = new Map(
+      vsResponse.result.map((doc) => [doc[pk_name], doc["_distance"]]),
     );
-
-    const idDistMap = vsResponse.result.reduce((acc, doc) => {
-      // distance returned will be in col "_distance"
-      acc[doc[_datasetInfo.primary_key.name]] = doc["_distance"];
-      return acc;
-    }, {});
 
     let relatedDocsFull = await databaseConnection.getDocsByID(
       _datasetInfo,
-      relatedDocIDs,
+      Array.from(orderedMap.keys()),
     );
 
     return {
-      originalDoc: structureDoc(originalDc, _datasetInfo, _id),
-      relatedDocs: relatedDocsFull.map((doc, idx) =>
+      originalDoc: structureDoc(originalDc, pk_name, _id, colTypeMap),
+      relatedDocs: relatedDocsFull.map((doc) =>
         structureDoc(
           doc,
-          _datasetInfo,
-          relatedDocIDs[idx],
-          idDistMap[relatedDocIDs[idx]],
+          pk_name,
+          doc[pk_name],
+          colTypeMap,
+          orderedMap.get(doc[pk_name]),
         ),
       ),
     };
@@ -50,23 +53,19 @@
 
   function structureDoc(
     record: any,
-    _datasetInfo: DatasetInfo,
-    id: number,
+    id_name: string,
+    id_value: number,
+    colTypeMap,
     distance?: number,
   ) {
     const rowArr = Object.entries(record);
-    const colTypeMap = $datasetInfo.columns.reduce((acc, col) => {
-      acc[col.name] = col.type;
-      return acc;
-    }, {});
 
     return {
-      id,
+      id: id_value,
       distance,
       textData: rowArr.filter(([k, v]) => colTypeMap[k] === "text"),
       metadata: rowArr.filter(
-        ([k, v]) =>
-          colTypeMap[k] !== "text" && k !== $datasetInfo.primary_key.name,
+        ([k, v]) => colTypeMap[k] !== "text" && k !== id_name,
       ),
     };
   }
