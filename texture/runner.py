@@ -1,5 +1,5 @@
 import uvicorn
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import multiprocess
 import pandas as pd
 
@@ -69,7 +69,7 @@ def run_server(
     args: TextureInitArgs,
     dsInfo: DatasetInfo,
     load_tables: Dict,
-    load_embeddings: Dict | None,
+    load_embeddings: Optional[Dict] = None,
 ):
 
     app = get_server(
