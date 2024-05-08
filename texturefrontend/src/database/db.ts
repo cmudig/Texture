@@ -199,16 +199,27 @@ export class DatabaseConnection {
     return resultMap;
   }
 
+  /**
+   * Retrieves documents from the database based on the provided dataset information and IDs.
+   * @param dsInfo - The dataset information.
+   * @param ids - An array of IDs to retrieve documents for. The order of the IDs in the array will be preserved in the returned array of documents.
+   * @returns A promise that resolves to an array of retrieved documents.
+   */
   async getDocsByID(dsInfo: DatasetInfo, ids: any[]): Promise<any[]> {
     let fromClause = dsInfo.name;
+    const pk_name = dsInfo.primary_key.name;
 
     let selectQString = vg.Query.from(fromClause).select("*").toString();
     let numericIds = ids.map((id) => Number(id));
 
-    let q = vg.sql`${selectQString} WHERE ${vg.column(dsInfo.primary_key.name)} IN (${numericIds})`;
+    let q = vg.sql`${selectQString} WHERE ${vg.column(pk_name)} IN (${numericIds})`;
 
-    // TODO make work with arrow?
     let r = await vg.coordinator().query(q, { type: "json" });
+
+    // sort result to ensure order of ids is preserved
+    r.sort((a, b) => {
+      return ids.indexOf(a[pk_name]) - ids.indexOf(b[pk_name]);
+    });
 
     return r;
   }

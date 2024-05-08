@@ -3,11 +3,7 @@
   import { TableClient } from "./TableClient";
   import { mosaicSelection, compareSimilarID, datasetInfo } from "../../stores";
   import { onDestroy } from "svelte";
-  import {
-    FilterOutline,
-    ArrowUpSolid,
-    ArrowDownSolid,
-  } from "flowbite-svelte-icons";
+  import { ArrowUpSolid, ArrowDownSolid } from "flowbite-svelte-icons";
   import RowView from "./RowView.svelte";
   import { Select } from "flowbite-svelte";
   import TablePlaceholder from "../utils/TablePlaceholder.svelte";
@@ -128,23 +124,7 @@
                     k !== $datasetInfo.primary_key.name,
                 )}
                 selection={myTableClient.filterBy}
-              >
-                <div
-                  slot="optionButtons"
-                  class="hover:bg-gray-100 text-gray-500 p-1 rounded"
-                  title="Show similar"
-                  class:hidden={!$datasetInfo.has_embeddings}
-                >
-                  <FilterOutline
-                    title="filter me"
-                    size="sm"
-                    on:click={() =>
-                      displaySimilar(
-                        Number(row[$datasetInfo.primary_key.name]),
-                      )}
-                  />
-                </div>
-              </RowView>
+              />
             {/each}
 
             {#if !$loaded}
