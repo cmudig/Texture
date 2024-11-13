@@ -1,92 +1,87 @@
 import uvicorn
-from typing import Dict, Any, List, Optional
+from typing import Dict, Callable, Optional
 import multiprocess
 import pandas as pd
 
-from texture.models import (
-    TextureInitArgs,
-    DatasetInitArgs,
-    ColumnInputInfo,
-    DatasetInfo,
-)
+from texture.models import DatasetInfo, DataType
 from texture.server import get_server
 from texture.utils import is_notebook
-from texture import preprocess
+from texture.database.preprocess import validate_and_construct_tables
 
 TEXTURE_SERVER_PROCESS = None
 
 try:
     multiprocess.set_start_method("spawn", force=True)
 except RuntimeError as e:
+    print("RuntimeError: ", e)
     pass
 
 
 def run(
     data: pd.DataFrame,
-    name: str = None,
-    embeddings: Any = None,
-    primary_key: str = None,
-    column_info: List[ColumnInputInfo] = None,
+    column_overrides: Dict[str, DataType] = None,
     host: str = "localhost",
     port: int = 8080,
-    load_example_data: bool = False,
     api_key: str = None,
+    create_new_embedding_func: Optional[Callable] = None,
 ):
-    args = TextureInitArgs(
-        data=data,
-        name=name,
-        embeddings=embeddings,
-        primary_key=primary_key,
-        column_info=column_info,
-        host=host,
-        port=port,
-        load_example_data=load_example_data,
-        api_key=api_key,
-    )
-
-    dsInfo, load_tables, load_embeddings = preprocess.validate_and_run_preprocess(args)
+    dataset_schema, load_tables = validate_and_construct_tables(data, column_overrides)
 
     if is_notebook():
-        print("Running from a notebook, starting a new process")
-
         global TEXTURE_SERVER_PROCESS
         if TEXTURE_SERVER_PROCESS is not None:
             print("Terminating existing server process")
             TEXTURE_SERVER_PROCESS.terminate()
+            TEXTURE_SERVER_PROCESS.join()
+
+        print("Running from a notebook, starting a new process")
 
         TEXTURE_SERVER_PROCESS = multiprocess.Process(
             target=run_server,
-            args=(args, dsInfo, load_tables, load_embeddings),
+            args=(
+                dataset_schema,
+                load_tables,
+                api_key,
+                host,
+                port,
+                create_new_embedding_func,
+            ),
         )
         TEXTURE_SERVER_PROCESS.start()
         # below will block notebook from progressing past server cell
         # TEXTURE_SERVER_PROCESS.join()
     else:
-        run_server(args, dsInfo, load_tables, load_embeddings)
+        run_server(
+            dataset_schema,
+            load_tables,
+            api_key,
+            host,
+            port,
+            create_new_embedding_func,
+        )
 
 
 def run_server(
-    args: TextureInitArgs,
-    dsInfo: DatasetInfo,
-    load_tables: Dict,
-    load_embeddings: Optional[Dict] = None,
+    dataset_schema: DatasetInfo,
+    load_tables: Dict[str, pd.DataFrame],
+    api_key: Optional[str] = None,
+    host: Optional[str] = "localhost",
+    port: Optional[int] = 8080,
+    create_new_embedding_func: Optional[Callable] = None,
 ):
 
     app = get_server(
-        DatasetInitArgs(
-            datasetInfo=dsInfo,
-            load_tables=load_tables,
-            load_embeddings=load_embeddings,
-        ),
-        load_example_data=args.load_example_data,
-        api_key=args.api_key,
+        dataset_schema,
+        load_tables,
+        create_new_embedding_func,
+        api_key,
     )
 
-    print(f"\n\033[1mTexture\033[0m running on http://{args.host}:{args.port}\n")
+    print(f"\n\033[1mTexture\033[0m running on http://{host}:{port}\n")
     uvicorn.run(
         app,
-        host=args.host,
-        port=args.port,
+        host=host,
+        port=port,
         log_level="warning",  # info or warning
         # reload=True,
     )

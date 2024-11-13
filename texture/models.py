@@ -1,11 +1,10 @@
 from typing import List, Dict, Union, Literal, Any, Optional
 from pydantic import BaseModel
-import pandas as pd
 
 
 #### Internal API models between frontend and backend
 
-DataType = Literal["text", "number", "date", "categorical"]
+DataType = Literal["text", "number", "date", "categorical", "list"]
 
 
 class Column(BaseModel):
@@ -139,25 +138,3 @@ class CodeTransformCommit(BaseModel):
 
 
 DataFrameType = Any  # Future: make sure this is pd.DataFrame or huggingface dataset
-
-
-class DatasetInitArgs(BaseModel):
-    datasetInfo: DatasetInfo
-    load_tables: Dict[str, DataFrameType]
-    load_embeddings: Optional[Dict[str, Any]] = None
-
-
-class ColumnInputInfo(Column):
-    table_data: Optional[DataFrameType] = None
-
-
-class TextureInitArgs(BaseModel):
-    data: DataFrameType  # TODO: also support huggingface dataset
-    name: Optional[str] = None
-    embeddings: Optional[Any] = None  # torch.tensor or np.ndarray
-    primary_key: Optional[str] = None
-    column_info: Optional[List[ColumnInputInfo]] = None
-    host: Optional[str] = "localhost"
-    port: Optional[int] = 8080
-    api_key: Optional[str] = None
-    load_example_data: Optional[bool] = False

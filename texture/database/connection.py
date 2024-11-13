@@ -1,101 +1,25 @@
 from pathlib import Path
 import duckdb
 import pyarrow as pa
+from fastapi.responses import Response
+import pandas as pd
+import numpy as np
+import lancedb
+from typing import Dict, Callable, Optional, Tuple
 from texture.models import (
     DuckQueryData,
     DuckQueryResult,
     ExecResponse,
     JsonResponse,
     ErrorResponse,
+    DatasetInfo,
 )
-from fastapi.responses import Response
-from texture.database.example_data import (
-    EXAMPLE_DATASET_INFO,
-    EXAMPLE_DATA_PATHS,
-)
-import pandas as pd
-import numpy as np
-import lancedb
-import torch
-import sentence_transformers
+from texture.names import C_VECTOR
 
 # NOTE: this path is affected by where the server is run from, assuming it is run in the root for now
 CACHE_DIR = ".texture_cache/"
 CACHE_PATH = Path(CACHE_DIR)
 CACHE_PATH.mkdir(parents=True, exist_ok=True)
-
-
-def get_embedding(col: np.ndarray, model_name):
-    model = sentence_transformers.SentenceTransformer(model_name)
-    e = model.encode(col)
-    return e
-
-
-def load_datasets(duckdbconn, dsGroup):
-    for dsName, dsPath in EXAMPLE_DATA_PATHS[dsGroup]["datasets"].items():
-        duckdbconn.load_dataset(dsName, dsPath)
-
-
-def load_embeddings(vectordbconn, dsGroup):
-    for dsName, embeddingPath in EXAMPLE_DATA_PATHS[dsGroup]["embeddings"].items():
-        embeddings = torch.load(CACHE_PATH / embeddingPath)
-        embeddings = (
-            embeddings.cpu().numpy()
-            if isinstance(embeddings, torch.Tensor)
-            else embeddings
-        )
-        df = pd.read_parquet(
-            CACHE_PATH / EXAMPLE_DATA_PATHS[dsGroup]["datasets"][dsName]
-        )
-
-        embed_func = lambda x: get_embedding(
-            x, "all-mpnet-base-v2"
-        )  # TODO change this model to be the same one used for making embedding
-
-        vectordbconn.add_table(dsName, df, embeddings, "id", embed_func)
-
-
-def populate_example_datasets(duckdbconn, vectordbconn, metadataCache):
-    print("Loading example datasets...")
-    for dsGroupName in EXAMPLE_DATASET_INFO:
-        print(f"Loading data for {dsGroupName}...")
-        load_datasets(duckdbconn, dsGroupName)
-        if "embeddings" in EXAMPLE_DATA_PATHS[dsGroupName]:
-            load_embeddings(vectordbconn, dsGroupName)
-        metadataCache[dsGroupName] = EXAMPLE_DATASET_INFO[dsGroupName]
-
-
-def populate_dataset(duckdb_conn, vectordb_conn, datasetMetadataCache, ds_init_info):
-    print("Loading dataset: ", ds_init_info.datasetInfo.name)
-    datasetMetadataCache[ds_init_info.datasetInfo.name] = ds_init_info.datasetInfo
-    for table_name, table_df in ds_init_info.load_tables.items():
-        duckdb_conn.load_dataframe(table_name, table_df)
-
-    if ds_init_info.load_embeddings:
-        for table_name, embedding_matrix in ds_init_info.load_embeddings.items():
-
-            table_df = ds_init_info.load_tables[table_name]
-
-            embed_func = lambda x: get_embedding(
-                x, "all-mpnet-base-v2"
-            )  # TODO change this model to be the same one used for making embedding
-
-            vectordb_conn.add_table(
-                table_name,
-                table_df,
-                embedding_matrix,
-                ds_init_info.datasetInfo.primary_key.name,
-                embed_func,
-            )
-
-
-def init_db():
-    duckdbconn = DatabaseConnection()
-    vectordbconn = VectorDBConnection()
-    metadataCache = {}
-
-    # print("Texture: database initialized.")
-    return duckdbconn, vectordbconn, metadataCache
 
 
 class DatabaseConnection:
@@ -249,7 +173,7 @@ class VectorDBConnection:
 
         self.connection = lancedb.connect(CACHE_PATH / database_dir)
         self.id_cols = {}
-        self.embed_funcs = {}
+        self.embed_funcs = {}  # type: dict[str, callable]
 
     def _check(self, table_name, check_conn=False, check_id=False, check_embed=False):
         if check_conn and table_name not in self.connection:
@@ -258,30 +182,35 @@ class VectorDBConnection:
         if check_id and table_name not in self.id_cols:
             raise ValueError(f"Table {table_name} does not have an id column saved.")
 
-        if check_embed and table_name not in self.embed_funcs:
-            raise ValueError(f"Table {table_name} does not have an embedding function.")
+        if (
+            check_embed
+            and table_name not in self.embed_funcs
+            or self.embed_funcs[table_name] is None
+        ):
+            raise ValueError(
+                f"Table {table_name} does not have a function for calcuating embeddings!"
+            )
 
     def add_table(
         self,
         table_name: str,
         data: pd.DataFrame,
-        embeddings: np.ndarray,
         id_col_name: str,
-        embed_func,
+        embed_func: Optional[Callable] = None,
     ):
         """
         Add a table to the database.
 
         Args:
             table_name (str): The name of the table.
-            data (pd.DataFrame): The dataframe containing the metadata and a column called "vector" with numpy arrays per row representing the vector representation.
+            data (pd.DataFrame): The dataframe containing the metadata. MUST have a column called "vector" with numpy arrays per row representing the vector representation.
             id_col_name (str): The name of the column in the dataframe that contains the unique identifier for each row.
             embed_func: function that takes a string and returns a numpy array embedding for this table
 
         Returns:
             None
         """
-        data["vector"] = list(embeddings)
+        # data[C_VECTOR] = list(embeddings)
         self.table = self.connection.create_table(
             table_name, data=data, mode="overwrite"
         )
@@ -316,7 +245,39 @@ class VectorDBConnection:
             self.connection[table_name]
             .search()
             .where(f"{self.id_cols[table_name]} = {id}")
-            .to_pandas()["vector"]
+            .to_pandas()[C_VECTOR]
         )
 
         return df.iloc[0]
+
+
+def initialize_databases(
+    datasetInfo: DatasetInfo,
+    load_tables: Dict[str, pd.DataFrame],
+    create_new_embedding_func: Optional[Callable] = None,
+) -> Tuple[DatabaseConnection, VectorDBConnection, Dict[str, DatasetInfo]]:
+    # Make DB
+    duckdb_conn = DatabaseConnection()
+    vectordb_conn = VectorDBConnection()
+    datasetMetadataCache = {}
+
+    # load vector data first
+    if datasetInfo.has_embeddings:
+        vectordb_conn.add_table(
+            datasetInfo.name,
+            load_tables[datasetInfo.name],
+            datasetInfo.primary_key.name,
+            create_new_embedding_func,
+        )
+
+        # remove vector column
+        load_tables[datasetInfo.name] = load_tables[datasetInfo.name].drop(
+            columns=[C_VECTOR]
+        )
+
+    # Load data
+    datasetMetadataCache[datasetInfo.name] = datasetInfo
+    for table_name, table_df in load_tables.items():
+        duckdb_conn.load_dataframe(table_name, table_df)
+
+    return duckdb_conn, vectordb_conn, datasetMetadataCache
