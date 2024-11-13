@@ -14,8 +14,8 @@
 
 <div>
   <button
-    class="space-between flex h-9 w-full items-center justify-between gap-2 px-2 hover:bg-secondary-200 border-t-2 border-secondary-200"
-    class:bg-secondary-100={active}
+    class="space-between flex h-9 w-full items-center justify-between gap-2 px-2 hover:bg-gray-200 border-t-2 border-secondary-200"
+    class:bg-gray-100={active}
     on:click={() => {
       active = !active;
     }}

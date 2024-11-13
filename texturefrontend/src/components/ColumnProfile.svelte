@@ -49,8 +49,8 @@
 >
   <!-- shadow is green-600 -->
   <button
-    class={`space-between flex h-9 w-full items-center justify-between border-t-2 border-secondary-200 gap-2 px-2 hover:bg-secondary-200 ${displayCol.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
-    class:bg-secondary-100={active}
+    class={`space-between flex h-9 w-full items-center justify-between border-t-2 border-secondary-200 gap-2 px-2 hover:bg-gray-200 ${displayCol.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
+    class:bg-gray-100={active}
     on:click={() => {
       active = !active;
     }}
@@ -79,7 +79,7 @@
       <NullDisplay nullPercentage={parseFloat(colSummary.null_percentage)} />
     {/if}
   </button>
-  <div class="w-full pl-4 py-1 relative" class:hidden={!active}>
+  <div class="w-full pl-4 py-1 mb-2" class:hidden={!active}>
     {#if displayCol.table_name && displayCol.table_name !== $datasetInfo.name}
       {#if displayCol.type === "categorical" || displayCol.type === "text"}
         <CategoricalChart
