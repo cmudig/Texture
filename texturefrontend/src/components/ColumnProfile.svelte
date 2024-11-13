@@ -14,7 +14,7 @@
   import { getUUID } from "../shared/utils";
   import DerivedIcon from "./icons/DerivedIcon.svelte";
   import { CogOutline } from "flowbite-svelte-icons";
-  import { Toggle } from "flowbite-svelte";
+
   import Search from "./Search.svelte";
   import type { Column, DatasetInfo } from "../backendapi";
 
@@ -146,11 +146,15 @@
     </div>
 
     {#if showSettings}
-      <div class="px-4 py-2 mx-2 mt-2 rounded bg-gray-100 flex">
-        <Toggle
-          size="small"
+      <div
+        class="px-4 py-2 mx-2 mt-2 rounded bg-gray-100 flex gap-2 items-center"
+      >
+        <input
+          type="checkbox"
+          class="w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 me-2 dark:bg-gray-700 dark:border-gray-600 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600"
           bind:checked={$showBackgroundDistMap[displayCol.name]}
         />
+
         <span class="text-sm text-gray-500"> Show original distribution </span>
       </div>
     {/if}
