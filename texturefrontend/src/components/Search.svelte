@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { Input } from "flowbite-svelte";
   import { SearchOutline } from "flowbite-svelte-icons";
   import { mosaicSelection, clearColumnSelections } from "../stores";
   import { isSelection } from "@uwdata/mosaic-core";
@@ -76,15 +75,13 @@
   });
 </script>
 
-<div class="relative w-full max-w-96">
-  <div
-    class="flex absolute inset-y-0 start-0 items-center ps-3 pointer-events-none"
-  >
-    <SearchOutline class="w-4 h-4" />
-  </div>
-  <Input
-    class="ps-10"
-    placeholder="Search over text columns..."
+<div class="inline flex gap-1 items-center">
+  <SearchOutline class="w-3 h-3" />
+
+  <input
+    class="w-full disabled:cursor-not-allowed disabled:opacity-50 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:border-gray-600 text-sm rounded-md bg-gray-50 text-gray-900 border-gray-300 px-2 py-0"
+    placeholder=""
+    type="text"
     bind:value={currentQuery}
     on:input={() => publishUpdate()}
   />

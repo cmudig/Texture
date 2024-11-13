@@ -12,6 +12,7 @@
   import DerivedIcon from "./icons/DerivedIcon.svelte";
   import { CogOutline } from "flowbite-svelte-icons";
   import { Toggle } from "flowbite-svelte";
+  import Search from "./Search.svelte";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
@@ -21,6 +22,10 @@
   let active = true;
   let showSettings = false;
   let mouseOver = false;
+  $: showChartForType =
+    displayCol.type === "number" ||
+    displayCol.type === "categorical" ||
+    displayCol.type === "date";
 </script>
 
 <div
@@ -77,42 +82,73 @@
           isDerivedTable={true}
           showBackground={$showBackgroundDistMap[displayCol.name]}
         />
+
+        <div class="flex gap-2 mx-2" class:invisible={!mouseOver}>
+          <div class="grow">
+            <Search
+              tableName={displayCol.table_name}
+              columnNames={[displayCol.name]}
+            />
+          </div>
+
+          {#if showChartForType}
+            <button
+              class="hover:bg-secondary-100 text-gray-500 p-1 rounded inline"
+              id={"chartSettings-" + id}
+              on:click={() => {
+                showSettings = !showSettings;
+              }}
+            >
+              <CogOutline size="xs" />
+            </button>
+          {/if}
+        </div>
       {:else}
         Not currently supporting quantitative columns from another table...
       {/if}
-    {:else if displayCol.type === "number"}
-      <Histogram
-        mainDatasetName={$datasetInfo.name}
-        showBackground={$showBackgroundDistMap[displayCol.name]}
-        columnName={displayCol.name}
-      />
-    {:else if displayCol.type === "categorical"}
-      <CategoricalChart
-        mainDatasetName={$datasetInfo.name}
-        showBackground={$showBackgroundDistMap[displayCol.name]}
-        columnName={displayCol.name}
-      />
-    {:else if displayCol.type === "date"}
-      <DateChart
-        mainDatasetName={$datasetInfo.name}
-        columnName={displayCol.name}
-      />
     {:else}
-      <div>
-        {displayCol.name}: Unsupported column type ({displayCol.type})
+      {#if displayCol.type === "number"}
+        <Histogram
+          mainDatasetName={$datasetInfo.name}
+          showBackground={$showBackgroundDistMap[displayCol.name]}
+          columnName={displayCol.name}
+        />
+      {:else if displayCol.type === "categorical"}
+        <CategoricalChart
+          mainDatasetName={$datasetInfo.name}
+          showBackground={$showBackgroundDistMap[displayCol.name]}
+          columnName={displayCol.name}
+        />
+      {:else if displayCol.type === "date"}
+        <DateChart
+          mainDatasetName={$datasetInfo.name}
+          columnName={displayCol.name}
+        />
+      {:else if displayCol.type === "text"}
+        <span> TODO show count</span>
+      {/if}
+
+      <div class="flex gap-2 mx-2" class:invisible={!mouseOver}>
+        <div class="grow">
+          <Search
+            tableName={$datasetInfo.name}
+            columnNames={[displayCol.name]}
+          />
+        </div>
+
+        {#if showChartForType}
+          <button
+            class="hover:bg-secondary-100 text-gray-500 p-1 rounded inline"
+            id={"chartSettings-" + id}
+            on:click={() => {
+              showSettings = !showSettings;
+            }}
+          >
+            <CogOutline size="xs" />
+          </button>
+        {/if}
       </div>
     {/if}
-
-    <button
-      class="hover:bg-secondary-100 text-gray-500 p-1 rounded absolute bottom-2 right-4"
-      id={"chartSettings-" + id}
-      class:hidden={!mouseOver}
-      on:click={() => {
-        showSettings = !showSettings;
-      }}
-    >
-      <CogOutline size="xs" />
-    </button>
 
     {#if showSettings}
       <div class="mb-2">
