@@ -17,5 +17,6 @@ export namespace Column {
     NUMBER = "number",
     DATE = "date",
     CATEGORICAL = "categorical",
+    LIST = "list",
   }
 }

@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ColumnSummary } from "../shared/types";
-  import type { Column } from "../backendapi/models/Column";
   import DataTypeIcon from "./icons/DataTypeIcon.svelte";
   import Histogram from "./charts/Histogram.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";
@@ -12,6 +11,8 @@
   import DerivedIcon from "./icons/DerivedIcon.svelte";
   import { CogOutline } from "flowbite-svelte-icons";
   import { Toggle } from "flowbite-svelte";
+  import Search from "./Search.svelte";
+  import type { Column, DatasetInfo } from "../backendapi";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
@@ -21,6 +22,22 @@
   let active = true;
   let showSettings = false;
   let mouseOver = false;
+  $: showChartForType =
+    displayCol.type === "number" ||
+    displayCol.type === "categorical" ||
+    displayCol.type === "date";
+
+  function getSearchInfo(col: Column, dsInfo: DatasetInfo): string {
+    if (
+      col.table_name &&
+      col.table_name !== dsInfo.name &&
+      (col.type === "categorical" || col.type === "text")
+    ) {
+      return col.table_name;
+    }
+
+    return dsInfo.name;
+  }
 </script>
 
 <div
@@ -32,8 +49,8 @@
 >
   <!-- shadow is green-600 -->
   <button
-    class={`space-between flex h-9 w-full items-center justify-between border-t-2 border-gray-100 gap-2 px-2 hover:bg-gray-100 ${displayCol.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
-    class:bg-gray-50={active}
+    class={`space-between flex h-9 w-full items-center justify-between border-t-2 border-secondary-200 gap-2 px-2 hover:bg-secondary-200 ${displayCol.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
+    class:bg-secondary-100={active}
     on:click={() => {
       active = !active;
     }}
@@ -97,32 +114,37 @@
         mainDatasetName={$datasetInfo.name}
         columnName={displayCol.name}
       />
-    {:else}
-      <div>
-        {displayCol.name}: Unsupported column type ({displayCol.type})
-      </div>
+    {:else if displayCol.type === "text"}
+      <span></span>
     {/if}
 
-    <button
-      class="hover:bg-secondary-100 text-gray-500 p-1 rounded absolute bottom-2 right-4"
-      id={"chartSettings-" + id}
-      class:hidden={!mouseOver}
-      on:click={() => {
-        showSettings = !showSettings;
-      }}
-    >
-      <CogOutline size="xs" />
-    </button>
+    <div class="flex gap-1 mx-2">
+      <div class="grow">
+        <Search
+          tableName={getSearchInfo(displayCol, $datasetInfo)}
+          column={displayCol}
+        />
+      </div>
+      {#if showChartForType}
+        <button
+          class="hover:bg-secondary-200 text-gray-500 p-1 rounded inline"
+          id={"chartSettings-" + id}
+          on:click={() => {
+            showSettings = !showSettings;
+          }}
+        >
+          <CogOutline size="xs" />
+        </button>
+      {/if}
+    </div>
 
     {#if showSettings}
-      <div class="mb-2">
+      <div class="px-4 py-2 mx-2 mt-2 rounded bg-gray-100 flex">
         <Toggle
           size="small"
-          class="mt-2"
           bind:checked={$showBackgroundDistMap[displayCol.name]}
-        >
-          Show original distribution
-        </Toggle>
+        />
+        <span class="text-sm text-gray-500"> Show original distribution </span>
       </div>
     {/if}
   </div>

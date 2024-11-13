@@ -1,11 +1,16 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { TableClient } from "./TableClient";
-  import { mosaicSelection, compareSimilarID, datasetInfo } from "../../stores";
+  import {
+    mosaicSelection,
+    compareSimilarID,
+    datasetInfo,
+    tableSortColStore,
+    tableSortDescStore,
+    tableSchemaStore,
+  } from "../../stores";
   import { onDestroy } from "svelte";
-  import { ArrowUpSolid, ArrowDownSolid } from "flowbite-svelte-icons";
   import RowView from "./RowView.svelte";
-  import { Select } from "flowbite-svelte";
   import TablePlaceholder from "../utils/TablePlaceholder.svelte";
 
   export let currentColToggleStates: Record<string, boolean> = {};
@@ -60,9 +65,13 @@
       .then(() => {
         ready = true;
       });
+
+    tableSortColStore.set(myTableClient.sortColumn);
+    tableSortDescStore.set(myTableClient.sortDesc);
+    tableSchemaStore.set(myTableClient.schema);
   }
 
-  $: ({ schema, data, sortColumn, sortDesc, loaded } = myTableClient);
+  $: ({ schema, data, loaded } = myTableClient);
 
   $: colTypeMap = $datasetInfo.columns.reduce((acc, col) => {
     acc[col.name] = col.type;
@@ -73,40 +82,6 @@
 <div class="h-full">
   {#if ready}
     {#if $schema}
-      <div class="flex gap-2 justify-end items-center text-gray-500 px-4 pb-1">
-        <slot name="navBar" />
-
-        <div class="flex gap-1 items-center">
-          <Select
-            class="max-w-40"
-            size="sm"
-            items={[
-              { value: undefined, name: "Not sorted" },
-              ...$schema.map((colInfo) => ({
-                value: colInfo.column,
-                name: colInfo.column,
-              })),
-            ]}
-            bind:value={$sortColumn}
-            placeholder="Sort by..."
-          />
-
-          <button
-            class={`hover:bg-gray-200 bg-gray-50 text-gray-500 p-1 rounded ${
-              !$sortColumn && "cursor-not-allowed !text-gray-300"
-            }`}
-            on:click={() => ($sortDesc = !$sortDesc)}
-            title={"Toggle sort order"}
-            disabled={!$sortColumn}
-          >
-            {#if $sortDesc}
-              <ArrowDownSolid size="xs" />
-            {:else}
-              <ArrowUpSolid size="xs" />
-            {/if}
-          </button>
-        </div>
-      </div>
       <div
         class="max-h-screen overflow-auto"
         on:scroll={(e) => myTableClient.scroll(e)}

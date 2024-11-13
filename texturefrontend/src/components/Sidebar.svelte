@@ -22,7 +22,7 @@
 
   {#each $datasetInfo.columns as col}
     <!-- Dont make row entry for text cols -->
-    {#if col.type === "categorical" || col.type === "number" || col.type === "date"}
+    {#if col.type === "categorical" || col.type === "number" || col.type === "date" || col.type === "text"}
       <ColumnProfile
         displayCol={col}
         colSummary={datasetColSummaries.get(col.name)}
