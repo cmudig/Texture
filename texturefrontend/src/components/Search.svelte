@@ -9,51 +9,47 @@
     prefix,
     suffix,
     literal,
-    or,
+    eq,
   } from "@uwdata/mosaic-sql";
   import { getUUID } from "../shared/utils";
+  import type { Column } from "../backendapi/models/Column";
 
   const FUNCTIONS = { contains, prefix, suffix, regexp: regexp_matches };
 
-  export let columnNames: string[] | undefined;
+  export let column: Column;
   export let tableName: string;
   export let type = "contains";
   let currentQuery: string | undefined;
   let uuid = getUUID();
 
-  $: saveSelectionToCache(columnNames);
+  $: saveSelectionToCache(column, uuid);
 
-  function saveSelectionToCache(_colNames: string[] | undefined) {
-    if (_colNames?.length) {
-      _colNames.forEach((colName) => {
-        $clearColumnSelections = [
-          ...$clearColumnSelections,
-          {
-            clearFunc: () => (currentQuery = undefined),
-            sourceId: uuid,
-            colName: colName,
-          },
-        ];
-      });
-    }
+  function saveSelectionToCache(_col: Column, _uuid) {
+    $clearColumnSelections = [
+      ...$clearColumnSelections,
+      {
+        clearFunc: () => (currentQuery = undefined),
+        sourceId: _uuid,
+        colName: _col.name,
+      },
+    ];
   }
 
   function publishUpdate() {
-    if (isSelection($mosaicSelection) && columnNames?.length) {
-      // adds predicates to provided selection; if a cross filter then these will be OR'd
-
+    if (isSelection($mosaicSelection) && column != undefined) {
       let pred = null;
       let cleanedQuery = currentQuery?.replaceAll("'", "''");
 
+      // TODO: support case-insensitive search
+
       if (cleanedQuery) {
-        pred =
-          columnNames.length > 1
-            ? or(
-                columnNames.map((col) =>
-                  FUNCTIONS[type](col, literal(cleanedQuery)),
-                ),
-              )
-            : FUNCTIONS[type](columnNames[0], literal(cleanedQuery));
+        if (column.type === "text" || column.type === "categorical") {
+          pred = FUNCTIONS[type](column.name, literal(cleanedQuery));
+        } else if (column.type === "number") {
+          pred = eq(column.name, literal(Number(cleanedQuery)));
+        } else if (column.type === "date") {
+          pred = eq(column.name, literal(cleanedQuery));
+        }
       }
 
       let updateInfo = {

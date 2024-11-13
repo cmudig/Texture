@@ -85,10 +85,7 @@
 
         <div class="flex gap-2 mx-2" class:opacity-25={!mouseOver}>
           <div class="grow">
-            <Search
-              tableName={displayCol.table_name}
-              columnNames={[displayCol.name]}
-            />
+            <Search tableName={displayCol.table_name} column={displayCol} />
           </div>
 
           {#if showChartForType}
@@ -130,10 +127,7 @@
 
       <div class="flex gap-2 mx-2" class:opacity-25={!mouseOver}>
         <div class="grow">
-          <Search
-            tableName={$datasetInfo.name}
-            columnNames={[displayCol.name]}
-          />
+          <Search tableName={$datasetInfo.name} column={displayCol} />
         </div>
 
         {#if showChartForType}
