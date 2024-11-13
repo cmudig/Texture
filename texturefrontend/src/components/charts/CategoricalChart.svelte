@@ -102,19 +102,27 @@
         vg.toggleY({ as: selection }),
         vg.toggleY({ as: $mosaicSelection }),
         vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
-          x: vg.count(),
+          x: 0,
           y: cName,
           sort: { y: "-x", limit },
           text: vg.count(),
           dx: -3,
           textAnchor: "end",
           textOverflow: "ellipsis",
-          fill: "white",
+          fill: "black",
         }),
-        vg.margins({ left: 80, bottom: 0, top: 0, right: 0 }),
+        vg.margins({ left: 250, bottom: 0, top: 0, right: 0 }),
         vg.width(400),
         vg.axis(null),
-        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7, label: null }),
+        vg.axisY({
+          textOverflow: "ellipsis",
+          lineWidth: 15,
+          label: null,
+          textAnchor: "start",
+          dx: -220,
+          fontSize: 14,
+          tickSize: 0,
+        }),
       );
     } else {
       plotWrapper = getPlot(
@@ -128,19 +136,27 @@
         vg.toggleY({ as: selection }),
         vg.toggleY({ as: $mosaicSelection }),
         vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
-          x: vg.count(),
+          x: 0,
           y: cName,
           sort: { y: "-x", limit },
           text: vg.count(),
           dx: -3,
           textAnchor: "end",
           textOverflow: "ellipsis",
-          fill: "white",
+          fill: "black",
         }),
-        vg.margins({ left: 80, bottom: 0, top: 0, right: 0 }),
+        vg.margins({ left: 250, bottom: 0, top: 0, right: 0 }),
         vg.width(400),
         vg.axis(null),
-        vg.axisY({ textOverflow: "ellipsis", lineWidth: 7, label: null }),
+        vg.axisY({
+          textOverflow: "ellipsis",
+          lineWidth: 15,
+          label: null,
+          textAnchor: "start",
+          dx: -220,
+          fontSize: 14,
+          tickSize: 0,
+        }),
       );
     }
 
