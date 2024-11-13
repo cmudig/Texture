@@ -24,10 +24,6 @@ const backendService: DefaultService = new TextProfileClient({
 
 // This isnt gonna update so not a store
 export const databaseConnection = new DatabaseConnection(backendService);
-export const tableSortColStore: Writable<Writable<string | undefined>> =
-  writable();
-export const tableSortDescStore: Writable<Writable<boolean>> = writable();
-export const tableSchemaStore: Writable<Writable<FieldInfo[]>> = writable();
 
 // ~~~~~~~~~~~~~~~ App wide stores ~~~~~~~~~~~~~~~
 export const compareSimilarID: Writable<number | undefined> = writable();
@@ -43,6 +39,12 @@ export const clearColumnSelections: Writable<
     colName: string;
   }[]
 > = writable([]);
+export const tableSortColStore: Writable<Writable<string | undefined>> =
+  writable();
+export const tableSortDescStore: Writable<Writable<boolean>> = writable();
+export const tableSchemaStore: Writable<Writable<FieldInfo[]>> = writable();
+export const projectionColorColumn: Writable<string | undefined> =
+  writable(undefined);
 
 export const selectionDisplay = derived(
   mosaicSelection,

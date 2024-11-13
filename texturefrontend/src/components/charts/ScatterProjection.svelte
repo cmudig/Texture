@@ -8,6 +8,7 @@
   export let columnName: string;
   export let mainDatasetName: string;
   export let plotNulls = true;
+  export let colorColName: string | undefined = undefined;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -42,23 +43,25 @@
     cName: string,
     pltNullsFlag: boolean,
     selection: any,
+    colorCol: string | undefined,
   ) {
     let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
     let fromClause: any = datasetName;
 
     plotWrapper = getPlot(
+      vg.name("projectionView"),
       vg.dot(vg.from(fromClause), {
         x: "umap_x",
         y: "umap_y",
-        r: 1.5,
+        r: 2,
         fill: "#ccc",
         fillOpacity: 0.4,
       }),
       vg.dot(vg.from(fromClause, { filterBy: $mosaicSelection }), {
         x: "umap_x",
         y: "umap_y",
-        r: 1.5,
-        fill: "steelblue",
+        r: 2,
+        fill: colorCol ?? "steelblue",
       }),
       vg.axis(null),
       vg.highlight({ by: selection, opacity: 0.1 }),
@@ -69,11 +72,17 @@
       vg.margins({ top: 10, right: 10, left: 10, bottom: 10 }),
     );
 
-    el.replaceChildren(plotWrapper.element);
+    el.replaceChildren(plotWrapper.element); //, legend.element);
   }
 
   afterUpdate(() => {
-    renderChart(mainDatasetName, columnName, plotNulls, thisSelection);
+    renderChart(
+      mainDatasetName,
+      columnName,
+      plotNulls,
+      thisSelection,
+      colorColName,
+    );
   });
 
   onDestroy(() => {

@@ -1,6 +1,12 @@
 <script lang="ts">
   import { datasetInfo } from "../stores";
   import ScatterProjection from "./charts/ScatterProjection.svelte";
+  import type { Column } from "../backendapi";
+  import { Select } from "flowbite-svelte";
+  import { projectionColorColumn } from "../stores";
+
+  export let colorCols: Column[] = [];
+  // let colorColName: string | undefined = undefined;
 
   let active = getInitialToggle();
 
@@ -27,23 +33,41 @@
       Dataset Overview
     </p>
   </button>
-  <div class="w-full">
-    <div class="ml-4 mt-2" class:hidden={!active}>
-      {#if $datasetInfo.has_projection}
+
+  <div class="w-full pl-4 pt-2 pr-2" class:hidden={!active}>
+    {#if $datasetInfo.has_projection}
+      <div class="flex flex-col">
+        {#if colorCols.length > 0}
+          <Select
+            class="max-w-40 py-1 self-end"
+            size="sm"
+            items={[
+              { value: undefined, name: "No color" },
+              ...colorCols.map((col) => ({
+                value: col.name,
+                name: col.name,
+              })),
+            ]}
+            bind:value={$projectionColorColumn}
+            placeholder="Color by..."
+          />
+        {/if}
+
         <ScatterProjection
           mainDatasetName={$datasetInfo.name}
           columnName="projection_xy"
+          colorColName={$projectionColorColumn}
         />
-      {:else}
-        <div class="text-gray-500 mb-2">
-          No projection uploaded! Try uploading <span class="font-bold"
-            >embeddings</span
-          >
-          or columns
-          <span class="font-bold">umap_x</span>
-          and <span class="font-bold">umap_y</span>.
-        </div>
-      {/if}
-    </div>
+      </div>
+    {:else}
+      <div class="text-gray-500 mb-2">
+        No projection uploaded! Try uploading <span class="font-bold"
+          >embeddings</span
+        >
+        or columns
+        <span class="font-bold">umap_x</span>
+        and <span class="font-bold">umap_y</span>.
+      </div>
+    {/if}
   </div>
 </div>

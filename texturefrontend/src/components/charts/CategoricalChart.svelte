@@ -18,6 +18,7 @@
   export let limit = 10;
   export let excludeList: string[] | undefined = undefined;
   export let isDerivedTable = false;
+  export let colorColName: string | undefined = undefined;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -55,6 +56,7 @@
     pltNullsFlag: boolean,
     selection: any,
     _excludeList?: string[],
+    colorColName?: string,
   ) {
     let datasetName = await getDatasetName(
       mainDsName,
@@ -93,7 +95,7 @@
         vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
-          fill: "steelblue",
+          fill: colorColName ?? "steelblue",
           sort: { y: "-x", limit },
         }),
         vg.highlight({ by: selection }),
@@ -119,7 +121,7 @@
         vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
           x: vg.count(),
           y: cName,
-          fill: "steelblue",
+          fill: colorColName ?? "steelblue",
           sort: { y: "-x", limit },
         }),
         vg.highlight({ by: selection }),
@@ -152,6 +154,7 @@
       plotNulls,
       thisSelection,
       excludeList,
+      colorColName,
     );
   });
 

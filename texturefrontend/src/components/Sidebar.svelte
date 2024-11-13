@@ -18,7 +18,11 @@
     </Button>
   </div>
 
-  <ProjectionOverview />
+  <ProjectionOverview
+    colorCols={$datasetInfo.columns.filter(
+      (c) => c.type === "categorical" && c.derived_from == null,
+    )}
+  />
 
   {#each $datasetInfo.columns as col}
     <!-- Dont make row entry for text cols -->

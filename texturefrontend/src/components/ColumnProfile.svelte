@@ -5,7 +5,11 @@
   import CategoricalChart from "./charts/CategoricalChart.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
-  import { datasetInfo, showBackgroundDistMap } from "../stores";
+  import {
+    datasetInfo,
+    showBackgroundDistMap,
+    projectionColorColumn,
+  } from "../stores";
   import { stopwords } from "../shared/stopwords";
   import { getUUID } from "../shared/utils";
   import DerivedIcon from "./icons/DerivedIcon.svelte";
@@ -108,6 +112,9 @@
         mainDatasetName={$datasetInfo.name}
         showBackground={$showBackgroundDistMap[displayCol.name]}
         columnName={displayCol.name}
+        colorColName={$projectionColorColumn === displayCol.name
+          ? displayCol.name
+          : undefined}
       />
     {:else if displayCol.type === "date"}
       <DateChart
