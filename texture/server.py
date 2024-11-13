@@ -3,12 +3,12 @@ from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
-from typing import Dict
+from typing import Dict, Callable, Optional
 import os
 import pandas as pd
 import datetime
 
-from texture.database import init_db, populate_example_datasets, populate_dataset
+from texture.database.connection import initialize_databases
 from texture.models import (
     DatasetInfo,
     DuckQueryData,
@@ -20,7 +20,6 @@ from texture.models import (
     Column,
     CodeTransformRequest,
     CodeTransformCommit,
-    DatasetInitArgs,
 )
 from texture.userTransformLLM.client import LLMClient
 from texture.utils import get_type_from_response, flatten
@@ -39,20 +38,17 @@ def custom_generate_unique_id(route: APIRoute):
 
 
 def get_server(
-    ds_init_info: DatasetInitArgs = None,
-    load_example_data: bool = True,
+    datasetInfo: DatasetInfo,
+    load_tables: Dict[str, pd.DataFrame],
+    create_new_embedding_func: Optional[Callable] = None,
     api_key: str = None,
 ) -> FastAPI:
 
     ### Database set up
-    duckdb_conn, vectordb_conn, datasetMetadataCache = init_db()
+    duckdb_conn, vectordb_conn, datasetMetadataCache = initialize_databases(
+        datasetInfo, load_tables, create_new_embedding_func
+    )
     llm_client = LLMClient(api_key=api_key)
-
-    if load_example_data:
-        populate_example_datasets(duckdb_conn, vectordb_conn, datasetMetadataCache)
-
-    if ds_init_info:
-        populate_dataset(duckdb_conn, vectordb_conn, datasetMetadataCache, ds_init_info)
 
     ### Web server set up
     app = FastAPI(

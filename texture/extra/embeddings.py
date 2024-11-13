@@ -4,7 +4,6 @@ import numpy as np
 from pathlib import Path
 import torch
 
-from texture.preprocess.utils import save_embeddings
 
 # see https://www.sbert.net/docs/pretrained_models.html for all models
 # best model overall for english: "all-mpnet-base-v2"
@@ -52,3 +51,14 @@ def get_embeddings_and_projection(
 
     projection = get_projection(local_embeds)
     return embeddings, projection
+
+
+def save_embeddings(embedding, path):
+    torch.save(embedding, path)
+    print("Saved embedding to ", path)
+
+
+def load_embeddings(path):
+    e = torch.load(path)
+    print("Loaded embedding from ", path)
+    return e
