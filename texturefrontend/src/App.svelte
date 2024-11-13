@@ -91,14 +91,14 @@
 
 <div class="h-screen flex flex-col">
   <!-- Top bar -->
-  <div class="flex gap-2 border-b-4 border-secondary-400 bg-secondary-200 p-4">
+  <div class="flex gap-2 border-b-2 border-gray-300 bg-secondary-200 p-4">
     <div class="mr-8"><TextureIcon size={40} /></div>
 
     <div class="grow self-center">
       <FilterBar />
     </div>
     <div class="text-md self-center">
-      {formatNumber($filteredCount)} / {formatNumber(datasetSize)} rows
+      {formatNumber($filteredCount)} / {formatNumber(datasetSize)} documents
     </div>
 
     <TableSort />
@@ -139,11 +139,11 @@
       <Spinner />
     </div>
   {:then}
-    <div class="flex flex-1 overflow-hidden">
-      <div class="w-[450px] shrink-0 overflow-auto border-r border-gray-300">
+    <div class="flex flex-1 overflow-hidden bg-gray-50">
+      <div class="w-[450px] shrink-0 overflow-auto border-r-2 border-gray-300">
         <Sidebar bind:showAddColModal {datasetColSummaries} />
       </div>
-      <div class="flex-1 min-w-[450px] overflow-auto bg-gray-50">
+      <div class="flex-1 min-w-[450px] overflow-auto">
         {#if $compareSimilarID !== undefined}
           <SimilarView
             similarDocID={$compareSimilarID}
