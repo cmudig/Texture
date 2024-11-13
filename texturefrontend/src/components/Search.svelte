@@ -53,7 +53,7 @@
       }
 
       let updateInfo = {
-        source: undefined,
+        source: `${column.name}_search_${uuid}`,
         schema: { type },
         value: cleanedQuery,
         predicate: pred,
