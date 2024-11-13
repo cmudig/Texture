@@ -13,6 +13,7 @@ import {
 } from "./backendapi";
 import { DatabaseConnection } from "./database/db";
 import { updateSelectionMap } from "./shared/selection";
+import type { FieldInfo } from "./components/table/TableClient";
 
 // ~~~~~~~~~~~~~~~  Database init ~~~~~~~~~~~~~~~
 const API_URL = import.meta.env.DEV ? "http://localhost:8080/api" : undefined;
@@ -23,6 +24,10 @@ const backendService: DefaultService = new TextProfileClient({
 
 // This isnt gonna update so not a store
 export const databaseConnection = new DatabaseConnection(backendService);
+export const tableSortColStore: Writable<Writable<string | undefined>> =
+  writable();
+export const tableSortDescStore: Writable<Writable<boolean>> = writable();
+export const tableSchemaStore: Writable<Writable<FieldInfo[]>> = writable();
 
 // ~~~~~~~~~~~~~~~ App wide stores ~~~~~~~~~~~~~~~
 export const compareSimilarID: Writable<number | undefined> = writable();
