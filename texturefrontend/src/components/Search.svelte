@@ -71,12 +71,19 @@
   });
 </script>
 
-<div class="inline flex gap-1 items-center">
-  <SearchOutline class="w-3 h-3" />
+<div class="relative">
+  <!-- <div class="text-gray-500 p-1 rounded inline">
+    <SearchOutline class="" size="xs" />
+  </div> -->
+
+  <div
+    class="flex absolute inset-y-0 items-center ps-2 pointer-events-none text-gray-500"
+  >
+    <SearchOutline size="xs" />
+  </div>
 
   <input
-    class="w-full disabled:cursor-not-allowed disabled:opacity-50 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:border-gray-600 text-sm rounded-md bg-gray-50 text-gray-900 border-gray-300 px-2 py-0"
-    placeholder=""
+    class="w-full disabled:cursor-not-allowed disabled:opacity-50 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:border-gray-600 text-sm rounded-md bg-gray-50 text-gray-900 border-gray-200 px-2 py-0 ps-6"
     type="text"
     bind:value={currentQuery}
     on:input={() => publishUpdate()}

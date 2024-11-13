@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ColumnSummary } from "../shared/types";
-  import type { Column } from "../backendapi/models/Column";
   import DataTypeIcon from "./icons/DataTypeIcon.svelte";
   import Histogram from "./charts/Histogram.svelte";
   import CategoricalChart from "./charts/CategoricalChart.svelte";
@@ -13,6 +12,7 @@
   import { CogOutline } from "flowbite-svelte-icons";
   import { Toggle } from "flowbite-svelte";
   import Search from "./Search.svelte";
+  import type { Column, DatasetInfo } from "../backendapi";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
@@ -26,6 +26,18 @@
     displayCol.type === "number" ||
     displayCol.type === "categorical" ||
     displayCol.type === "date";
+
+  function getSearchInfo(col: Column, dsInfo: DatasetInfo): string {
+    if (
+      col.table_name &&
+      col.table_name !== dsInfo.name &&
+      (col.type === "categorical" || col.type === "text")
+    ) {
+      return col.table_name;
+    }
+
+    return dsInfo.name;
+  }
 </script>
 
 <div
@@ -82,77 +94,57 @@
           isDerivedTable={true}
           showBackground={$showBackgroundDistMap[displayCol.name]}
         />
-
-        <div class="flex gap-2 mx-2" class:opacity-25={!mouseOver}>
-          <div class="grow">
-            <Search tableName={displayCol.table_name} column={displayCol} />
-          </div>
-
-          {#if showChartForType}
-            <button
-              class="hover:bg-secondary-100 text-gray-500 p-1 rounded inline"
-              id={"chartSettings-" + id}
-              on:click={() => {
-                showSettings = !showSettings;
-              }}
-            >
-              <CogOutline size="xs" />
-            </button>
-          {/if}
-        </div>
       {:else}
         Not currently supporting quantitative columns from another table...
       {/if}
-    {:else}
-      {#if displayCol.type === "number"}
-        <Histogram
-          mainDatasetName={$datasetInfo.name}
-          showBackground={$showBackgroundDistMap[displayCol.name]}
-          columnName={displayCol.name}
-        />
-      {:else if displayCol.type === "categorical"}
-        <CategoricalChart
-          mainDatasetName={$datasetInfo.name}
-          showBackground={$showBackgroundDistMap[displayCol.name]}
-          columnName={displayCol.name}
-        />
-      {:else if displayCol.type === "date"}
-        <DateChart
-          mainDatasetName={$datasetInfo.name}
-          columnName={displayCol.name}
-        />
-      {:else if displayCol.type === "text"}
-        <span> TODO show count</span>
-      {/if}
-
-      <div class="flex gap-2 mx-2" class:opacity-25={!mouseOver}>
-        <div class="grow">
-          <Search tableName={$datasetInfo.name} column={displayCol} />
-        </div>
-
-        {#if showChartForType}
-          <button
-            class="hover:bg-secondary-100 text-gray-500 p-1 rounded inline"
-            id={"chartSettings-" + id}
-            on:click={() => {
-              showSettings = !showSettings;
-            }}
-          >
-            <CogOutline size="xs" />
-          </button>
-        {/if}
-      </div>
+    {:else if displayCol.type === "number"}
+      <Histogram
+        mainDatasetName={$datasetInfo.name}
+        showBackground={$showBackgroundDistMap[displayCol.name]}
+        columnName={displayCol.name}
+      />
+    {:else if displayCol.type === "categorical"}
+      <CategoricalChart
+        mainDatasetName={$datasetInfo.name}
+        showBackground={$showBackgroundDistMap[displayCol.name]}
+        columnName={displayCol.name}
+      />
+    {:else if displayCol.type === "date"}
+      <DateChart
+        mainDatasetName={$datasetInfo.name}
+        columnName={displayCol.name}
+      />
+    {:else if displayCol.type === "text"}
+      <span></span>
     {/if}
 
+    <div class="flex gap-1 mx-2">
+      <div class="grow">
+        <Search
+          tableName={getSearchInfo(displayCol, $datasetInfo)}
+          column={displayCol}
+        />
+      </div>
+      {#if showChartForType}
+        <button
+          class="hover:bg-secondary-200 text-gray-500 p-1 rounded inline"
+          id={"chartSettings-" + id}
+          on:click={() => {
+            showSettings = !showSettings;
+          }}
+        >
+          <CogOutline size="xs" />
+        </button>
+      {/if}
+    </div>
+
     {#if showSettings}
-      <div class="mb-2">
+      <div class="px-4 py-2 mx-2 mt-2 rounded bg-gray-100 flex">
         <Toggle
           size="small"
-          class="mt-2"
           bind:checked={$showBackgroundDistMap[displayCol.name]}
-        >
-          Show original distribution
-        </Toggle>
+        />
+        <span class="text-sm text-gray-500"> Show original distribution </span>
       </div>
     {/if}
   </div>
