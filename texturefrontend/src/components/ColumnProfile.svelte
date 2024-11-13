@@ -83,7 +83,7 @@
           showBackground={$showBackgroundDistMap[displayCol.name]}
         />
 
-        <div class="flex gap-2 mx-2" class:invisible={!mouseOver}>
+        <div class="flex gap-2 mx-2" class:opacity-25={!mouseOver}>
           <div class="grow">
             <Search
               tableName={displayCol.table_name}
@@ -128,7 +128,7 @@
         <span> TODO show count</span>
       {/if}
 
-      <div class="flex gap-2 mx-2" class:invisible={!mouseOver}>
+      <div class="flex gap-2 mx-2" class:opacity-25={!mouseOver}>
         <div class="grow">
           <Search
             tableName={$datasetInfo.name}
