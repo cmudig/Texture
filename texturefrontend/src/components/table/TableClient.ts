@@ -1,11 +1,13 @@
 import { desc } from "@uwdata/mosaic-sql";
 import * as vg from "@uwdata/vgplot";
 import { type Writable, writable, get } from "svelte/store";
+import type { Column } from "../../backendapi";
 
 export type TableProps = {
   filterBy?: any;
-  mainTableName: string;
-  columns: any[];
+  from: string;
+  mainColumns: Column[];
+  otherColumns: Column[];
 };
 
 export type FieldInfo = {
@@ -17,9 +19,10 @@ export type FieldInfo = {
 };
 
 export class TableClient extends vg.MosaicClient {
-  public columns: any[];
+  public mainColumns: Column[];
+  public otherColumns: Column[];
   public filterBy: any;
-  public mainTableName: string;
+  public from: string; // N.B. don't change this property name bc used in mosaic
   public data: Writable<any[]>;
   public limit: number;
   public loaded: Writable<boolean>;
@@ -31,13 +34,13 @@ export class TableClient extends vg.MosaicClient {
   public sortDesc: Writable<boolean>;
   public sortHeader: any;
 
-  // NOTE: the table client only supports fields from a single table right now, must be filtered out before passing to the client
-  constructor({ filterBy, mainTableName, columns }: TableProps) {
+  constructor({ filterBy, from, mainColumns, otherColumns }: TableProps) {
     super(filterBy);
 
-    this.columns = columns;
+    this.mainColumns = mainColumns;
+    this.otherColumns = otherColumns;
     this.filterBy = filterBy;
-    this.mainTableName = mainTableName;
+    this.from = from;
     this.data = writable();
     this.limit = 50;
     this.loaded = writable(false);
@@ -75,7 +78,7 @@ export class TableClient extends vg.MosaicClient {
    * Return an array of fields queried by this client.
    */
   fields() {
-    return this.columns.map((name: any) => vg.column(this.mainTableName, name));
+    return this.mainColumns.map((col) => vg.column(this.from, col.name));
   }
 
   /**
@@ -100,12 +103,12 @@ export class TableClient extends vg.MosaicClient {
       this.offset = 0;
     }
 
-    const { mainTableName, limit, offset } = this;
+    const { from, limit, offset } = this;
     let sortColumn = get(this.sortColumn);
     let schema = get(this.schema);
     let sortDesc = get(this.sortDesc);
 
-    let q = vg.Query.from({ source: mainTableName })
+    let q = vg.Query.from({ source: from })
       .select(schema.map((s) => s.column))
       .where(filter)
       .orderby(sortColumn ? (sortDesc ? desc(sortColumn) : sortColumn) : [])
@@ -127,7 +130,11 @@ export class TableClient extends vg.MosaicClient {
 
     if (newData) {
       let thisData = [...newData];
+
+      const otherData = this.getOtherTableData(thisData);
+
       this.data.update((oldItems) => [...oldItems, ...thisData]);
+      // TODO: make store for other table data
 
       if (thisData.length < this.limit) {
         // data table has been fully loaded
@@ -136,6 +143,10 @@ export class TableClient extends vg.MosaicClient {
     }
 
     return this;
+  }
+
+  getOtherTableData(newMainData) {
+    // query the tables in otherColumns to get the new data and update...
   }
 
   /**

@@ -9,7 +9,7 @@
     tableSortDescStore,
     tableSchemaStore,
   } from "../../stores";
-  import type { DatasetSchema } from "../../backendapi";
+  import type { DatasetSchema, Column } from "../../backendapi";
   import { onDestroy } from "svelte";
   import RowView from "./RowView.svelte";
   import TablePlaceholder from "../utils/TablePlaceholder.svelte";
@@ -22,26 +22,30 @@
 
   function createClient(
     _dsInfo: DatasetSchema,
-    _currentColToggleStates: Record<string, boolean>,
+    shouldDisplay: Record<string, boolean>,
     filter,
   ) {
-    // only get columns with toggle on; remove duplicate pk
-    let plotcols = Object.keys(_currentColToggleStates).filter(
-      (col) =>
-        _currentColToggleStates[col] &&
-        col !== _dsInfo.primary_key.name &&
-        !_dsInfo.columns.find((c) => c.name === col)?.derivedSchema, // dont include cols from another table bc breaks mosaic client
-    );
+    const mainTableCols: Column[] = [];
+    const otherTableCols: Column[] = [];
 
-    // TODO: add array columns into table view
+    for (let col of _dsInfo.columns) {
+      if (shouldDisplay[col.name]) {
+        if (col.derivedSchema) {
+          otherTableCols.push(col);
+        } else {
+          mainTableCols.push(col);
+        }
+      }
+    }
 
     // always include pk
-    plotcols.push(_dsInfo.primary_key.name);
+    mainTableCols.push(_dsInfo.primary_key);
 
     let client = new TableClient({
       filterBy: filter,
-      mainTableName: _dsInfo.name,
-      columns: plotcols,
+      from: _dsInfo.name,
+      mainColumns: mainTableCols,
+      otherColumns: otherTableCols,
     });
 
     return client;

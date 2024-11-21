@@ -10,7 +10,7 @@ DataType = Literal["text", "number", "date", "categorical"]
 class DerivedSchema(BaseModel):
     is_segment: bool  # corresponds to a segment of a text col
     table_name: str  # table name for this data
-    derived_from: str  # name of col derived from
+    derived_from: Optional[str] = None  # name of col derived from
     derived_how: Optional[Literal["model", "code"]] = None
 
 

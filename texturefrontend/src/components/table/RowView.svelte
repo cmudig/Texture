@@ -44,7 +44,7 @@
       let derivedCol = datasetSchema.columns.find(
         (col) =>
           col.derivedSchema?.is_segment &&
-          col.derivedSchema.derived_from === textCol,
+          col.derivedSchema?.derived_from === textCol,
       );
 
       if (derivedCol != undefined && derivedCol.name in selectionMap) {
