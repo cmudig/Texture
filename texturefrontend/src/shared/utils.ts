@@ -9,20 +9,24 @@ export function getUUID(): string {
 
 const randomSixDigitInt = () => Math.floor(Math.random() * 900000) + 100000;
 
+/**
+ * If we are excluding some values from a plot or want to filter out nulls, we create a view
+ * and then visualize the view in the charts
+ */
 export async function getDatasetName(
   mainDSName: string,
   cName: string,
-  pltNullsFlag: boolean,
+  shouldPlotNulls: boolean,
   _excludeList?: string[],
 ): Promise<string> {
   // if filter updates but view name does not change then mosaic might not refresh so we append random int every time
   let viewNameStr = `${mainDSName}_VIEW_${cName}_${randomSixDigitInt()}`;
 
-  if (!pltNullsFlag || _excludeList) {
+  if (!shouldPlotNulls || _excludeList) {
     let baseQ = vg.sql`CREATE OR REPLACE VIEW ${vg.column(viewNameStr)} as select * from ${vg.column(mainDSName)} `;
     let whereClauses: string[] = [];
 
-    if (!pltNullsFlag) {
+    if (!shouldPlotNulls) {
       let s = vg.sql`${vg.column(cName)} is not null`;
       whereClauses.push(s);
     }
