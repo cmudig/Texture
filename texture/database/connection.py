@@ -182,10 +182,8 @@ class VectorDBConnection:
         if check_id and table_name not in self.id_cols:
             raise ValueError(f"Table {table_name} does not have an id column saved.")
 
-        if (
-            check_embed
-            and table_name not in self.embed_funcs
-            or self.embed_funcs[table_name] is None
+        if check_embed and (
+            table_name not in self.embed_funcs or self.embed_funcs[table_name] is None
         ):
             raise ValueError(
                 f"Table {table_name} does not have a function for calcuating embeddings!"
