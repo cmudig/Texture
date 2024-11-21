@@ -40,7 +40,7 @@
 
     let client = new TableClient({
       filterBy: filter,
-      from: _dsInfo.name,
+      mainTableName: _dsInfo.name,
       columns: plotcols,
     });
 

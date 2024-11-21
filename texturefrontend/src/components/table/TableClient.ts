@@ -4,7 +4,7 @@ import { type Writable, writable, get } from "svelte/store";
 
 export type TableProps = {
   filterBy?: any;
-  from: any;
+  mainTableName: string;
   columns: any[];
 };
 
@@ -19,7 +19,7 @@ export type FieldInfo = {
 export class TableClient extends vg.MosaicClient {
   public columns: any[];
   public filterBy: any;
-  public from: any;
+  public mainTableName: string;
   public data: Writable<any[]>;
   public limit: number;
   public loaded: Writable<boolean>;
@@ -32,12 +32,12 @@ export class TableClient extends vg.MosaicClient {
   public sortHeader: any;
 
   // NOTE: the table client only supports fields from a single table right now, must be filtered out before passing to the client
-  constructor({ filterBy, from, columns }: TableProps) {
+  constructor({ filterBy, mainTableName, columns }: TableProps) {
     super(filterBy);
 
     this.columns = columns;
     this.filterBy = filterBy;
-    this.from = from;
+    this.mainTableName = mainTableName;
     this.data = writable();
     this.limit = 50;
     this.loaded = writable(false);
@@ -75,7 +75,7 @@ export class TableClient extends vg.MosaicClient {
    * Return an array of fields queried by this client.
    */
   fields() {
-    return this.columns.map((name: any) => vg.column(this.from, name));
+    return this.columns.map((name: any) => vg.column(this.mainTableName, name));
   }
 
   /**
@@ -100,12 +100,12 @@ export class TableClient extends vg.MosaicClient {
       this.offset = 0;
     }
 
-    const { from, limit, offset } = this;
+    const { mainTableName, limit, offset } = this;
     let sortColumn = get(this.sortColumn);
     let schema = get(this.schema);
     let sortDesc = get(this.sortDesc);
 
-    let q = vg.Query.from({ source: from })
+    let q = vg.Query.from({ source: mainTableName })
       .select(schema.map((s) => s.column))
       .where(filter)
       .orderby(sortColumn ? (sortDesc ? desc(sortColumn) : sortColumn) : [])
