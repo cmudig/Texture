@@ -3,7 +3,6 @@
   import type { DatasetSchema } from "../../backendapi";
 
   import { datasetSchema, showBackgroundDistMap } from "../../stores";
-  import StopwordEditor from "./StopwordEditor.svelte";
   import SaveTableToFile from "../SaveTableToFile.svelte";
 
   export let datasets: Record<string, DatasetSchema>;
@@ -39,11 +38,6 @@
     />
 
     <SaveTableToFile />
-  </div>
-
-  <div class="flex flex-col gap-2 pb-2 border-b-2 border-grey-300">
-    <h3>Stopwords</h3>
-    <StopwordEditor />
   </div>
 
   <div class="flex flex-col gap-2">

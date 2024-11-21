@@ -16,7 +16,6 @@
   export let showBackground = true;
   export let plotNulls = true;
   export let limit = 10;
-  export let excludeList: string[] | undefined = undefined;
   export let isDerivedTable = false;
   export let colorColName: string | undefined = undefined;
 
@@ -53,20 +52,18 @@
   async function renderChart(
     mainDsName: string,
     cName: string,
-    pltNullsFlag: boolean,
+    shouldPlotNulls: boolean,
     selection: any,
-    _excludeList?: string[],
     colorColName?: string,
   ) {
-    let datasetName = await getDatasetName(
-      mainDsName,
-      cName,
-      pltNullsFlag,
-      _excludeList,
-    );
+    let datasetName = await getDatasetName(mainDsName, cName, shouldPlotNulls);
+
     let fromClause: any = datasetName;
 
+    console.log("Plotting ", cName, "the table is: ", datasetName);
+
     if (isDerivedTable) {
+      // console.log(datasetName, "is a derived table");
       $derivedViewNames.set(
         getCacheKey({ table: mainDsName, col: cName }),
         datasetName,
@@ -169,7 +166,6 @@
       columnName,
       plotNulls,
       thisSelection,
-      excludeList,
       colorColName,
     );
   });
