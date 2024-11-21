@@ -119,7 +119,7 @@ def construct_schema_and_tables(
                 derivedSchema={
                     "is_segment": False,
                     "table_name": new_table_name,
-                    "derived_from": col_name,
+                    "derived_from": None,  # since non-segment leave as None
                     "derived_how": None,
                 },
             )
