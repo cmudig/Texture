@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 from texture.extra.embeddings import get_projection
-from texture.models import DatasetInfo, Column, DataType
+from texture.models import DatasetSchema, Column, DataType
 from texture.names import (
     C_VECTOR,
     C_EMBED_X,
@@ -17,7 +17,7 @@ from texture.names import (
 
 def preprocess(
     df: pd.DataFrame, column_type_overrides: Dict[str, DataType] = None
-) -> Tuple[DatasetInfo, Dict[str, pd.DataFrame]]:
+) -> Tuple[DatasetSchema, Dict[str, pd.DataFrame]]:
     has_embeddings = False
     has_projection = False
     name = "dataset_" + str(random.randint(100000, 999999))
@@ -48,7 +48,7 @@ def preprocess(
         name, df, column_type_overrides
     )
 
-    ds_info = DatasetInfo(
+    ds_info = DatasetSchema(
         name=name,
         primary_key=pk_schema,
         origin="uploaded",

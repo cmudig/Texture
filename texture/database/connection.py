@@ -12,7 +12,7 @@ from texture.models import (
     ExecResponse,
     JsonResponse,
     ErrorResponse,
-    DatasetInfo,
+    DatasetSchema,
 )
 from texture.names import C_VECTOR
 
@@ -256,32 +256,30 @@ class VectorDBConnection:
 
 
 def initialize_databases(
-    datasetInfo: DatasetInfo,
+    schema: DatasetSchema,
     load_tables: Dict[str, pd.DataFrame],
     create_new_embedding_func: Optional[Callable] = None,
-) -> Tuple[DatabaseConnection, VectorDBConnection, Dict[str, DatasetInfo]]:
+) -> Tuple[DatabaseConnection, VectorDBConnection, Dict[str, DatasetSchema]]:
     # Make DB
     duckdb_conn = DatabaseConnection()
     vectordb_conn = VectorDBConnection()
-    datasetMetadataCache = {}
+    schemaStore = {}
 
     # load vector data first
-    if datasetInfo.has_embeddings:
+    if schema.has_embeddings:
         vectordb_conn.add_table(
-            datasetInfo.name,
-            load_tables[datasetInfo.name],
-            datasetInfo.primary_key.name,
+            schema.name,
+            load_tables[schema.name],
+            schema.primary_key.name,
             create_new_embedding_func,
         )
 
         # remove vector column
-        load_tables[datasetInfo.name] = load_tables[datasetInfo.name].drop(
-            columns=[C_VECTOR]
-        )
+        load_tables[schema.name] = load_tables[schema.name].drop(columns=[C_VECTOR])
 
     # Load data
-    datasetMetadataCache[datasetInfo.name] = datasetInfo
+    schemaStore[schema.name] = schema
     for table_name, table_df in load_tables.items():
         duckdb_conn.load_dataframe(table_name, table_df)
 
-    return duckdb_conn, vectordb_conn, datasetMetadataCache
+    return duckdb_conn, vectordb_conn, schemaStore

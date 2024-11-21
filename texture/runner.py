@@ -3,7 +3,7 @@ from typing import Dict, Callable, Optional
 import multiprocess
 import pandas as pd
 
-from texture.models import DatasetInfo
+from texture.models import DatasetSchema
 from texture.server import get_server
 from texture.utils import is_notebook
 from texture.database.preprocess import preprocess
@@ -19,7 +19,7 @@ except RuntimeError as e:
 
 def run(
     data: pd.DataFrame = None,
-    schema: DatasetInfo = None,
+    schema: DatasetSchema = None,
     load_tables: Dict[str, pd.DataFrame] = None,
     create_new_embedding_func: Optional[Callable] = None,
     host: str = "localhost",
@@ -70,7 +70,7 @@ def run(
 
 
 def run_server(
-    dataset_schema: DatasetInfo,
+    dataset_schema: DatasetSchema,
     load_tables: Dict[str, pd.DataFrame],
     api_key: Optional[str] = None,
     host: Optional[str] = "localhost",

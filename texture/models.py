@@ -16,7 +16,7 @@ class Column(BaseModel):
     derived_how: Optional[Literal["model", "code"]] = None
 
 
-class DatasetInfo(BaseModel):
+class DatasetSchema(BaseModel):
     name: str
     columns: List[Column]
     primary_key: Column
@@ -70,7 +70,7 @@ DuckQueryResult = Union[ExecResponse, JsonResponse, ErrorResponse]
 class DatasetUploadResponse(BaseModel):
     success: bool
     message: str
-    datasetSchema: DatasetInfo = None
+    datasetSchema: DatasetSchema = None
 
 
 class DatasetVerifyResponse(BaseModel):
