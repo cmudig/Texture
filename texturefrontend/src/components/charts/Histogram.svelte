@@ -18,6 +18,8 @@
     cName: string,
     pltNullsFlag: boolean,
   ) {
+    // TODO: need a more general way to find if selection is from same table
+    // since this might be a view to get rid of nulls
     let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
 
     let fromClause: any = datasetName;

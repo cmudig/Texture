@@ -41,11 +41,14 @@
     let spanMap = {};
 
     for (let textCol of textCols) {
+      // TODO: this is buggy because the col might not always be the first found -- but will probably be replaced anyway
       let derivedCol = datasetSchema.columns.find(
         (col) =>
           col.derivedSchema?.is_segment &&
           col.derivedSchema?.derived_from === textCol,
       );
+
+      // console.log("DERIVED_COL: ", derivedCol);
 
       if (derivedCol != undefined && derivedCol.name in selectionMap) {
         let spans = await databaseConnection.getSpansPerDoc(
@@ -59,6 +62,8 @@
         spanMap[textCol] = spans;
       }
     }
+
+    // console.log("SpanMap: ", spanMap);
 
     return spanMap;
   }

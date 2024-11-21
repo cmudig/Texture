@@ -10,7 +10,6 @@
     showBackgroundDistMap,
     projectionColorColumn,
   } from "../stores";
-  import { stopwords } from "../shared/stopwords";
   import { getUUID } from "../shared/utils";
   import DerivedIcon from "./icons/DerivedIcon.svelte";
   import { CogOutline } from "flowbite-svelte-icons";
@@ -78,10 +77,6 @@
         <CategoricalChart
           mainDatasetName={displayCol.derivedSchema.table_name}
           columnName={displayCol.name}
-          excludeList={displayCol.derivedSchema.is_segment &&
-          displayCol.name === "word"
-            ? $stopwords
-            : undefined}
           plotNulls={true}
           isDerivedTable={true}
           showBackground={$showBackgroundDistMap[displayCol.name]}
