@@ -5,7 +5,7 @@ pyod==1.1.0
 torch==2.1.1
 fastapi==0.104.1
 pydantic==2.5.2
-duckdb==0.9.2
+duckdb==0.10.2
 pyarrow==14.0.1
 orjson==3.9.10
 uvicorn[standard]==0.24.0.post1
@@ -15,3 +15,4 @@ tiktoken==0.5.2
 lancedb==0.5.1
 umap-learn==0.5.5
 openai==1.20.0
+multiprocess==0.70.16
