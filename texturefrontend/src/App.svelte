@@ -1,10 +1,10 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import type { ColumnSummary } from "./shared/types";
-  import type { DatasetInfo } from "./backendapi";
+  import type { DatasetSchema } from "./backendapi";
   import {
     mosaicSelection,
-    datasetInfo,
+    datasetSchema,
     databaseConnection,
     compareSimilarID,
     showBackgroundDistMap,
@@ -23,7 +23,7 @@
   import { formatNumber } from "./shared/format";
 
   // Locals
-  let datasets: Record<string, DatasetInfo>;
+  let datasets: Record<string, DatasetSchema>;
   let currentDatasetName: string;
   let currentColToggleStates: Record<string, boolean> = {}; // TODO create ignore list by name to not plot columns with umap_x, umap_y, or id
   let datasetSize: number;
@@ -57,9 +57,9 @@
 
   async function setDataset(resetCrossfilter = true) {
     const info = datasets[currentDatasetName];
-    $datasetInfo = info;
+    $datasetSchema = info;
 
-    currentColToggleStates = $datasetInfo.columns.reduce(
+    currentColToggleStates = $datasetSchema.columns.reduce(
       (acc: Record<string, boolean>, col) => {
         acc[col.name] = true;
 
@@ -68,7 +68,7 @@
       {},
     );
 
-    $showBackgroundDistMap = $datasetInfo.columns.reduce(
+    $showBackgroundDistMap = $datasetSchema.columns.reduce(
       (acc: Record<string, boolean>, col) => {
         if (col.name === "word") {
           acc[col.name] = false;

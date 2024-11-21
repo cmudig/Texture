@@ -9,7 +9,7 @@ import type { SelectionMap } from "./shared/types";
 import {
   TextProfileClient,
   DefaultService,
-  type DatasetInfo,
+  type DatasetSchema,
 } from "./backendapi";
 import { DatabaseConnection } from "./database/db";
 import { updateSelectionMap } from "./shared/selection";
@@ -29,7 +29,7 @@ export const databaseConnection = new DatabaseConnection(backendService);
 export const compareSimilarID: Writable<number | undefined> = writable();
 export const derivedViewNames: Writable<Map<any, string>> = writable(new Map());
 export const mosaicSelection: Writable<any> = writable(); // vg.Selection crossfilter
-export const datasetInfo: Writable<DatasetInfo> = writable();
+export const datasetSchema: Writable<DatasetSchema> = writable();
 export const showBackgroundDistMap: Writable<Record<string, boolean>> =
   writable();
 export const clearColumnSelections: Writable<
@@ -65,18 +65,18 @@ export const selectionDisplay = derived(
 );
 
 export const filteredCount: Readable<number | undefined> = derived(
-  [mosaicSelection, datasetInfo],
-  ([$mosaicSelection, $datasetInfo], set) => {
-    if ($mosaicSelection && $datasetInfo) {
+  [mosaicSelection, datasetSchema],
+  ([$mosaicSelection, $datasetSchema], set) => {
+    if ($mosaicSelection && $datasetSchema) {
       $mosaicSelection.addEventListener("value", async () => {
         let v = await databaseConnection.getCount(
-          $datasetInfo.name,
+          $datasetSchema.name,
           $mosaicSelection,
         );
         set(v);
       });
       let v = databaseConnection
-        .getCount($datasetInfo.name, $mosaicSelection)
+        .getCount($datasetSchema.name, $mosaicSelection)
         .then((v) => set(v));
     } else {
       set(undefined);
@@ -85,23 +85,23 @@ export const filteredCount: Readable<number | undefined> = derived(
 );
 
 export const filteredIndices: Readable<number[]> = derived(
-  [mosaicSelection, datasetInfo],
-  ([$mosaicSelection, $datasetInfo], set) => {
-    if ($mosaicSelection && $datasetInfo) {
+  [mosaicSelection, datasetSchema],
+  ([$mosaicSelection, $datasetSchema], set) => {
+    if ($mosaicSelection && $datasetSchema) {
       $mosaicSelection.addEventListener("value", async () => {
         databaseConnection
           .getIndex(
-            $datasetInfo.name,
+            $datasetSchema.name,
             $mosaicSelection,
-            $datasetInfo.primary_key.name,
+            $datasetSchema.primary_key.name,
           )
           .then((v) => set(v));
       });
       databaseConnection
         .getIndex(
-          $datasetInfo.name,
+          $datasetSchema.name,
           $mosaicSelection,
-          $datasetInfo.primary_key.name,
+          $datasetSchema.primary_key.name,
         )
         .then((v) => set(v));
     } else {

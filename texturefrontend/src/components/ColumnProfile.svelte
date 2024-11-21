@@ -6,7 +6,7 @@
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
   import {
-    datasetInfo,
+    datasetSchema,
     showBackgroundDistMap,
     projectionColorColumn,
   } from "../stores";
@@ -16,7 +16,7 @@
   import { CogOutline } from "flowbite-svelte-icons";
 
   import Search from "./Search.svelte";
-  import type { Column, DatasetInfo } from "../backendapi";
+  import type { Column } from "../backendapi";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
@@ -30,18 +30,6 @@
     displayCol.type === "number" ||
     displayCol.type === "categorical" ||
     displayCol.type === "date";
-
-  function getSearchInfo(col: Column, dsInfo: DatasetInfo): string {
-    if (
-      col.table_name &&
-      col.table_name !== dsInfo.name &&
-      (col.type === "categorical" || col.type === "text")
-    ) {
-      return col.table_name;
-    }
-
-    return dsInfo.name;
-  }
 </script>
 
 <div
@@ -53,7 +41,7 @@
 >
   <!-- shadow is green-600 -->
   <button
-    class={`space-between flex h-9 w-full items-center justify-between border-t-2 border-secondary-200 gap-2 px-2 hover:bg-gray-200 ${displayCol.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
+    class={`space-between flex h-9 w-full items-center justify-between border-t-2 border-secondary-200 gap-2 px-2 hover:bg-gray-200 ${displayCol.derivedSchema?.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
     class:bg-gray-100={active}
     on:click={() => {
       active = !active;
@@ -67,11 +55,11 @@
     >
       {displayCol.name}
     </p>
-    {#if displayCol.derived_from}
+    {#if displayCol.derivedSchema?.derived_how}
       <div class="text-gray-400 flex items-center">
-        <span>(from {displayCol.derived_from}</span>
+        <span>(from {displayCol.derivedSchema.derived_from}</span>
         <span class="ml-1">
-          <DerivedIcon derived_how={displayCol.derived_how} />
+          <DerivedIcon derived_how={displayCol.derivedSchema.derived_how} />
         </span>
         <span>)</span>
       </div>
@@ -84,14 +72,14 @@
     {/if}
   </button>
   <div class="w-full pl-4 py-1 mb-2" class:hidden={!active}>
-    {#if displayCol.table_name && displayCol.table_name !== $datasetInfo.name}
+    {#if displayCol.derivedSchema != undefined}
       {#if displayCol.type === "categorical" || displayCol.type === "text"}
+        <!-- Only exclude stop words if is a segment column named "word"  -->
         <CategoricalChart
-          mainDatasetName={displayCol.table_name}
+          mainDatasetName={displayCol.derivedSchema.table_name}
           columnName={displayCol.name}
-          excludeList={$datasetInfo.columns.find(
-            (c) => c.name === displayCol.derived_from,
-          )?.type === "text"
+          excludeList={displayCol.derivedSchema.is_segment &&
+          displayCol.name === "word"
             ? $stopwords
             : undefined}
           plotNulls={true}
@@ -103,13 +91,13 @@
       {/if}
     {:else if displayCol.type === "number"}
       <Histogram
-        mainDatasetName={$datasetInfo.name}
+        mainDatasetName={$datasetSchema.name}
         showBackground={$showBackgroundDistMap[displayCol.name]}
         columnName={displayCol.name}
       />
     {:else if displayCol.type === "categorical"}
       <CategoricalChart
-        mainDatasetName={$datasetInfo.name}
+        mainDatasetName={$datasetSchema.name}
         showBackground={$showBackgroundDistMap[displayCol.name]}
         columnName={displayCol.name}
         colorColName={$projectionColorColumn === displayCol.name
@@ -118,7 +106,7 @@
       />
     {:else if displayCol.type === "date"}
       <DateChart
-        mainDatasetName={$datasetInfo.name}
+        mainDatasetName={$datasetSchema.name}
         columnName={displayCol.name}
       />
     {:else if displayCol.type === "text"}
@@ -128,7 +116,8 @@
     <div class="flex gap-1 mx-2">
       <div class="grow">
         <Search
-          tableName={getSearchInfo(displayCol, $datasetInfo)}
+          tableName={displayCol.derivedSchema?.table_name ??
+            $datasetSchema.name}
           column={displayCol}
         />
       </div>

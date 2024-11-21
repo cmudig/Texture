@@ -1,12 +1,12 @@
 <script lang="ts">
   import { Select, Toggle, Label, Button } from "flowbite-svelte";
-  import type { DatasetInfo } from "../../backendapi";
+  import type { DatasetSchema } from "../../backendapi";
 
-  import { datasetInfo, showBackgroundDistMap } from "../../stores";
+  import { datasetSchema, showBackgroundDistMap } from "../../stores";
   import StopwordEditor from "./StopwordEditor.svelte";
   import SaveTableToFile from "../SaveTableToFile.svelte";
 
-  export let datasets: Record<string, DatasetInfo>;
+  export let datasets: Record<string, DatasetSchema>;
   export let currentDatasetName: string;
   export let updateData: () => void;
   export let currentColToggleStates: Record<string, boolean>;
@@ -71,7 +71,7 @@
     <div>
       <Label>Display in table</Label>
       <div class="mt-2 flex flex-col gap-1">
-        {#each $datasetInfo.columns as col}
+        {#each $datasetSchema.columns as col}
           <Toggle bind:checked={currentColToggleStates[col.name]}>
             <span class="overflow-hidden text-ellipsis">
               {col.name}

@@ -1,14 +1,14 @@
 <script lang="ts">
   import { Button, Spinner } from "flowbite-svelte";
   import { CheckSolid, DownloadSolid } from "flowbite-svelte-icons";
-  import { databaseConnection, datasetInfo } from "../stores";
+  import { databaseConnection, datasetSchema } from "../stores";
   import { QueryStatus } from "../shared/types";
 
   let saveStatus: QueryStatus = QueryStatus.NOT_STARTED;
 
   async function doSave() {
     saveStatus = QueryStatus.PENDING;
-    databaseConnection.api.saveDatabaseToFile($datasetInfo.name).then((r) => {
+    databaseConnection.api.saveDatabaseToFile($datasetSchema.name).then((r) => {
       saveStatus = QueryStatus.COMPLETED;
 
       setTimeout(() => {

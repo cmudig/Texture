@@ -10,7 +10,7 @@ import type {
   JsonResponse,
   ErrorResponse,
   DuckQueryData,
-  DatasetInfo,
+  DatasetSchema,
 } from "../backendapi";
 import { derivedViewNames } from "../stores";
 import { getCacheKey } from "../shared/utils";
@@ -205,7 +205,7 @@ export class DatabaseConnection {
    * @param ids - An array of IDs to retrieve documents for. The order of the IDs in the array will be preserved in the returned array of documents.
    * @returns A promise that resolves to an array of retrieved documents.
    */
-  async getDocsByID(dsInfo: DatasetInfo, ids: any[]): Promise<any[]> {
+  async getDocsByID(dsInfo: DatasetSchema, ids: any[]): Promise<any[]> {
     let fromClause = dsInfo.name;
     const pk_name = dsInfo.primary_key.name;
 

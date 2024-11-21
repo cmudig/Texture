@@ -9,12 +9,12 @@
   import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
   import SubstringHighlight from "./SubstringHighlight.svelte";
   import {
-    datasetInfo,
+    datasetSchema,
     selectionDisplay,
     databaseConnection,
     compareSimilarID,
   } from "../../stores";
-  import type { DatasetInfo } from "../../backendapi";
+  import type { DatasetSchema } from "../../backendapi";
   import { shouldHighlight } from "../../shared/utils";
 
   export let id: number;
@@ -31,32 +31,27 @@
     id: number,
     textCols: string[],
     selectionMap: SelectionMap,
-    datasetInfo: DatasetInfo,
+    datasetSchema: DatasetSchema,
     _selection?: any,
   ): Promise<undefined | Record<string, unknown[]>> {
-    if (!datasetInfo || !selection || !Object.keys(selectionMap).length) {
+    if (!datasetSchema || !selection || !Object.keys(selectionMap).length) {
       return undefined;
     }
 
     let spanMap = {};
 
     for (let textCol of textCols) {
-      let derivedCol = datasetInfo.columns.find(
+      let derivedCol = datasetSchema.columns.find(
         (col) =>
-          col.derived_from === textCol &&
-          col.table_name &&
-          col.table_name !== datasetInfo.name,
+          col.derivedSchema?.is_segment &&
+          col.derivedSchema.derived_from === textCol,
       );
 
-      if (
-        derivedCol &&
-        derivedCol.table_name &&
-        derivedCol.name in selectionMap
-      ) {
+      if (derivedCol != undefined && derivedCol.name in selectionMap) {
         let spans = await databaseConnection.getSpansPerDoc(
-          derivedCol.table_name,
+          derivedCol.derivedSchema?.table_name as string,
           derivedCol.name,
-          datasetInfo.primary_key.name,
+          datasetSchema.primary_key.name,
           id,
           _selection,
         );
@@ -77,7 +72,7 @@
     id,
     textData.map((d) => d[0]),
     $selectionDisplay,
-    $datasetInfo,
+    $datasetSchema,
     selection,
   );
 </script>
@@ -105,7 +100,7 @@
       on:click={() => {
         $compareSimilarID = id;
       }}
-      class:hidden={!$datasetInfo.has_embeddings}
+      class:hidden={!$datasetSchema.has_embeddings}
     >
       <FilterOutline size="xs" />
     </button>
@@ -167,7 +162,7 @@
       class={`w-[300px] shrink-0 pt-2 ${toggle ? "overflow-auto" : "overflow-hidden"}`}
     >
       {#each plotMetadata as [itemKey, itemValue] (itemKey)}
-        {@const itemType = $datasetInfo?.columns.find(
+        {@const itemType = $datasetSchema?.columns.find(
           (col) => col.name === itemKey,
         )?.type}
         <div class="flex px-2">
