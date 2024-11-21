@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { CodeTransformCommit } from "../models/CodeTransformCommit";
 import type { CodeTransformRequest } from "../models/CodeTransformRequest";
-import type { DatasetInfo } from "../models/DatasetInfo";
+import type { DatasetSchema } from "../models/DatasetSchema";
 import type { DuckQueryData } from "../models/DuckQueryData";
 import type { ErrorResponse } from "../models/ErrorResponse";
 import type { ExecResponse } from "../models/ExecResponse";
@@ -35,10 +35,10 @@ export class DefaultService {
   /**
    * Read Dataset Info
    * Get the datasets available along with a summary of their columns
-   * @returns DatasetInfo Successful Response
+   * @returns DatasetSchema Successful Response
    * @throws ApiError
    */
-  public readDatasetInfo(): CancelablePromise<Record<string, DatasetInfo>> {
+  public readDatasetInfo(): CancelablePromise<Record<string, DatasetSchema>> {
     return this.httpRequest.request({
       method: "GET",
       url: "/all_dataset_info",

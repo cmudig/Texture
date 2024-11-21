@@ -4,11 +4,12 @@
   import {
     mosaicSelection,
     compareSimilarID,
-    datasetInfo,
+    datasetSchema,
     tableSortColStore,
     tableSortDescStore,
     tableSchemaStore,
   } from "../../stores";
+  import type { DatasetSchema, Column } from "../../backendapi";
   import { onDestroy } from "svelte";
   import RowView from "./RowView.svelte";
   import TablePlaceholder from "../utils/TablePlaceholder.svelte";
@@ -19,22 +20,32 @@
   let previousClient: TableClient;
   let ready = false;
 
-  function createClient(_dsInfo, _currentColToggleStates, filter) {
-    // only get columns with toggle on; remove duplicate pk
-    let plotcols = Object.keys(_currentColToggleStates).filter(
-      (col) =>
-        _currentColToggleStates[col] &&
-        col !== _dsInfo.primary_key.name &&
-        _dsInfo.columns.find((c) => c.name === col).table_name == null, // dont include cols from another table bc breaks mosaic client
-    );
+  function createClient(
+    _dsInfo: DatasetSchema,
+    shouldDisplay: Record<string, boolean>,
+    filter,
+  ) {
+    const mainTableCols: Column[] = [];
+    const otherTableCols: Column[] = [];
+
+    for (let col of _dsInfo.columns) {
+      if (shouldDisplay[col.name]) {
+        if (col.derivedSchema) {
+          otherTableCols.push(col);
+        } else {
+          mainTableCols.push(col);
+        }
+      }
+    }
 
     // always include pk
-    plotcols.push(_dsInfo.primary_key.name);
+    mainTableCols.push(_dsInfo.primary_key);
 
     let client = new TableClient({
       filterBy: filter,
       from: _dsInfo.name,
-      columns: plotcols,
+      mainColumns: mainTableCols,
+      otherColumns: otherTableCols,
     });
 
     return client;
@@ -50,7 +61,7 @@
 
   $: {
     myTableClient = createClient(
-      $datasetInfo,
+      $datasetSchema,
       currentColToggleStates,
       $mosaicSelection,
     );
@@ -73,7 +84,7 @@
 
   $: ({ schema, data, loaded } = myTableClient);
 
-  $: colTypeMap = $datasetInfo.columns.reduce((acc, col) => {
+  $: colTypeMap = $datasetSchema.columns.reduce((acc, col) => {
     acc[col.name] = col.type;
     return acc;
   }, {});
@@ -91,12 +102,12 @@
             {#each $data as row}
               {@const rowArr = Object.entries(row)}
               <RowView
-                id={Number(row[$datasetInfo.primary_key.name])}
+                id={Number(row[$datasetSchema.primary_key.name])}
                 textData={rowArr.filter(([k, v]) => colTypeMap[k] === "text")}
                 metadata={rowArr.filter(
                   ([k, v]) =>
                     colTypeMap[k] !== "text" &&
-                    k !== $datasetInfo.primary_key.name,
+                    k !== $datasetSchema.primary_key.name,
                 )}
                 selection={myTableClient.filterBy}
               />

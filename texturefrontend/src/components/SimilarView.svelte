@@ -1,30 +1,30 @@
 <script lang="ts">
   import { CloseButton } from "flowbite-svelte";
   import RowView from "./table/RowView.svelte";
-  import type { DatasetInfo } from "../backendapi";
-  import { databaseConnection, datasetInfo } from "../stores";
+  import type { DatasetSchema } from "../backendapi";
+  import { databaseConnection, datasetSchema } from "../stores";
   import { formatNumber } from "../shared/format";
   import TablePlaceholder from "./utils/TablePlaceholder.svelte";
 
   export let similarDocID: number;
   export let clearFunc: () => void;
 
-  async function getData(_datasetInfo: DatasetInfo, _id: number) {
+  async function getData(_datasetSchema: DatasetSchema, _id: number) {
     // set up
-    const colTypeMap = _datasetInfo.columns.reduce((acc, col) => {
+    const colTypeMap = _datasetSchema.columns.reduce((acc, col) => {
       acc[col.name] = col.type;
       return acc;
     }, {});
-    const pk_name = _datasetInfo.primary_key.name;
+    const pk_name = _datasetSchema.primary_key.name;
 
     // get original doc
-    let originalDocArr = await databaseConnection.getDocsByID(_datasetInfo, [
+    let originalDocArr = await databaseConnection.getDocsByID(_datasetSchema, [
       _id,
     ]);
     let originalDc = originalDocArr[0];
 
     let vsResponse = await databaseConnection.api.queryEmbedFromId(
-      _datasetInfo.name,
+      _datasetSchema.name,
       _id,
     );
 
@@ -33,7 +33,7 @@
     );
 
     let relatedDocsFull = await databaseConnection.getDocsByID(
-      _datasetInfo,
+      _datasetSchema,
       Array.from(orderedMap.keys()),
     );
 
@@ -70,7 +70,7 @@
     };
   }
 
-  $: dataPromise = getData($datasetInfo, similarDocID);
+  $: dataPromise = getData($datasetSchema, similarDocID);
 </script>
 
 <div class="max-h-screen overflow-auto bg-gray-100 h-full">

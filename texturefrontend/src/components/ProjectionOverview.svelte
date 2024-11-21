@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { datasetInfo } from "../stores";
+  import { datasetSchema } from "../stores";
   import ScatterProjection from "./charts/ScatterProjection.svelte";
   import type { Column } from "../backendapi";
   import { Select } from "flowbite-svelte";
@@ -11,7 +11,7 @@
   let active = getInitialToggle();
 
   function getInitialToggle() {
-    if ($datasetInfo.has_projection) {
+    if ($datasetSchema.has_projection) {
       return true;
     }
     return false;
@@ -35,7 +35,7 @@
   </button>
 
   <div class="w-full pl-4 pt-2 pr-2" class:hidden={!active}>
-    {#if $datasetInfo.has_projection}
+    {#if $datasetSchema.has_projection}
       <div class="flex flex-col">
         {#if colorCols.length > 0}
           <Select
@@ -54,7 +54,7 @@
         {/if}
 
         <ScatterProjection
-          mainDatasetName={$datasetInfo.name}
+          mainDatasetName={$datasetSchema.name}
           columnName="projection_xy"
           colorColName={$projectionColorColumn}
         />

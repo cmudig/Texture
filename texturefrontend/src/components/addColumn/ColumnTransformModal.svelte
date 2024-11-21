@@ -1,7 +1,7 @@
 <script lang="ts">
   import {
     databaseConnection,
-    datasetInfo,
+    datasetSchema,
     filteredIndices,
     filteredCount,
   } from "../../stores";
@@ -25,9 +25,9 @@
   export let panelOpen: boolean;
   export let finishedCommitHandler: () => void;
 
-  $: textCols = $datasetInfo?.columns.filter((col) => col.type === "text");
-  $: allColNames = $datasetInfo?.columns.map((col) => col.name);
-  $: idColName = $datasetInfo?.primary_key.name;
+  $: textCols = $datasetSchema?.columns.filter((col) => col.type === "text");
+  $: allColNames = $datasetSchema?.columns.map((col) => col.name);
+  $: idColName = $datasetSchema?.primary_key.name;
 
   // locals
   let targetColName: string;
@@ -83,13 +83,13 @@
   function fetchColData() {
     if (targetColName && idColName) {
       databaseConnection
-        .getValues($datasetInfo.name, idColName, targetColName, example_idxs)
+        .getValues($datasetSchema.name, idColName, targetColName, example_idxs)
         .then((r) => {
           columnExampleData = r;
         });
 
       databaseConnection
-        .getValues($datasetInfo.name, idColName, targetColName, preview_idxs)
+        .getValues($datasetSchema.name, idColName, targetColName, preview_idxs)
         .then((r) => {
           columnPreviewData = r;
         });
@@ -141,7 +141,7 @@
         userPrompt,
         taskFormat: responseSchema,
         columnName: targetColName,
-        tableName: $datasetInfo.name,
+        tableName: $datasetSchema.name,
         exampleData: columnExampleData.map((cd) => cd[targetColName]),
         exampleResponse: exampleResult?.map((item) => ({
           [responseSchema.name]: item,
@@ -153,7 +153,7 @@
         codeString: userTransformCode,
         taskFormat: responseSchema,
         columnName: targetColName,
-        tableName: $datasetInfo.name,
+        tableName: $datasetSchema.name,
         applyToIndices: $filteredIndices,
       });
     }

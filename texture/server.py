@@ -10,7 +10,7 @@ import datetime
 
 from texture.database.connection import initialize_databases
 from texture.models import (
-    DatasetInfo,
+    DatasetSchema,
     DuckQueryData,
     DuckQueryResult,
     VectorSearchResponse,
@@ -20,6 +20,7 @@ from texture.models import (
     Column,
     CodeTransformRequest,
     CodeTransformCommit,
+    DerivedSchema,
 )
 from texture.userTransformLLM.client import LLMClient
 from texture.utils import get_type_from_response, flatten
@@ -38,15 +39,15 @@ def custom_generate_unique_id(route: APIRoute):
 
 
 def get_server(
-    datasetInfo: DatasetInfo,
+    schema: DatasetSchema,
     load_tables: Dict[str, pd.DataFrame],
     create_new_embedding_func: Optional[Callable] = None,
     api_key: str = None,
 ) -> FastAPI:
 
     ### Database set up
-    duckdb_conn, vectordb_conn, datasetMetadataCache = initialize_databases(
-        datasetInfo, load_tables, create_new_embedding_func
+    duckdb_conn, vectordb_conn, schemaMap = initialize_databases(
+        schema, load_tables, create_new_embedding_func
     )
     llm_client = LLMClient(api_key=api_key)
 
@@ -97,14 +98,14 @@ def get_server(
 
     @api_app.get(
         "/all_dataset_info",
-        response_model=Dict[str, DatasetInfo],
+        response_model=Dict[str, DatasetSchema],
     )
     def read_dataset_info():
         """
         Get the datasets available along with a summary of their columns
         """
 
-        return datasetMetadataCache
+        return schemaMap
 
     @api_app.post("/duckdb_query_json", response_model=DuckQueryResult)
     def duckdb_query_json(data: DuckQueryData):
@@ -200,9 +201,12 @@ def get_server(
                 newColSchema = Column(
                     name=new_col_name,
                     type=colType,
-                    table_name=newTableName,
-                    derived_from=request.columnName,
-                    derived_how="model",
+                    derivedSchema=DerivedSchema(
+                        is_segment=False,
+                        table_name=newTableName,
+                        derived_from=request.columnName,
+                        derived_how="model",
+                    ),
                 )
             else:
                 if colType == "number":
@@ -218,11 +222,15 @@ def get_server(
                 newColSchema = Column(
                     name=new_col_name,
                     type=colType,
-                    derived_from=request.columnName,
-                    derived_how="model",
+                    derivedSchema=DerivedSchema(
+                        is_segment=False,
+                        table_name=newTableName,
+                        derived_from=request.columnName,
+                        derived_how="model",
+                    ),
                 )
 
-            datasetMetadataCache[request.tableName].columns.insert(0, newColSchema)
+            schemaMap[request.tableName].columns.insert(0, newColSchema)
 
             return TransformResponse(success=True, result=[])
 
@@ -282,9 +290,12 @@ def get_server(
             newColSchema = Column(
                 name=new_col_name,
                 type=colType,
-                table_name=newTableName,
-                derived_from=request.columnName,
-                derived_how="code",
+                derivedSchema=DerivedSchema(
+                    is_segment=False,
+                    table_name=newTableName,
+                    derived_from=request.columnName,
+                    derived_how="code",
+                ),
             )
         else:
             if colType == "number":
@@ -298,11 +309,15 @@ def get_server(
             newColSchema = Column(
                 name=new_col_name,
                 type=colType,
-                derived_from=request.columnName,
-                derived_how="code",
+                derivedSchema=DerivedSchema(
+                    is_segment=False,
+                    table_name=newTableName,
+                    derived_from=request.columnName,
+                    derived_how="code",
+                ),
             )
 
-        datasetMetadataCache[request.tableName].columns.insert(0, newColSchema)
+        schemaMap[request.tableName].columns.insert(0, newColSchema)
         return TransformResponse(success=True, result=[])
 
     @api_app.post("/save_to_file", response_model=bool)
@@ -310,7 +325,7 @@ def get_server(
 
         all_table_names = set([table_name])
         # get all table names
-        for col in datasetMetadataCache[table_name].columns:
+        for col in schemaMap[table_name].columns:
             if col.table_name is not None:
                 all_table_names.add(col.table_name)
 
