@@ -8,15 +8,18 @@
 
   export let datasetColSummaries: Map<string, ColumnSummary>;
   export let showAddColModal;
+  export let allowDeriveNew;
 </script>
 
 <div class="flex flex-col">
-  <div class="flex justify-center py-2">
-    <Button on:click={() => (showAddColModal = true)} size="sm">
-      <PlusSolid size="sm" class="mr-2" />
-      Derive New Column
-    </Button>
-  </div>
+  {#if allowDeriveNew}
+    <div class="flex justify-center py-2">
+      <Button on:click={() => (showAddColModal = true)} size="sm">
+        <PlusSolid size="sm" class="mr-2" />
+        Derive New Column
+      </Button>
+    </div>
+  {/if}
 
   <ProjectionOverview
     colorCols={$datasetInfo.columns.filter(

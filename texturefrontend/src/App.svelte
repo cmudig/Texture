@@ -30,6 +30,7 @@
   let showAddColModal = false;
   let datasetColSummaries: Map<string, ColumnSummary>;
   let dataPromise: Promise<any> = populateDataTables();
+  let allowDeriveNew = false;
 
   async function populateDataTables(
     datasetName?: string,
@@ -119,6 +120,7 @@
         updateData={() => {
           dataPromise = setDataset();
         }}
+        bind:allowDeriveNew
         bind:currentDatasetName
         bind:currentColToggleStates
       />
@@ -141,7 +143,7 @@
   {:then}
     <div class="flex flex-1 overflow-hidden bg-gray-50">
       <div class="w-[450px] shrink-0 overflow-auto border-r-2 border-gray-300">
-        <Sidebar bind:showAddColModal {datasetColSummaries} />
+        <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
       </div>
       <div class="flex-1 min-w-[450px] overflow-auto">
         {#if $compareSimilarID !== undefined}
