@@ -3,10 +3,10 @@ from typing import Dict, Callable, Optional
 import multiprocess
 import pandas as pd
 
-from texture.models import DatasetInfo, DataType
+from texture.models import DatasetInfo
 from texture.server import get_server
 from texture.utils import is_notebook
-from texture.database.preprocess import validate_and_construct_tables
+from texture.database.preprocess import preprocess
 
 TEXTURE_SERVER_PROCESS = None
 
@@ -18,14 +18,22 @@ except RuntimeError as e:
 
 
 def run(
-    data: pd.DataFrame,
-    column_overrides: Dict[str, DataType] = None,
+    data: pd.DataFrame = None,
+    schema: DatasetInfo = None,
+    load_tables: Dict[str, pd.DataFrame] = None,
+    create_new_embedding_func: Optional[Callable] = None,
     host: str = "localhost",
     port: int = 8080,
     api_key: str = None,
-    create_new_embedding_func: Optional[Callable] = None,
 ):
-    dataset_schema, load_tables = validate_and_construct_tables(data, column_overrides)
+    if data is None and (schema is None or load_tables is None):
+        raise ValueError(
+            "Must provide data as pd.DataFrame OR both a schema and load_tables."
+        )
+
+    if data is not None and (schema is None or load_tables is None):
+        print("Preprocessing data...")
+        schema, load_tables = preprocess(data)
 
     if is_notebook():
         global TEXTURE_SERVER_PROCESS
@@ -39,7 +47,7 @@ def run(
         TEXTURE_SERVER_PROCESS = multiprocess.Process(
             target=run_server,
             args=(
-                dataset_schema,
+                schema,
                 load_tables,
                 api_key,
                 host,
@@ -52,7 +60,7 @@ def run(
         # TEXTURE_SERVER_PROCESS.join()
     else:
         run_server(
-            dataset_schema,
+            schema,
             load_tables,
             api_key,
             host,

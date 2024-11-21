@@ -15,7 +15,7 @@ from texture.names import (
 )
 
 
-def validate_and_construct_tables(
+def preprocess(
     df: pd.DataFrame, column_type_overrides: Dict[str, DataType] = None
 ) -> Tuple[DatasetInfo, Dict[str, pd.DataFrame]]:
     has_embeddings = False
@@ -88,6 +88,8 @@ def construct_schema_and_tables(
         elif any(
             df[col_name].apply(lambda x: isinstance(x, (list, tuple, np.ndarray)))
         ):
+            # TODO: if is a list, then don't keep it in the dataframe after processing...
+
             # is a list
             df_primed = df.set_index(C_ID)
 
