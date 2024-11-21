@@ -20,6 +20,7 @@ from texture.models import (
     Column,
     CodeTransformRequest,
     CodeTransformCommit,
+    DerivedSchema,
 )
 from texture.userTransformLLM.client import LLMClient
 from texture.utils import get_type_from_response, flatten
@@ -200,9 +201,12 @@ def get_server(
                 newColSchema = Column(
                     name=new_col_name,
                     type=colType,
-                    table_name=newTableName,
-                    derived_from=request.columnName,
-                    derived_how="model",
+                    derivedSchema=DerivedSchema(
+                        is_segment=False,
+                        table_name=newTableName,
+                        derived_from=request.columnName,
+                        derived_how="model",
+                    ),
                 )
             else:
                 if colType == "number":
@@ -218,8 +222,12 @@ def get_server(
                 newColSchema = Column(
                     name=new_col_name,
                     type=colType,
-                    derived_from=request.columnName,
-                    derived_how="model",
+                    derivedSchema=DerivedSchema(
+                        is_segment=False,
+                        table_name=newTableName,
+                        derived_from=request.columnName,
+                        derived_how="model",
+                    ),
                 )
 
             schemaMap[request.tableName].columns.insert(0, newColSchema)
@@ -282,9 +290,12 @@ def get_server(
             newColSchema = Column(
                 name=new_col_name,
                 type=colType,
-                table_name=newTableName,
-                derived_from=request.columnName,
-                derived_how="code",
+                derivedSchema=DerivedSchema(
+                    is_segment=False,
+                    table_name=newTableName,
+                    derived_from=request.columnName,
+                    derived_how="code",
+                ),
             )
         else:
             if colType == "number":
@@ -298,8 +309,12 @@ def get_server(
             newColSchema = Column(
                 name=new_col_name,
                 type=colType,
-                derived_from=request.columnName,
-                derived_how="code",
+                derivedSchema=DerivedSchema(
+                    is_segment=False,
+                    table_name=newTableName,
+                    derived_from=request.columnName,
+                    derived_how="code",
+                ),
             )
 
         schemaMap[request.tableName].columns.insert(0, newColSchema)

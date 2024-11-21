@@ -4,16 +4,20 @@ from pydantic import BaseModel
 
 #### Internal API models between frontend and backend
 
-DataType = Literal["text", "number", "date", "categorical", "list"]
+DataType = Literal["text", "number", "date", "categorical"]
+
+
+class DerivedSchema(BaseModel):
+    is_segment: bool  # corresponds to a segment of a text col
+    table_name: str  # table name for this data
+    derived_from: str  # name of col derived from
+    derived_how: Optional[Literal["model", "code"]] = None
 
 
 class Column(BaseModel):
     name: str
     type: DataType
-    derived_from: Optional[str] = None
-    # for join datasets, if None assumed to be in main table
-    table_name: Optional[str] = None
-    derived_how: Optional[Literal["model", "code"]] = None
+    derivedSchema: Optional[DerivedSchema] = None
 
 
 class DatasetSchema(BaseModel):

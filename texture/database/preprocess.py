@@ -73,23 +73,18 @@ def construct_schema_and_tables(
     new_tables = {}
 
     for col_name, dtype in df.dtypes.items():
-        # no schema for reserved columns since we won't profile
+        # no schema for reserved columns since special handling
         if col_name in [C_VECTOR, C_EMBED_X, C_EMBED_Y, C_ID]:
             continue
-
         if column_type_overrides is not None and col_name in column_type_overrides:
-            inferred_type = column_type_overrides[col_name]
-            schemas.append(Column(name=col_name, type=inferred_type))
-        elif pd.api.types.is_numeric_dtype(dtype):
+            schemas.append(Column(name=col_name, type=column_type_overrides[col_name]))
+        elif is_numeric(dtype):
             schemas.append(Column(name=col_name, type="number"))
-        elif pd.api.types.is_datetime64_any_dtype(dtype):
+        elif is_date(dtype):
             schemas.append(Column(name=col_name, type="date"))
-
         elif any(
             df[col_name].apply(lambda x: isinstance(x, (list, tuple, np.ndarray)))
         ):
-            # TODO: if is a list, then don't keep it in the dataframe after processing...
-
             # is a list
             df_primed = df.set_index(C_ID)
 
@@ -99,25 +94,37 @@ def construct_schema_and_tables(
                 .reset_index()
                 .rename(columns={"index": C_ID})
             )
+
+            # NOTE: assumed these are non-segment lists so the spans are array index
             exploded[C_SPAN_START] = exploded.groupby(C_ID).cumcount()
-            exploded[C_SPAN_END] = (
-                exploded[C_SPAN_START] + 1
-            )  # TODO: this wont give me what I want for words
+            exploded[C_SPAN_END] = exploded[C_SPAN_START] + 1
 
             # Save parsed column
             new_table_name = col_name + "_parsed"
-            new_col_name = col_name + "_list"
             new_tables[new_table_name] = exploded
-            df = df.rename(columns={col_name: new_col_name})
-            list_schema = Column(name=col_name + "_list", type="list")
+
+            # delete original list col
+            df = df.drop(columns=[col_name])
+
+            # get type
+            parsed_type = "categorical"
+            if is_numeric(exploded[col_name].dtype):
+                parsed_type = "number"
+            elif is_date(exploded[col_name].dtype):
+                parsed_type = "date"
+
             parsed_schema = Column(
                 name=col_name,
-                type="categorical",
-                derived_from=new_col_name,
-                table_name=new_table_name,
+                type=parsed_type,
+                derivedSchema={
+                    "is_segment": False,
+                    "table_name": new_table_name,
+                    "derived_from": col_name,
+                    "derived_how": None,
+                },
             )
 
-            schemas.extend([list_schema, parsed_schema])
+            schemas.append(parsed_schema)
 
         else:
             max_col_len = df[col_name].str.len().max()
@@ -125,13 +132,21 @@ def construct_schema_and_tables(
 
             # heuristic to detect text or categorical
             if (max_col_len > 200) or (cardinality == len(df)):
-                inferred_type = "text"
+                estimated_type = "text"
             else:
-                inferred_type = "categorical"
+                estimated_type = "categorical"
 
-            c = Column(name=col_name, type=inferred_type)
+            c = Column(name=col_name, type=estimated_type)
             schemas.append(c)
 
     new_tables[name] = df
 
     return schemas, new_tables
+
+
+def is_numeric(type) -> bool:
+    return pd.api.types.is_numeric_dtype(type)
+
+
+def is_date(type) -> bool:
+    return pd.api.types.is_datetime64_any_dtype(type)
