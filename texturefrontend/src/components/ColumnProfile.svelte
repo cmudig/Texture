@@ -79,7 +79,7 @@
 
     <div class="grow" />
 
-    {#if colSummary?.null_percentage}
+    {#if colSummary?.null_percentage !== undefined}
       <NullDisplay nullPercentage={parseFloat(colSummary.null_percentage)} />
     {/if}
   </button>
