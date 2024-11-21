@@ -115,6 +115,12 @@ class DatabaseConnection:
                 response_message = ExecResponse(type="exec", uuid=uuid)
             elif data.type == "json":
                 query_result = self.connection.query(sql).df()
+
+                # ensure if array data that is serializable
+                query_result = query_result.map(
+                    lambda x: x.tolist() if isinstance(x, np.ndarray) else x
+                )
+
                 json = query_result.to_dict(orient="records")
 
                 response_message = JsonResponse(type="json", uuid=uuid, result=json)
