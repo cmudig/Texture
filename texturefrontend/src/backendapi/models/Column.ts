@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { DerivedSchema } from "./DerivedSchema";
+
 export type Column = {
   name: string;
   type: Column.type;
-  derived_from?: string | null;
-  table_name?: string | null;
-  derived_how?: "model" | "code" | null;
+  derivedSchema?: DerivedSchema | null;
 };
 
 export namespace Column {
@@ -17,6 +17,5 @@ export namespace Column {
     NUMBER = "number",
     DATE = "date",
     CATEGORICAL = "categorical",
-    LIST = "list",
   }
 }
