@@ -44,6 +44,7 @@ export const tableSortDescStore: Writable<Writable<boolean>> = writable();
 export const tableSchemaStore: Writable<Writable<FieldInfo[]>> = writable();
 export const projectionColorColumn: Writable<string | undefined> =
   writable(undefined);
+export const showSegmentValues: Writable<boolean> = writable(false);
 
 export const selectionDisplay = derived(
   mosaicSelection,

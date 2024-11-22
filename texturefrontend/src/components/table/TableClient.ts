@@ -6,6 +6,7 @@ import type { Column } from "../../backendapi";
 export type TableProps = {
   filterBy?: any;
   from: string;
+  idColumn: Column;
   mainColumns: Column[];
   otherColumns: Column[];
 };
@@ -19,36 +20,46 @@ export type FieldInfo = {
 };
 
 export class TableClient extends vg.MosaicClient {
+  public idColumn: Column;
   public mainColumns: Column[];
   public otherColumns: Column[];
   public filterBy: any;
   public from: string; // N.B. don't change this property name bc used in mosaic
-  public data: Writable<any[]>;
+  public data: Writable<any[]>; // apache-arrow.Table
+  public arrayColData: Writable<Map<string, any[]>>;
   public limit: number;
   public loaded: Writable<boolean>;
   public offset: number;
   public pending: boolean;
   public prevScrollTop: number;
   public schema: Writable<FieldInfo[]>;
-  public sortColumn: Writable<string | undefined>;
+  public sortColumn: Writable<string>;
   public sortDesc: Writable<boolean>;
   public sortHeader: any;
 
-  constructor({ filterBy, from, mainColumns, otherColumns }: TableProps) {
+  constructor({
+    filterBy,
+    from,
+    idColumn,
+    mainColumns,
+    otherColumns,
+  }: TableProps) {
     super(filterBy);
 
+    this.idColumn = idColumn;
     this.mainColumns = mainColumns;
     this.otherColumns = otherColumns;
     this.filterBy = filterBy;
     this.from = from;
     this.data = writable();
+    this.arrayColData = writable(new Map());
     this.limit = 50;
     this.loaded = writable(false);
     this.offset = 0;
     this.pending = false;
     this.prevScrollTop = -1;
     this.schema = writable([]);
-    this.sortColumn = writable(undefined);
+    this.sortColumn = writable(this.idColumn.name);
     this.sortDesc = writable(false);
     this.sortHeader = null;
 
@@ -78,7 +89,9 @@ export class TableClient extends vg.MosaicClient {
    * Return an array of fields queried by this client.
    */
   fields() {
-    return this.mainColumns.map((col) => vg.column(this.from, col.name));
+    const base = this.mainColumns.map((col) => vg.column(this.from, col.name));
+    base.push(vg.column(this.from, this.idColumn.name));
+    return base;
   }
 
   /**
@@ -92,7 +105,7 @@ export class TableClient extends vg.MosaicClient {
   /**
    * Return a query to coordinator specifying the data needed by this client.
    */
-  query(filter = []) {
+  query(filter = [], columns?: string[]) {
     // console.log(
     //   "Filters in tableClient::",
     //   filter.map((f: any) => f.toString()),
@@ -108,8 +121,11 @@ export class TableClient extends vg.MosaicClient {
     let schema = get(this.schema);
     let sortDesc = get(this.sortDesc);
 
+    const columnNames =
+      columns != undefined ? columns : schema.map((s) => s.column);
+
     let q = vg.Query.from({ source: from })
-      .select(schema.map((s) => s.column))
+      .select(columnNames)
       .where(filter)
       .orderby(sortColumn ? (sortDesc ? desc(sortColumn) : sortColumn) : [])
       .limit(limit)
@@ -126,15 +142,28 @@ export class TableClient extends vg.MosaicClient {
       // data is not from an internal request, so reset table
       this.loaded.set(false);
       this.data.set([]);
+      this.arrayColData.set(new Map());
     }
 
     if (newData) {
       let thisData = [...newData];
 
-      const otherData = this.getOtherTableData(thisData);
-
       this.data.update((oldItems) => [...oldItems, ...thisData]);
-      // TODO: make store for other table data
+
+      this.getOtherTableData().then((newResult) => {
+        this.arrayColData.update((oldMap) => {
+          for (let [key, value] of newResult.entries()) {
+            let oldArray = oldMap.get(key);
+            if (oldArray) {
+              oldMap.set(key, [...oldArray, ...value]);
+            } else {
+              oldMap.set(key, [...value]);
+            }
+          }
+
+          return oldMap;
+        });
+      });
 
       if (thisData.length < this.limit) {
         // data table has been fully loaded
@@ -145,8 +174,27 @@ export class TableClient extends vg.MosaicClient {
     return this;
   }
 
-  getOtherTableData(newMainData) {
-    // query the tables in otherColumns to get the new data and update...
+  async getOtherTableData() {
+    const idName = vg.column(this.idColumn.name);
+
+    const baseQuery = this.query(this.filterBy?.predicate(this), [
+      this.idColumn.name,
+    ]);
+
+    const queries = this.otherColumns.map((col) => {
+      const table = vg.column(col.derivedSchema?.table_name);
+      const q = vg.sql`SELECT ${table}.* FROM ${table} JOIN (${baseQuery}) AS main_table ON ${table}.${idName} = main_table.${idName}`;
+      return vg.coordinator().query(q);
+    });
+
+    const results = await Promise.all(queries);
+    const resultMap = new Map();
+    results.forEach((result, i) => {
+      const colName = this.otherColumns[i].name;
+      resultMap.set(colName, result);
+    });
+
+    return resultMap;
   }
 
   /**

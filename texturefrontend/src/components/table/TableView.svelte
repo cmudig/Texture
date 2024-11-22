@@ -13,27 +13,19 @@
   import RowView from "./RowView.svelte";
   import TablePlaceholder from "../utils/TablePlaceholder.svelte";
 
-  export let currentColToggleStates: Record<string, boolean> = {};
-
   let myTableClient: TableClient;
   let previousClient: TableClient;
   let ready = false;
 
-  function createClient(
-    schema: DatasetSchema,
-    shouldDisplay: Record<string, boolean>,
-    filter,
-  ) {
+  function createClient(schema: DatasetSchema, filter) {
     const mainTableCols: Column[] = [];
     const otherTableCols: Column[] = [];
 
     for (let col of schema.columns) {
-      if (shouldDisplay[col.name]) {
-        if (col.derivedSchema == undefined) {
-          mainTableCols.push(col);
-        } else {
-          otherTableCols.push(col);
-        }
+      if (col.derivedSchema == undefined) {
+        mainTableCols.push(col);
+      } else {
+        otherTableCols.push(col);
       }
     }
 
@@ -53,11 +45,7 @@
   });
 
   $: {
-    myTableClient = createClient(
-      $datasetSchema,
-      currentColToggleStates,
-      $mosaicSelection,
-    );
+    myTableClient = createClient($datasetSchema, $mosaicSelection);
 
     if (previousClient) {
       vg.coordinator().disconnect(previousClient);
@@ -75,7 +63,7 @@
     tableSchemaStore.set(myTableClient.schema);
   }
 
-  $: ({ schema, data, loaded } = myTableClient);
+  $: ({ schema, data, loaded, arrayColData } = myTableClient);
 </script>
 
 <div class="h-full">
@@ -88,10 +76,20 @@
         {#if $data}
           <div class="p-4 flex flex-col gap-2">
             {#each $data as row}
+              {@const id = row[$datasetSchema.primary_key.name]}
+              {@const thisRowData = new Map(
+                Array.from($arrayColData, ([key, value]) => [
+                  key,
+                  value.filter(
+                    (item) => item[$datasetSchema.primary_key.name] == id,
+                  ),
+                ]),
+              )}
               <RowView
                 idSchema={$datasetSchema.primary_key}
                 colSchema={$datasetSchema.columns}
                 mainTableData={row}
+                arrayTableMap={thisRowData}
               />
             {/each}
 
