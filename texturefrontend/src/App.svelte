@@ -11,7 +11,7 @@
     filteredCount,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
-  import DataDisplay from "./components/table/DataDisplay.svelte";
+  import TableView from "./components/table/TableView.svelte";
   import SimilarView from "./components/SimilarView.svelte";
   import ColumnTransformModal from "./components/addColumn/ColumnTransformModal.svelte";
   import { Popover, Spinner } from "flowbite-svelte";
@@ -154,9 +154,9 @@
             }}
           />
         {:else}
-          <DataDisplay {currentColToggleStates}>
+          <TableView {currentColToggleStates}>
             <svelte:fragment slot="navBar"></svelte:fragment>
-          </DataDisplay>
+          </TableView>
         {/if}
       </div>
     </div>
