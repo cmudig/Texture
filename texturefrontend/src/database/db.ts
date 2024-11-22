@@ -1,7 +1,6 @@
 import * as vg from "@uwdata/vgplot";
 // @ts-ignore
 import { tableFromIPC } from "apache-arrow";
-import { get } from "svelte/store";
 
 import type { ColumnSummary } from "../shared/types";
 import type {
@@ -12,8 +11,6 @@ import type {
   DuckQueryData,
   DatasetSchema,
 } from "../backendapi";
-import { derivedViewNames } from "../stores";
-import { getCacheKey } from "../shared/utils";
 
 type DuckQueryResult = ExecResponse | JsonResponse | ErrorResponse;
 
@@ -231,11 +228,8 @@ export class DatabaseConnection {
     id: number,
     mosaicSelection: any, // vg.selection to get the predicates from
   ): Promise<any[]> {
-    const viewMap = get(derivedViewNames);
-    const viewName = viewMap.get(getCacheKey({ table, col }));
-
     const predicates = mosaicSelection.predicate({
-      from: viewName,
+      from: table,
     });
 
     let q = vg.Query.select("*")

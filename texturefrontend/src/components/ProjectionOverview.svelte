@@ -6,16 +6,8 @@
   import { projectionColorColumn } from "../stores";
 
   export let colorCols: Column[] = [];
-  // let colorColName: string | undefined = undefined;
 
-  let active = getInitialToggle();
-
-  function getInitialToggle() {
-    if ($datasetSchema.has_projection) {
-      return true;
-    }
-    return false;
-  }
+  let active = $datasetSchema.has_projection;
 </script>
 
 <div>
@@ -55,7 +47,8 @@
 
         <ScatterProjection
           mainDatasetName={$datasetSchema.name}
-          columnName="projection_xy"
+          columnX="umap_x"
+          columnY="umap_y"
           colorColName={$projectionColorColumn}
         />
       </div>

@@ -4,19 +4,16 @@
   import {
     mosaicSelection,
     clearColumnSelections,
-    derivedViewNames,
     databaseConnection,
   } from "../../stores";
-  import { getDatasetName, getUUID, getCacheKey } from "../../shared/utils";
+  import { getUUID } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
   import { formatInt } from "../../shared/format";
 
   export let columnName: string;
   export let mainDatasetName: string;
   export let showBackground = true;
-  export let plotNulls = true;
   export let limit = 10;
-  export let isDerivedTable = false;
   export let colorColName: string | undefined = undefined;
 
   let el: HTMLElement;
@@ -50,26 +47,11 @@
   }
 
   async function renderChart(
-    mainDsName: string,
-    cName: string,
-    shouldPlotNulls: boolean,
+    table: string,
+    col: string,
     selection: any,
     colorColName?: string,
   ) {
-    let datasetName = await getDatasetName(mainDsName, cName, shouldPlotNulls);
-
-    let fromClause: any = datasetName;
-
-    console.log("Plotting ", cName, "the table is: ", datasetName);
-
-    if (isDerivedTable) {
-      // console.log(datasetName, "is a derived table");
-      $derivedViewNames.set(
-        getCacheKey({ table: mainDsName, col: cName }),
-        datasetName,
-      );
-    }
-
     colCount = await databaseConnection.getColCount(
       mainDatasetName,
       columnName,
@@ -77,30 +59,25 @@
 
     if (showBackground) {
       plotWrapper = getPlot(
-        // including this breaks the click interation and doesnt cut off text?
-        // vg.axisY({
-        //   textOverflow: "ellipsis",
-        //   lineWidth: 50,
-        // }),
-        vg.barX(vg.from(fromClause), {
+        vg.barX(vg.from(table), {
           x: vg.count(),
-          y: cName,
+          y: col,
           fill: "#ccc",
           fillOpacity: 0.4,
           sort: { y: "-x", limit },
         }),
-        vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
+        vg.barX(vg.from(table, { filterBy: $mosaicSelection }), {
           x: vg.count(),
-          y: cName,
+          y: col,
           fill: colorColName ?? "steelblue",
           sort: { y: "-x", limit },
         }),
         vg.highlight({ by: selection }),
         vg.toggleY({ as: selection }),
         vg.toggleY({ as: $mosaicSelection }),
-        vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
+        vg.text(vg.from(table, { filterBy: $mosaicSelection }), {
           x: 0,
-          y: cName,
+          y: col,
           sort: { y: "-x", limit },
           text: vg.count(),
           dx: -3,
@@ -123,18 +100,18 @@
       );
     } else {
       plotWrapper = getPlot(
-        vg.barX(vg.from(fromClause, { filterBy: $mosaicSelection }), {
+        vg.barX(vg.from(table, { filterBy: $mosaicSelection }), {
           x: vg.count(),
-          y: cName,
+          y: col,
           fill: colorColName ?? "steelblue",
           sort: { y: "-x", limit },
         }),
         vg.highlight({ by: selection }),
         vg.toggleY({ as: selection }),
         vg.toggleY({ as: $mosaicSelection }),
-        vg.text(vg.from(fromClause, { filterBy: $mosaicSelection }), {
+        vg.text(vg.from(table, { filterBy: $mosaicSelection }), {
           x: 0,
-          y: cName,
+          y: col,
           sort: { y: "-x", limit },
           text: vg.count(),
           dx: -3,
@@ -161,13 +138,7 @@
   }
 
   afterUpdate(() => {
-    renderChart(
-      mainDatasetName,
-      columnName,
-      plotNulls,
-      thisSelection,
-      colorColName,
-    );
+    renderChart(mainDatasetName, columnName, thisSelection, colorColName);
   });
 
   onDestroy(() => {

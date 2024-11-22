@@ -11,7 +11,9 @@ const randomSixDigitInt = () => Math.floor(Math.random() * 900000) + 100000;
 
 /**
  * If we are excluding some values from a plot or want to filter out nulls, we create a view
- * and then visualize the view in the charts
+ * and then visualize the view in the charts.
+ * NOTE: this function is not used anymore; can use in future if selection resolution is not based on table name
+ * or can append the null filters to the selection directly
  */
 export async function getDatasetName(
   mainDSName: string,
@@ -72,8 +74,4 @@ export function shouldHighlight(
     return v >= Number(sel[0]) && v <= Number(sel[1]);
   }
   return false;
-}
-
-export function getCacheKey({ table, col }): string {
-  return `${table}_${col}`;
 }
