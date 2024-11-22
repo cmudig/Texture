@@ -3,7 +3,6 @@
   import { TableClient } from "./TableClient";
   import {
     mosaicSelection,
-    compareSimilarID,
     datasetSchema,
     tableSortColStore,
     tableSortDescStore,
@@ -32,18 +31,16 @@
       if (shouldDisplay[col.name]) {
         if (col.derivedSchema == undefined) {
           mainTableCols.push(col);
-        } else if (!col.derivedSchema.is_segment) {
+        } else {
           otherTableCols.push(col);
         }
       }
     }
 
-    // always include pk
-    mainTableCols.push(schema.primary_key);
-
     let client = new TableClient({
       filterBy: filter,
       from: schema.name,
+      idColumn: schema.primary_key,
       mainColumns: mainTableCols,
       otherColumns: otherTableCols,
     });
@@ -54,10 +51,6 @@
   onDestroy(() => {
     vg.coordinator().disconnect(myTableClient);
   });
-
-  function displaySimilar(id: number) {
-    $compareSimilarID = id;
-  }
 
   $: {
     myTableClient = createClient(
@@ -83,11 +76,6 @@
   }
 
   $: ({ schema, data, loaded } = myTableClient);
-
-  $: colTypeMap = $datasetSchema.columns.reduce((acc, col) => {
-    acc[col.name] = col.type;
-    return acc;
-  }, {});
 </script>
 
 <div class="h-full">
@@ -100,16 +88,10 @@
         {#if $data}
           <div class="p-4 flex flex-col gap-2">
             {#each $data as row}
-              {@const rowArr = Object.entries(row)}
               <RowView
-                id={Number(row[$datasetSchema.primary_key.name])}
-                textData={rowArr.filter(([k, v]) => colTypeMap[k] === "text")}
-                metadata={rowArr.filter(
-                  ([k, v]) =>
-                    colTypeMap[k] !== "text" &&
-                    k !== $datasetSchema.primary_key.name,
-                )}
-                selection={myTableClient.filterBy}
+                idSchema={$datasetSchema.primary_key}
+                colSchema={$datasetSchema.columns}
+                mainTableData={row}
               />
             {/each}
 
