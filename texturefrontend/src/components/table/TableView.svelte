@@ -21,29 +21,29 @@
   let ready = false;
 
   function createClient(
-    _dsInfo: DatasetSchema,
+    schema: DatasetSchema,
     shouldDisplay: Record<string, boolean>,
     filter,
   ) {
     const mainTableCols: Column[] = [];
     const otherTableCols: Column[] = [];
 
-    for (let col of _dsInfo.columns) {
+    for (let col of schema.columns) {
       if (shouldDisplay[col.name]) {
-        if (col.derivedSchema) {
-          otherTableCols.push(col);
-        } else {
+        if (col.derivedSchema == undefined) {
           mainTableCols.push(col);
+        } else if (!col.derivedSchema.is_segment) {
+          otherTableCols.push(col);
         }
       }
     }
 
     // always include pk
-    mainTableCols.push(_dsInfo.primary_key);
+    mainTableCols.push(schema.primary_key);
 
     let client = new TableClient({
       filterBy: filter,
-      from: _dsInfo.name,
+      from: schema.name,
       mainColumns: mainTableCols,
       otherColumns: otherTableCols,
     });
