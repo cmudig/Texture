@@ -2,12 +2,12 @@
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
   import { mosaicSelection, clearColumnSelections } from "../../stores";
-  import { getDatasetName, getUUID } from "../../shared/utils";
+  import { getUUID } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
-  export let columnName: string;
+  export let columnX: string;
+  export let columnY: string;
   export let mainDatasetName: string;
-  export let plotNulls = true;
   export let colorColName: string | undefined = undefined;
 
   let el: HTMLElement;
@@ -15,7 +15,7 @@
   let thisSelection = vg.Selection.single();
 
   let uuid = getUUID();
-  $: saveSelectionToCache(thisSelection, columnName);
+  $: saveSelectionToCache(thisSelection, `${columnX}_${columnY}`);
 
   function resetSelection(s) {
     s.clauses.forEach((clause) => {
@@ -27,11 +27,11 @@
     });
   }
 
-  function saveSelectionToCache(s, name) {
+  function saveSelectionToCache(selection, name) {
     $clearColumnSelections = [
       ...$clearColumnSelections,
       {
-        clearFunc: () => resetSelection(s),
+        clearFunc: () => resetSelection(selection),
         sourceId: uuid,
         colName: name,
       },
@@ -39,27 +39,24 @@
   }
 
   async function renderChart(
-    mainDsName: string,
-    cName: string,
-    pltNullsFlag: boolean,
+    table: string,
+    colX: string,
+    colY: string,
     selection: any,
     colorCol: string | undefined,
   ) {
-    let datasetName = await getDatasetName(mainDsName, cName, pltNullsFlag);
-    let fromClause: any = datasetName;
-
     plotWrapper = getPlot(
       vg.name("projectionView"),
-      vg.dot(vg.from(fromClause), {
-        x: "umap_x",
-        y: "umap_y",
+      vg.dot(vg.from(table), {
+        x: colX,
+        y: colY,
         r: 2,
         fill: "#ccc",
         fillOpacity: 0.4,
       }),
-      vg.dot(vg.from(fromClause, { filterBy: $mosaicSelection }), {
-        x: "umap_x",
-        y: "umap_y",
+      vg.dot(vg.from(table, { filterBy: $mosaicSelection }), {
+        x: colX,
+        y: colY,
         r: 2,
         fill: colorCol ?? "steelblue",
       }),
@@ -76,13 +73,7 @@
   }
 
   afterUpdate(() => {
-    renderChart(
-      mainDatasetName,
-      columnName,
-      plotNulls,
-      thisSelection,
-      colorColName,
-    );
+    renderChart(mainDatasetName, columnX, columnY, thisSelection, colorColName);
   });
 
   onDestroy(() => {

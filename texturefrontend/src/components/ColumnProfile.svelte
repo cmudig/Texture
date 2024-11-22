@@ -71,37 +71,27 @@
     {/if}
   </button>
   <div class="w-full pl-4 py-1 mb-2" class:hidden={!active}>
-    {#if displayCol.derivedSchema != undefined}
-      {#if displayCol.type === "categorical" || displayCol.type === "text"}
-        <!-- Only exclude stop words if is a segment column named "word"  -->
-        <CategoricalChart
-          mainDatasetName={displayCol.derivedSchema.table_name}
-          columnName={displayCol.name}
-          plotNulls={true}
-          isDerivedTable={true}
-          showBackground={$showBackgroundDistMap[displayCol.name]}
-        />
-      {:else}
-        Not currently supporting quantitative columns from another table...
-      {/if}
-    {:else if displayCol.type === "number"}
+    {#if displayCol.type === "number"}
       <Histogram
-        mainDatasetName={$datasetSchema.name}
-        showBackground={$showBackgroundDistMap[displayCol.name]}
+        mainDatasetName={displayCol.derivedSchema?.table_name ??
+          $datasetSchema.name}
         columnName={displayCol.name}
+        showBackground={$showBackgroundDistMap[displayCol.name]}
       />
     {:else if displayCol.type === "categorical"}
       <CategoricalChart
-        mainDatasetName={$datasetSchema.name}
-        showBackground={$showBackgroundDistMap[displayCol.name]}
+        mainDatasetName={displayCol.derivedSchema?.table_name ??
+          $datasetSchema.name}
         columnName={displayCol.name}
+        showBackground={$showBackgroundDistMap[displayCol.name]}
         colorColName={$projectionColorColumn === displayCol.name
           ? displayCol.name
           : undefined}
       />
     {:else if displayCol.type === "date"}
       <DateChart
-        mainDatasetName={$datasetSchema.name}
+        mainDatasetName={displayCol.derivedSchema?.table_name ??
+          $datasetSchema.name}
         columnName={displayCol.name}
       />
     {:else if displayCol.type === "text"}

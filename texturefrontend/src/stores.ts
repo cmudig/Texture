@@ -27,7 +27,6 @@ export const databaseConnection = new DatabaseConnection(backendService);
 
 // ~~~~~~~~~~~~~~~ App wide stores ~~~~~~~~~~~~~~~
 export const compareSimilarID: Writable<number | undefined> = writable();
-export const derivedViewNames: Writable<Map<any, string>> = writable(new Map());
 export const mosaicSelection: Writable<any> = writable(); // vg.Selection crossfilter
 export const datasetSchema: Writable<DatasetSchema> = writable();
 export const showBackgroundDistMap: Writable<Record<string, boolean>> =

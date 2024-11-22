@@ -11,12 +11,10 @@
   let plotWrapper;
 
   // FUTURE: if vg.bin() works for dates might be nice here so less crowded line...
-  function renderChart(datasetName: string, cName: string) {
-    let fromClause: any = datasetName;
-
+  function renderChart(table: string, col: string) {
     plotWrapper = getPlot(
-      vg.lineY(vg.from(fromClause, { filterBy: $mosaicSelection }), {
-        x: cName,
+      vg.lineY(vg.from(table, { filterBy: $mosaicSelection }), {
+        x: col,
         y: vg.count(),
         stroke: "steelblue",
         curve: "monotone-x",
