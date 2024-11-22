@@ -5,81 +5,75 @@
     FilterOutline,
   } from "flowbite-svelte-icons";
   import { formatValue } from "../../shared/format";
-  import { type SelectionMap } from "../../shared/types";
   import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
   import SubstringHighlight from "./SubstringHighlight.svelte";
   import {
     datasetSchema,
     selectionDisplay,
-    databaseConnection,
     compareSimilarID,
+    showSegmentValues,
   } from "../../stores";
-  import type { DatasetSchema } from "../../backendapi";
+  import type { Column } from "../../backendapi";
   import { shouldHighlight } from "../../shared/utils";
+  import type { SelectionMap } from "../../shared/types";
+  import ArrayDisplay from "./ArrayDisplay.svelte";
 
-  export let id: number;
-  export let textData: Array<[string, unknown]>;
-  export let metadata: Array<[string, unknown]>;
+  export let idSchema: Column;
+  export let colSchema: Column[];
+  export let mainTableData: object[];
+  export let arrayTableMap: Map<string, object[]> | undefined = undefined; // {colname: [data]}
   export let highlight = false;
-  export let selection: any = undefined; // vgplot.Selection
-
-  $: plotMetadata = [["id", id], ...metadata];
 
   let toggle = false;
 
-  async function getWordSpans(
-    id: number,
-    textCols: string[],
-    selectionMap: SelectionMap,
-    datasetSchema: DatasetSchema,
-    _selection?: any,
-  ): Promise<undefined | Record<string, unknown[]>> {
-    if (!datasetSchema || !selection || !Object.keys(selectionMap).length) {
+  $: textColSchemas = colSchema.filter((c) => c.type === "text");
+  $: metaColSchemas = [idSchema, ...colSchema.filter((c) => c.type !== "text")];
+
+  /**
+   * For a given text column, finds cols in current selection that are derived from it
+   * and then gets the span values for those selections
+   */
+  function getSpanHighlights(
+    textCol: Column,
+    currentSelections: SelectionMap,
+    segmentTables,
+    schemas: Column[],
+  ): undefined | any[] {
+    // get cols that correspond to this text
+    const matching_selections = Object.entries(currentSelections).filter(
+      ([k, v]) => {
+        const match = schemas.find((c) => c.name === k);
+        return (
+          match &&
+          match.derivedSchema?.is_segment &&
+          match.derivedSchema?.derived_from === textCol.name
+        );
+      },
+    );
+
+    if (!matching_selections.length) {
       return undefined;
     }
 
-    let spanMap = {};
-
-    for (let textCol of textCols) {
-      // TODO: this is buggy because the col might not always be the first found -- but will probably be replaced anyway
-      let derivedCol = datasetSchema.columns.find(
-        (col) =>
-          col.derivedSchema?.is_segment &&
-          col.derivedSchema?.derived_from === textCol,
-      );
-
-      // console.log("DERIVED_COL: ", derivedCol);
-
-      if (derivedCol != undefined && derivedCol.name in selectionMap) {
-        let spans = await databaseConnection.getSpansPerDoc(
-          derivedCol.derivedSchema?.table_name as string,
-          derivedCol.name,
-          datasetSchema.primary_key.name,
-          id,
-          _selection,
-        );
-
-        spanMap[textCol] = spans;
+    // get only the matching values from each segment table
+    const colSpanMap = new Map<string, any[]>();
+    for (let [colName, selection] of matching_selections as [string, any[]][]) {
+      const segmentTable = segmentTables.get(colName);
+      if (!segmentTable) {
+        continue;
       }
+      const matching_spans = segmentTable.filter((v) =>
+        selection.includes(v[colName]),
+      );
+      colSpanMap.set(colName, matching_spans);
     }
 
-    // console.log("SpanMap: ", spanMap);
+    // combine selections into one list
+    const combinedSpans = Array.from(colSpanMap.values()).flat();
 
-    return spanMap;
+    // FUTURE: keep the keys and highlight different colors
+    return combinedSpans;
   }
-
-  /**
-   * BUG: this is called twice now, once when $selectionDisplay updates, and then again once textData prop
-   * updates, not sure how to batch these?
-   *
-   */
-  $: wordSpans = getWordSpans(
-    id,
-    textData.map((d) => d[0]),
-    $selectionDisplay,
-    $datasetSchema,
-    selection,
-  );
 </script>
 
 <div
@@ -103,7 +97,7 @@
       title="Show similar"
       class="hover:bg-gray-100 text-gray-500 p-1 rounded"
       on:click={() => {
-        $compareSimilarID = id;
+        $compareSimilarID = Number(mainTableData[idSchema.name]);
       }}
       class:hidden={!$datasetSchema.has_embeddings}
     >
@@ -116,74 +110,95 @@
   >
     <slot name="title" />
 
-    {#await wordSpans}
-      {#each textData as [textColName, textColData], idx (textColName)}
-        <div
-          class={idx !== textData.length - 1 ? "border-b border-gray-300" : ""}
-        >
-          <div class="font-light text-secondary-600 inline animate-pulse">
-            {textColName}:
-          </div>
-
-          <div class="text-gray-800 inline animate-pulse whitespace-pre-wrap">
-            {formatValue(textColData, { type: "text" })}
-          </div>
+    {#each textColSchemas as textSchema, idx (textSchema.name)}
+      {@const wordSpans = getSpanHighlights(
+        textSchema,
+        $selectionDisplay,
+        arrayTableMap,
+        colSchema,
+      )}
+      <div
+        class={idx !== textColSchemas.length - 1
+          ? "border-b border-gray-300"
+          : ""}
+      >
+        <div class="font-light text-secondary-600 inline">
+          {textSchema.name}:
         </div>
-      {/each}
-    {:then wordSpanMap}
-      {#each textData as [textColName, textColData], idx (textColName)}
-        <div
-          class={idx !== textData.length - 1 ? "border-b border-gray-300" : ""}
-        >
-          <div class="font-light text-secondary-600 inline">
-            {textColName}:
-          </div>
 
-          <div class="text-gray-800 inline">
-            <!-- TODO: can be both, but right now only doing one at a time -->
-            {#if wordSpanMap && textColName in wordSpanMap}
-              <SpanIndexHighlight
-                highlights={wordSpanMap[textColName]}
-                value={textColData}
-              />
-            {:else if textColName in $selectionDisplay}
-              <SubstringHighlight
-                highlights={$selectionDisplay[textColName]}
-                value={textColData}
-              />
-            {:else}
-              <span class="whitespace-pre-wrap">
-                {formatValue(textColData, { type: "text" })}
-              </span>
-            {/if}
-          </div>
+        <div class="text-gray-800 inline">
+          <!-- TODO: can be both, but right now only doing one at a time -->
+          {#if wordSpans != undefined}
+            <SpanIndexHighlight
+              highlights={wordSpans}
+              value={mainTableData[textSchema.name]}
+            />
+          {:else if textSchema.name in $selectionDisplay}
+            <SubstringHighlight
+              highlights={$selectionDisplay[textSchema.name]}
+              value={mainTableData[textSchema.name]}
+            />
+          {:else}
+            <span class="whitespace-pre-wrap">
+              {formatValue(mainTableData[textSchema.name], { type: "text" })}
+            </span>
+          {/if}
         </div>
-      {/each}
-    {/await}
+      </div>
+    {/each}
   </div>
 
-  {#if plotMetadata.length}
+  {#if metaColSchemas.length}
     <div
       class={`w-[300px] shrink-0 pt-2 ${toggle ? "overflow-auto" : "overflow-hidden"}`}
     >
-      {#each plotMetadata as [itemKey, itemValue] (itemKey)}
-        {@const itemType = $datasetSchema?.columns.find(
-          (col) => col.name === itemKey,
-        )?.type}
-        <div class="flex px-2">
+      {#each metaColSchemas as metaSchema (metaSchema.name)}
+        {@const name = metaSchema.name}
+        {@const table = metaSchema.derivedSchema
+          ? arrayTableMap?.get(name)
+          : mainTableData}
+        {@const hasValue = metaSchema.derivedSchema
+          ? arrayTableMap?.get(name) != null
+          : mainTableData[name] != null}
+
+        <div class="flex px-2 mb-[2px]">
           <div
             class="whitespace-normal text-ellipsis overflow-hidden text-sm font-light text-secondary-600 shrink-0 w-[165px]"
-            title={String(itemKey)}
+            title={String(name)}
           >
-            {itemKey}
+            {name}
           </div>
           <div
-            class={`whitespace-normal break-words text-sm pl-1 grow ${itemValue == undefined ? "text-gray-300 italic" : "text-gray-800"}`}
-            class:bg-highlight-300={itemKey in $selectionDisplay &&
-              shouldHighlight(itemValue, $selectionDisplay[itemKey], itemType)}
+            class={`whitespace-normal break-words text-sm pl-1 grow ${hasValue ? "text-gray-800" : "text-gray-300 italic"}`}
+            class:bg-highlight-100={name in $selectionDisplay &&
+              shouldHighlight(
+                mainTableData[name],
+                $selectionDisplay[name],
+                metaSchema.type,
+              )}
           >
             <div>
-              {formatValue(itemValue, { type: itemType, colName: itemKey })}
+              {#if metaSchema.derivedSchema?.is_segment}
+                {#if $showSegmentValues}
+                  <ArrayDisplay {name} type={metaSchema.type} data={table} />
+                {:else}
+                  <span class="italic text-gray-500">
+                    {table?.length ?? 0} items
+                  </span>
+                {/if}
+              {:else if metaSchema.derivedSchema && arrayTableMap}
+                <ArrayDisplay
+                  {name}
+                  type={metaSchema.type}
+                  data={table}
+                  highlights={$selectionDisplay[name]}
+                />
+              {:else}
+                {formatValue(table?.[name], {
+                  type: metaSchema.type,
+                  colName: metaSchema.name,
+                })}
+              {/if}
             </div>
           </div>
         </div>

@@ -18,14 +18,12 @@
   }
 </script>
 
-<Button on:click={doSave} size="sm">
+<Button on:click={doSave} title="Save data to file" size="sm">
   {#if saveStatus === QueryStatus.COMPLETED}
-    <CheckSolid size="sm" class="mr-2" />
+    <CheckSolid size="sm" />
   {:else if saveStatus === QueryStatus.PENDING}
-    <Spinner size="4" class="mr-2" />
+    <Spinner size="4" />
   {:else}
-    <DownloadSolid size="sm" class="mr-2" />
+    <DownloadSolid size="sm" />
   {/if}
-
-  Save current dataset to file
 </Button>

@@ -221,26 +221,6 @@ export class DatabaseConnection {
     return r;
   }
 
-  async getSpansPerDoc(
-    table: string,
-    col: string,
-    joinKey: string,
-    id: number,
-    mosaicSelection: any, // vg.selection to get the predicates from
-  ): Promise<any[]> {
-    const predicates = mosaicSelection.predicate({
-      from: table,
-    });
-
-    let q = vg.Query.select("*")
-      .from({ source: table })
-      .where([...predicates, vg.sql`"source".${vg.column(joinKey)} = ${id}`]);
-
-    let r = await vg.coordinator().query(q, { type: "json" });
-
-    return r;
-  }
-
   async getValues(
     tableName: string,
     idxColName: string,

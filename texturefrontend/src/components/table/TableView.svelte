@@ -3,7 +3,6 @@
   import { TableClient } from "./TableClient";
   import {
     mosaicSelection,
-    compareSimilarID,
     datasetSchema,
     tableSortColStore,
     tableSortDescStore,
@@ -14,36 +13,26 @@
   import RowView from "./RowView.svelte";
   import TablePlaceholder from "../utils/TablePlaceholder.svelte";
 
-  export let currentColToggleStates: Record<string, boolean> = {};
-
   let myTableClient: TableClient;
   let previousClient: TableClient;
   let ready = false;
 
-  function createClient(
-    _dsInfo: DatasetSchema,
-    shouldDisplay: Record<string, boolean>,
-    filter,
-  ) {
+  function createClient(schema: DatasetSchema, filter) {
     const mainTableCols: Column[] = [];
     const otherTableCols: Column[] = [];
 
-    for (let col of _dsInfo.columns) {
-      if (shouldDisplay[col.name]) {
-        if (col.derivedSchema) {
-          otherTableCols.push(col);
-        } else {
-          mainTableCols.push(col);
-        }
+    for (let col of schema.columns) {
+      if (col.derivedSchema == undefined) {
+        mainTableCols.push(col);
+      } else {
+        otherTableCols.push(col);
       }
     }
 
-    // always include pk
-    mainTableCols.push(_dsInfo.primary_key);
-
     let client = new TableClient({
       filterBy: filter,
-      from: _dsInfo.name,
+      from: schema.name,
+      idColumn: schema.primary_key,
       mainColumns: mainTableCols,
       otherColumns: otherTableCols,
     });
@@ -55,16 +44,8 @@
     vg.coordinator().disconnect(myTableClient);
   });
 
-  function displaySimilar(id: number) {
-    $compareSimilarID = id;
-  }
-
   $: {
-    myTableClient = createClient(
-      $datasetSchema,
-      currentColToggleStates,
-      $mosaicSelection,
-    );
+    myTableClient = createClient($datasetSchema, $mosaicSelection);
 
     if (previousClient) {
       vg.coordinator().disconnect(previousClient);
@@ -82,12 +63,7 @@
     tableSchemaStore.set(myTableClient.schema);
   }
 
-  $: ({ schema, data, loaded } = myTableClient);
-
-  $: colTypeMap = $datasetSchema.columns.reduce((acc, col) => {
-    acc[col.name] = col.type;
-    return acc;
-  }, {});
+  $: ({ schema, data, loaded, arrayColData } = myTableClient);
 </script>
 
 <div class="h-full">
@@ -100,16 +76,20 @@
         {#if $data}
           <div class="p-4 flex flex-col gap-2">
             {#each $data as row}
-              {@const rowArr = Object.entries(row)}
+              {@const id = row[$datasetSchema.primary_key.name]}
+              {@const thisRowData = new Map(
+                Array.from($arrayColData, ([key, value]) => [
+                  key,
+                  value.filter(
+                    (item) => item[$datasetSchema.primary_key.name] == id,
+                  ),
+                ]),
+              )}
               <RowView
-                id={Number(row[$datasetSchema.primary_key.name])}
-                textData={rowArr.filter(([k, v]) => colTypeMap[k] === "text")}
-                metadata={rowArr.filter(
-                  ([k, v]) =>
-                    colTypeMap[k] !== "text" &&
-                    k !== $datasetSchema.primary_key.name,
-                )}
-                selection={myTableClient.filterBy}
+                idSchema={$datasetSchema.primary_key}
+                colSchema={$datasetSchema.columns}
+                mainTableData={row}
+                arrayTableMap={thisRowData}
               />
             {/each}
 

@@ -18,7 +18,6 @@
       class="max-w-40"
       size="sm"
       items={[
-        { value: undefined, name: "Not sorted" },
         ...$schema.map((colInfo) => ({
           value: colInfo.column,
           name: colInfo.column,
