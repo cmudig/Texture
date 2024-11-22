@@ -25,7 +25,6 @@
   // Locals
   let datasets: Record<string, DatasetSchema>;
   let currentDatasetName: string;
-  let currentColToggleStates: Record<string, boolean> = {}; // TODO create ignore list by name to not plot columns with umap_x, umap_y, or id
   let datasetSize: number;
   let showAddColModal = false;
   let datasetColSummaries: Map<string, ColumnSummary>;
@@ -58,15 +57,6 @@
   async function setDataset(resetCrossfilter = true) {
     const info = datasets[currentDatasetName];
     $datasetSchema = info;
-
-    currentColToggleStates = $datasetSchema.columns.reduce(
-      (acc: Record<string, boolean>, col) => {
-        acc[col.name] = true;
-
-        return acc;
-      },
-      {},
-    );
 
     $showBackgroundDistMap = $datasetSchema.columns.reduce(
       (acc: Record<string, boolean>, col) => {
@@ -122,7 +112,6 @@
         }}
         bind:allowDeriveNew
         bind:currentDatasetName
-        bind:currentColToggleStates
       />
     </Popover>
 
@@ -154,7 +143,7 @@
             }}
           />
         {:else}
-          <TableView {currentColToggleStates} />
+          <TableView />
         {/if}
       </div>
     </div>
