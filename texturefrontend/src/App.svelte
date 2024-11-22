@@ -154,9 +154,7 @@
             }}
           />
         {:else}
-          <TableView {currentColToggleStates}>
-            <svelte:fragment slot="navBar"></svelte:fragment>
-          </TableView>
+          <TableView {currentColToggleStates} />
         {/if}
       </div>
     </div>
