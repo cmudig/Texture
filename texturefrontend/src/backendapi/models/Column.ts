@@ -9,6 +9,7 @@ export type Column = {
   name: string;
   type: Column.type;
   derivedSchema?: DerivedSchema | null;
+  extra?: Record<string, any> | null;
 };
 
 export namespace Column {

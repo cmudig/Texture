@@ -25,6 +25,5 @@ export type { LLMTransformRequest } from "./models/LLMTransformRequest";
 export { TaskFormat } from "./models/TaskFormat";
 export type { TransformResponse } from "./models/TransformResponse";
 export type { ValidationError } from "./models/ValidationError";
-export type { VectorSearchResponse } from "./models/VectorSearchResponse";
 
 export { DefaultService } from "./services/DefaultService";
