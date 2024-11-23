@@ -38,6 +38,18 @@ def custom_generate_unique_id(route: APIRoute):
     return route.name
 
 
+class Counter:
+    def __init__(self):
+        self.counter = 0
+
+    def increment(self):
+        self.counter += 1
+        return self.counter
+
+    def get(self):
+        return self.counter
+
+
 def get_server(
     schema: DatasetSchema,
     load_tables: Dict[str, pd.DataFrame],
@@ -50,6 +62,9 @@ def get_server(
         schema, load_tables, create_new_embedding_func
     )
     llm_client = LLMClient(api_key=api_key)
+
+    ### state tracking
+    embed_query_counter = Counter()
 
     ### Web server set up
     app = FastAPI(
@@ -121,21 +136,56 @@ def get_server(
         """
         return duckdb_conn._handle_arrow_message(data)
 
-    @api_app.get("/query_embed_from_id", response_model=VectorSearchResponse)
-    async def query_embed_from_id(datasetName: str, id: int):
-        vector = vectordb_conn.get_embedding_from_id(datasetName, id)
-        result_df = vectordb_conn.search(datasetName, vector)
-        return VectorSearchResponse(
-            success=True, result=result_df.to_dict(orient="records")
+    @api_app.get("/run_embed_search", response_model=Column)
+    async def run_embed_search(tableName: str, id: int = None, queryString: str = None):
+        if id is None and queryString is None:
+            raise ValueError("Must provide either id or queryString")
+
+        if id is not None:
+            vector = vectordb_conn.get_embedding_from_id(tableName, id)
+        else:
+            vector = vectordb_conn.get_embedding_from_string(tableName, queryString)
+
+        # local vars
+        new_col_name = f"search_{embed_query_counter.get()}"
+        embed_query_counter.increment()
+        id_col_name = schemaMap[tableName].primary_key.name
+
+        # pd.Dataframe with [id, _distance] columns
+        result_df = vectordb_conn.search(tableName, vector)
+        result_df = result_df.rename(columns={"_distance": new_col_name})
+
+        print("result of vector search is: ", result_df)
+
+        # make sure indices align
+        df_ids = duckdb_conn.connection.execute(
+            f'SELECT "{id_col_name}" from "{tableName}"'
+        ).df()
+
+        merged_df = pd.merge(df_ids, result_df, on="id")
+
+        print("merged_df is: ", merged_df)
+
+        duckdb_conn.add_column(tableName, new_col_name, merged_df[new_col_name])
+
+        newColSchema = Column(
+            name=new_col_name,
+            type="number",
+            derivedSchema=DerivedSchema(
+                is_segment=False,
+                table_name=None,
+                derived_from=None,
+                derived_how="search",
+            ),
+            extra={
+                "search_id": id,
+                "search_query": queryString,
+            },
         )
 
-    @api_app.get("/query_embed_from_string", response_model=VectorSearchResponse)
-    async def query_embed_from_string(datasetName: str, queryString: str):
-        vector = vectordb_conn.get_embedding_from_string(datasetName, queryString)
-        result_df = vectordb_conn.search(datasetName, vector)
-        return VectorSearchResponse(
-            success=True, result=result_df.to_dict(orient="records")
-        )
+        schemaMap[tableName].columns.insert(0, newColSchema)
+
+        return newColSchema
 
     @api_app.post("/fetch_llm_response_format", response_model=TransformResponse)
     def get_llm_response_format(userPrompt: str):
