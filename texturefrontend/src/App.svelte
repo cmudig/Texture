@@ -1,7 +1,6 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import type { ColumnSummary } from "./shared/types";
-  import type { DatasetSchema } from "./backendapi";
   import {
     mosaicSelection,
     datasetSchema,
@@ -9,6 +8,7 @@
     compareSimilarID,
     showBackgroundDistMap,
     filteredCount,
+    setSchema,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import TableView from "./components/table/TableView.svelte";
@@ -23,48 +23,18 @@
   import { formatNumber } from "./shared/format";
 
   // Locals
-  let datasets: Record<string, DatasetSchema>;
-  let currentDatasetName: string;
   let datasetSize: number;
   let showAddColModal = false;
   let datasetColSummaries: Map<string, ColumnSummary>;
-  let dataPromise: Promise<any> = populateDataTables();
+  let readyToLoad: Promise<any> = initialLoad();
   let allowDeriveNew = false;
 
-  async function populateDataTables(
-    datasetName?: string,
-    resetCrossfilter = true,
-  ): Promise<void> {
-    let d = await databaseConnection.api.readDatasetInfo();
-
-    if (Object.keys(d).length === 0) {
-      throw new Error(
-        "No datasets found! Please pass a dataset to texture.run()",
-      );
-    }
-
-    datasets = d;
-
-    if (datasetName && datasetName in datasets) {
-      currentDatasetName = datasetName;
-    } else {
-      currentDatasetName = Object.keys(datasets)[0];
-    }
-
-    return setDataset(resetCrossfilter);
-  }
-
-  async function setDataset(resetCrossfilter = true) {
-    const info = datasets[currentDatasetName];
-    $datasetSchema = info;
+  async function initialLoad() {
+    await setSchema();
 
     $showBackgroundDistMap = $datasetSchema.columns.reduce(
       (acc: Record<string, boolean>, col) => {
-        if (col.name === "word") {
-          acc[col.name] = false;
-        } else {
-          acc[col.name] = true;
-        }
+        acc[col.name] = col.name !== "word";
 
         return acc;
       },
@@ -72,11 +42,10 @@
     );
 
     // create new brush to clear selections from old dataset
-    if (resetCrossfilter) {
-      $mosaicSelection = vg.Selection.crossfilter();
-    }
-    datasetSize = await databaseConnection.getCount(info.name);
-    datasetColSummaries = await databaseConnection.getColSummaries(info);
+    $mosaicSelection = vg.Selection.crossfilter();
+    datasetSize = await databaseConnection.getCount($datasetSchema.name);
+    datasetColSummaries =
+      await databaseConnection.getColSummaries($datasetSchema);
   }
 </script>
 
@@ -105,27 +74,19 @@
       class="z-10 w-80 bg-white text-sm font-light text-gray-500"
       title="Settings"
     >
-      <SettingsPanel
-        {datasets}
-        updateData={() => {
-          dataPromise = setDataset();
-        }}
-        bind:allowDeriveNew
-        bind:currentDatasetName
-      />
+      <SettingsPanel bind:allowDeriveNew />
     </Popover>
 
     <ColumnTransformModal
       bind:panelOpen={showAddColModal}
       finishedCommitHandler={() => {
-        dataPromise = populateDataTables(currentDatasetName, false);
         showAddColModal = false; // close modal when complete
       }}
     />
   </div>
 
   <!-- Main content -->
-  {#await dataPromise}
+  {#await readyToLoad}
     <div class="p-4">
       <Spinner />
     </div>
@@ -149,7 +110,7 @@
     </div>
   {:catch error}
     <div class="p-4">
-      <span class="italic text-red-600">Error fetching data:</span>
+      <span class="italic text-red-600">Error getting data:</span>
       {error.message}
     </div>
   {/await}

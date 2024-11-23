@@ -8,10 +8,11 @@
   import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
   import SubstringHighlight from "./SubstringHighlight.svelte";
   import {
+    databaseConnection,
     datasetSchema,
     selectionDisplay,
-    compareSimilarID,
     showSegmentValues,
+    setSchema,
   } from "../../stores";
   import type { Column } from "../../backendapi";
   import { shouldHighlight } from "../../shared/utils";
@@ -74,6 +75,16 @@
     // FUTURE: keep the keys and highlight different colors
     return combinedSpans;
   }
+
+  function runSimilaritySearch(id, table) {
+    console.log("Starting similarity search", { id, table });
+    const prom = databaseConnection.api.runEmbedSearch(table, id);
+
+    prom.then((res) => {
+      console.log("Finished similarity search", res);
+      setSchema();
+    });
+  }
 </script>
 
 <div
@@ -94,10 +105,13 @@
       {/if}
     </button>
     <button
-      title="Show similar"
+      title="Calculate similar"
       class="hover:bg-gray-100 text-gray-500 p-1 rounded"
       on:click={() => {
-        $compareSimilarID = Number(mainTableData[idSchema.name]);
+        runSimilaritySearch(
+          Number(mainTableData[idSchema.name]),
+          $datasetSchema.name,
+        );
       }}
       class:hidden={!$datasetSchema.has_embeddings}
     >

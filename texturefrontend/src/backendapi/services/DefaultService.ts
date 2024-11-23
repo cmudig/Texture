@@ -38,10 +38,10 @@ export class DefaultService {
    * @returns DatasetSchema Successful Response
    * @throws ApiError
    */
-  public readDatasetInfo(): CancelablePromise<Record<string, DatasetSchema>> {
+  public getDatasetSchema(): CancelablePromise<DatasetSchema> {
     return this.httpRequest.request({
       method: "GET",
-      url: "/all_dataset_info",
+      url: "/get_dataset_schema",
     });
   }
 

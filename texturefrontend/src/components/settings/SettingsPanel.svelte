@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { Select, Label } from "flowbite-svelte";
-  import type { DatasetSchema } from "../../backendapi";
+  import { Label } from "flowbite-svelte";
 
-  import { showBackgroundDistMap, showSegmentValues } from "../../stores";
+  import {
+    showBackgroundDistMap,
+    showSegmentValues,
+    datasetSchema,
+  } from "../../stores";
   import SaveTableToFile from "../SaveTableToFile.svelte";
 
-  export let datasets: Record<string, DatasetSchema>;
-  export let currentDatasetName: string;
-  export let updateData: () => void;
   export let allowDeriveNew: boolean;
 
   function setBackgroundDist(val: boolean) {
@@ -23,20 +23,8 @@
 
 <div class="flex flex-col gap-4 p-2">
   <div class="flex flex-col gap-2">
-    <h3 class="text-base">Dataset</h3>
-
     <div class="flex gap-2 items-center">
-      <Select
-        size="sm"
-        items={Object.values(datasets).map((k) => ({
-          value: k.name,
-          name: k.origin === "example" ? `${k.name} (example)` : k.name,
-        }))}
-        placeholder="Select dataset"
-        bind:value={currentDatasetName}
-        on:change={updateData}
-      />
-
+      <h3 class="text-base">Dataset: {$datasetSchema.name}</h3>
       <SaveTableToFile />
     </div>
   </div>
@@ -58,13 +46,13 @@
 
     <div class="flex gap-2 items-center">
       <button
-        class="hover:bg-gray-100 bg-gray-50 rounded border px-2 border-gray-200"
+        class="hover:bg-gray-100 bg-gray-50 rounded border px-2 border-gray-200 focus:ring-2 focus:ring-primary-500"
         on:click={() => setBackgroundDist(true)}
       >
         On
       </button>
       <button
-        class="hover:bg-gray-100 bg-gray-50 rounded border px-2 border-gray-200"
+        class="hover:bg-gray-100 bg-gray-50 rounded border px-2 border-gray-200 focus:ring-2 focus:ring-primary-500"
         on:click={() => setBackgroundDist(false)}
       >
         Off

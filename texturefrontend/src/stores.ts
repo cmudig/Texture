@@ -29,6 +29,11 @@ export const databaseConnection = new DatabaseConnection(backendService);
 export const compareSimilarID: Writable<number | undefined> = writable();
 export const mosaicSelection: Writable<any> = writable(); // vg.Selection crossfilter
 export const datasetSchema: Writable<DatasetSchema> = writable();
+
+export async function setSchema() {
+  const newInfo = await databaseConnection.api.getDatasetSchema();
+  datasetSchema.update((oldVal) => newInfo);
+}
 export const showBackgroundDistMap: Writable<Record<string, boolean>> =
   writable();
 export const clearColumnSelections: Writable<

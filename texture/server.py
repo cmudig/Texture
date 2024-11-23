@@ -13,7 +13,6 @@ from texture.models import (
     DatasetSchema,
     DuckQueryData,
     DuckQueryResult,
-    VectorSearchResponse,
     TransformResponse,
     LLMTransformRequest,
     LLMTransformCommit,
@@ -58,7 +57,7 @@ def get_server(
 ) -> FastAPI:
 
     ### Database set up
-    duckdb_conn, vectordb_conn, schemaMap = initialize_databases(
+    duckdb_conn, vectordb_conn = initialize_databases(
         schema, load_tables, create_new_embedding_func
     )
     llm_client = LLMClient(api_key=api_key)
@@ -112,15 +111,15 @@ def get_server(
         return "hello from backend server"
 
     @api_app.get(
-        "/all_dataset_info",
-        response_model=Dict[str, DatasetSchema],
+        "/get_dataset_schema",
+        response_model=DatasetSchema,
     )
     def read_dataset_info():
         """
         Get the datasets available along with a summary of their columns
         """
 
-        return schemaMap
+        return schema
 
     @api_app.post("/duckdb_query_json", response_model=DuckQueryResult)
     def duckdb_query_json(data: DuckQueryData):
@@ -149,7 +148,7 @@ def get_server(
         # local vars
         new_col_name = f"search_{embed_query_counter.get()}"
         embed_query_counter.increment()
-        id_col_name = schemaMap[tableName].primary_key.name
+        id_col_name = schema.primary_key.name
 
         # pd.Dataframe with [id, _distance] columns
         result_df = vectordb_conn.search(tableName, vector)
@@ -168,6 +167,7 @@ def get_server(
 
         duckdb_conn.add_column(tableName, new_col_name, merged_df[new_col_name])
 
+        # THIS is causing issues in frontend because table_name is None
         newColSchema = Column(
             name=new_col_name,
             type="number",
@@ -183,7 +183,7 @@ def get_server(
             },
         )
 
-        schemaMap[tableName].columns.insert(0, newColSchema)
+        schema.columns.insert(0, newColSchema)
 
         return newColSchema
 
@@ -280,7 +280,7 @@ def get_server(
                     ),
                 )
 
-            schemaMap[request.tableName].columns.insert(0, newColSchema)
+            schema.columns.insert(0, newColSchema)
 
             return TransformResponse(success=True, result=[])
 
@@ -367,7 +367,7 @@ def get_server(
                 ),
             )
 
-        schemaMap[request.tableName].columns.insert(0, newColSchema)
+        schema.columns.insert(0, newColSchema)
         return TransformResponse(success=True, result=[])
 
     @api_app.post("/save_to_file", response_model=bool)
@@ -375,7 +375,7 @@ def get_server(
 
         all_table_names = set([table_name])
         # get all table names
-        for col in schemaMap[table_name].columns:
+        for col in schema.columns:
             if col.table_name is not None:
                 all_table_names.add(col.table_name)
 
