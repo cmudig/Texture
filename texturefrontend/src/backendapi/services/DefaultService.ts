@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { CodeTransformCommit } from "../models/CodeTransformCommit";
 import type { CodeTransformRequest } from "../models/CodeTransformRequest";
+import type { Column } from "../models/Column";
 import type { DatasetSchema } from "../models/DatasetSchema";
 import type { DuckQueryData } from "../models/DuckQueryData";
 import type { ErrorResponse } from "../models/ErrorResponse";
@@ -12,7 +13,6 @@ import type { JsonResponse } from "../models/JsonResponse";
 import type { LLMTransformCommit } from "../models/LLMTransformCommit";
 import type { LLMTransformRequest } from "../models/LLMTransformRequest";
 import type { TransformResponse } from "../models/TransformResponse";
-import type { VectorSearchResponse } from "../models/VectorSearchResponse";
 
 import type { CancelablePromise } from "../core/CancelablePromise";
 import type { BaseHttpRequest } from "../core/BaseHttpRequest";
@@ -86,45 +86,24 @@ export class DefaultService {
   }
 
   /**
-   * Query Embed From Id
-   * @param datasetName
+   * Run Embed Search
+   * @param tableName
    * @param id
-   * @returns VectorSearchResponse Successful Response
-   * @throws ApiError
-   */
-  public queryEmbedFromId(
-    datasetName: string,
-    id: number,
-  ): CancelablePromise<VectorSearchResponse> {
-    return this.httpRequest.request({
-      method: "GET",
-      url: "/query_embed_from_id",
-      query: {
-        datasetName: datasetName,
-        id: id,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-
-  /**
-   * Query Embed From String
-   * @param datasetName
    * @param queryString
-   * @returns VectorSearchResponse Successful Response
+   * @returns Column Successful Response
    * @throws ApiError
    */
-  public queryEmbedFromString(
-    datasetName: string,
-    queryString: string,
-  ): CancelablePromise<VectorSearchResponse> {
+  public runEmbedSearch(
+    tableName: string,
+    id?: number,
+    queryString?: string,
+  ): CancelablePromise<Column> {
     return this.httpRequest.request({
       method: "GET",
-      url: "/query_embed_from_string",
+      url: "/run_embed_search",
       query: {
-        datasetName: datasetName,
+        tableName: tableName,
+        id: id,
         queryString: queryString,
       },
       errors: {
