@@ -5,6 +5,7 @@
   import CategoricalChart from "./charts/CategoricalChart.svelte";
   import DateChart from "./charts/DateChart.svelte";
   import NullDisplay from "./NullDisplay.svelte";
+  import CardinalityDisplay from "./CardinalityDisplay.svelte";
   import {
     datasetSchema,
     showBackgroundDistMap,
@@ -66,8 +67,13 @@
 
     <div class="grow" />
 
+    {#if colSummary?.cardinality !== undefined}
+      <CardinalityDisplay cardinality={colSummary.cardinality} />
+    {/if}
     {#if colSummary?.null_percentage !== undefined}
-      <NullDisplay nullPercentage={parseFloat(colSummary.null_percentage)} />
+      <div class="-ml-1">
+        <NullDisplay nullPercentage={parseFloat(colSummary.null_percentage)} />
+      </div>
     {/if}
   </button>
   <div class="w-full pl-4 py-1 mb-2" class:hidden={!active}>

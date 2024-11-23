@@ -163,7 +163,8 @@
         limit += 10;
       }}
     >
-      +{formatInt(remainingRows)} values. Click to load more.
+      <!-- +{formatInt(remainingRows)} values. Click to load more. -->
+      Load more
     </button>
   {/if}
 

@@ -26,7 +26,7 @@ export type ColumnSummary = {
   column_type: string;
   min: string;
   max: string;
-  approx_unique: string;
+  approx_unique: string; // this value is always wrong from duckdb
   avg?: string;
   std?: string;
   q25?: string;
@@ -34,6 +34,7 @@ export type ColumnSummary = {
   q75?: string;
   count: number;
   null_percentage: string;
+  cardinality: number; // plus extra field
 };
 
 export enum QueryStatus {
