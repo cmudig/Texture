@@ -76,7 +76,7 @@
       $mosaicSelection = vg.Selection.crossfilter();
     }
     datasetSize = await databaseConnection.getCount(info.name);
-    datasetColSummaries = await databaseConnection.getColSummaries(info.name);
+    datasetColSummaries = await databaseConnection.getColSummaries(info);
   }
 </script>
 

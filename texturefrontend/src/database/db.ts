@@ -181,17 +181,62 @@ export class DatabaseConnection {
   }
 
   async getColSummaries(
-    datasetName: string,
+    schema: DatasetSchema,
   ): Promise<Map<string, ColumnSummary>> {
-    let q = vg.sql`summarize ${vg.column(datasetName)}`;
-    let r: ColumnSummary[] = await vg.coordinator().query(q, { type: "json" });
+    // mapping from table name to cols in that table
+    const tableColMap = new Map<string, string[]>();
 
-    const resultMap = new Map<string, any>();
+    schema.columns.forEach((col) => {
+      const tableName =
+        col.derivedSchema?.table_name != undefined
+          ? col.derivedSchema.table_name
+          : schema.name;
 
-    for (const item of r) {
-      const columnName = item.column_name;
-      resultMap.set(columnName, item);
-    }
+      if (tableColMap.has(tableName)) {
+        tableColMap.get(tableName)?.push(col.name);
+      } else {
+        tableColMap.set(tableName, [col.name]);
+      }
+    });
+
+    // prepare summarize quuery for each table
+    const summarizeQueries = Array.from(tableColMap.keys()).map((tableName) => {
+      const q = vg.sql`SUMMARIZE ${vg.column(tableName)}`;
+      return vg.coordinator().query(q, { type: "json" });
+    });
+
+    // and count distinct queries
+    const countDistinctQueries = Array.from(tableColMap.entries()).map(
+      ([tableName, cols]) => {
+        const countDistinctQueries = cols.map(
+          (col) =>
+            vg.sql`COUNT(DISTINCT ${vg.column(col)}) as ${vg.column(col)}`,
+        );
+
+        const q = vg.sql`SELECT ${countDistinctQueries} FROM ${vg.column(tableName)}`;
+        return vg.coordinator().query(q, { type: "json" });
+      },
+    );
+
+    const summarizeResults = await Promise.all(summarizeQueries);
+    const countDistinctResults = await Promise.all(countDistinctQueries);
+
+    const summarizeValues = summarizeResults.flat();
+    const countDistinctValues = countDistinctResults
+      .flat()
+      .reduce((acc, curr) => {
+        return { ...acc, ...curr };
+      }, {});
+
+    const resultMap = new Map<string, ColumnSummary>();
+
+    schema.columns.forEach((col) => {
+      const info = summarizeValues.find((v) => v.column_name === col.name);
+      if (info != undefined) {
+        info["cardinality"] = countDistinctValues[col.name];
+        resultMap.set(col.name, info);
+      }
+    });
 
     return resultMap;
   }
