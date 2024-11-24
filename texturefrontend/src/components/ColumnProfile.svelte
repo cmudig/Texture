@@ -72,7 +72,8 @@
       Similarity to id: {displayCol.extra?.["search_id"]}
     {/if}
     {#if displayCol.extra?.["search_query"] != undefined}
-      Similarity to query: {displayCol.extra?.["search_query"]}
+      <span class="italic">Similarity to:</span>
+      "{displayCol.extra?.["search_query"]}"
     {/if}
 
     {#if displayCol.type === "number"}

@@ -146,7 +146,7 @@ def get_server(
             vector = vectordb_conn.get_embedding_from_string(tableName, queryString)
 
         # local vars
-        new_col_name = f"search_{embed_query_counter.get()}"
+        new_col_name = "similarity_search_result"
         embed_query_counter.increment()
         id_col_name = schema.primary_key.name
 
@@ -154,28 +154,17 @@ def get_server(
         result_df = vectordb_conn.search(tableName, vector)
         result_df = result_df.rename(columns={"_distance": new_col_name})
 
-        print("result of vector search is: ", result_df)
-
         # make sure indices align
         df_ids = duckdb_conn.connection.execute(
             f'SELECT "{id_col_name}" from "{tableName}"'
         ).df()
 
         merged_df = pd.merge(df_ids, result_df, on="id")
-
-        print("merged_df is: ", merged_df)
-
         duckdb_conn.add_column(tableName, new_col_name, merged_df[new_col_name])
 
         newColSchema = Column(
             name=new_col_name,
             type="number",
-            # derivedSchema=DerivedSchema(
-            #     is_segment=False,
-            #     table_name=None,
-            #     derived_from=None,
-            #     derived_how="search",
-            # ),
             extra={
                 "search_id": id,
                 "search_query": queryString,

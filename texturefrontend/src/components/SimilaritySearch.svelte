@@ -1,15 +1,17 @@
 <script lang="ts">
   import { databaseConnection, datasetSchema, setSchema } from "../stores";
-
   import { SearchOutline } from "flowbite-svelte-icons";
   import Toggle from "./Toggle.svelte";
-  import Histogram from "./charts/Histogram.svelte";
+  import { QueryStatus } from "../shared/types";
+  import { Spinner } from "flowbite-svelte";
 
   let currentQuery: string = "";
+  let searchStatus: QueryStatus = QueryStatus.NOT_STARTED;
 
   function runSearch() {
     if (currentQuery) {
       console.log("Starting similarity search", currentQuery);
+      searchStatus = QueryStatus.PENDING;
       const prom = databaseConnection.api.runEmbedSearch(
         $datasetSchema.name,
         undefined,
@@ -18,6 +20,7 @@
 
       prom.then((res) => {
         console.log("Finished similarity search", res);
+        searchStatus = QueryStatus.NOT_STARTED;
         setSchema();
       });
     } else {
@@ -42,32 +45,15 @@
         title="Run search"
         on:click={runSearch}
       >
-        <SearchOutline
-          class="text-primary-800  pointer-events-none"
-          size="sm"
-        />
+        {#if searchStatus === QueryStatus.PENDING}
+          <Spinner size="4" />
+        {:else}
+          <SearchOutline
+            class="text-primary-800  pointer-events-none"
+            size="sm"
+          />
+        {/if}
       </button>
     </div>
-
-    <!-- {#if $datasetSchema.search_result}
-      <div class="italic">
-        {#if $datasetSchema.search_result.extra?.["search_id"] != undefined}
-          Similarity to id: {$datasetSchema.search_result.extra?.["search_id"]}
-        {/if}
-        {#if $datasetSchema.search_result.extra?.["search_query"] != undefined}
-          Similarity to query: {$datasetSchema.search_result.extra?.[
-            "search_query"
-          ]}
-        {/if}
-      </div>
-      <Histogram
-        mainDatasetName={$datasetSchema.search_result.derivedSchema
-          ?.table_name ?? $datasetSchema.name}
-        columnName={$datasetSchema.search_result.name}
-        showBackground={false}
-      />
-    {:else}
-      no search
-    {/if} -->
   </div>
 </Toggle>

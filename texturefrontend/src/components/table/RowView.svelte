@@ -2,7 +2,7 @@
   import {
     AngleRightOutline,
     AngleDownOutline,
-    FilterOutline,
+    MapPinAltSolid,
   } from "flowbite-svelte-icons";
   import { formatValue } from "../../shared/format";
   import SpanIndexHighlight from "./SpanIndexHighlight.svelte";
@@ -115,7 +115,7 @@
       }}
       class:hidden={!$datasetSchema.has_embeddings}
     >
-      <FilterOutline size="xs" />
+      <MapPinAltSolid size="xs" />
     </button>
   </div>
 
