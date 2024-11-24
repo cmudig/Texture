@@ -5,6 +5,7 @@
   import ColumnProfile from "./ColumnProfile.svelte";
   import ProjectionOverview from "./ProjectionOverview.svelte";
   import { datasetSchema } from "../stores";
+  import SimilaritySearch from "./SimilaritySearch.svelte";
 
   export let datasetColSummaries: Map<string, ColumnSummary>;
   export let showAddColModal;
@@ -20,6 +21,8 @@
       </Button>
     </div>
   {/if}
+
+  <SimilaritySearch />
 
   <ProjectionOverview
     colorCols={$datasetSchema.columns.filter(
