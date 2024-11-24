@@ -26,7 +26,6 @@ const backendService: DefaultService = new TextProfileClient({
 export const databaseConnection = new DatabaseConnection(backendService);
 
 // ~~~~~~~~~~~~~~~ App wide stores ~~~~~~~~~~~~~~~
-export const compareSimilarID: Writable<number | undefined> = writable();
 export const mosaicSelection: Writable<any> = writable(); // vg.Selection crossfilter
 export const datasetSchema: Writable<DatasetSchema> = writable();
 

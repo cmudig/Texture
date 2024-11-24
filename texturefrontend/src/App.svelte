@@ -5,14 +5,12 @@
     mosaicSelection,
     datasetSchema,
     databaseConnection,
-    compareSimilarID,
     showBackgroundDistMap,
     filteredCount,
     setSchema,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import TableView from "./components/table/TableView.svelte";
-  import SimilarView from "./components/SimilarView.svelte";
   import ColumnTransformModal from "./components/addColumn/ColumnTransformModal.svelte";
   import { Popover, Spinner } from "flowbite-svelte";
   import { AdjustmentsHorizontalOutline } from "flowbite-svelte-icons";
@@ -96,16 +94,7 @@
         <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
       </div>
       <div class="flex-1 min-w-[450px] overflow-auto">
-        {#if $compareSimilarID !== undefined}
-          <SimilarView
-            similarDocID={$compareSimilarID}
-            clearFunc={() => {
-              $compareSimilarID = undefined;
-            }}
-          />
-        {:else}
-          <TableView />
-        {/if}
+        <TableView />
       </div>
     </div>
   {:catch error}
