@@ -13,7 +13,6 @@ from texture.models import (
     DatasetSchema,
     DuckQueryData,
     DuckQueryResult,
-    VectorSearchResponse,
     TransformResponse,
     LLMTransformRequest,
     LLMTransformCommit,
@@ -38,6 +37,18 @@ def custom_generate_unique_id(route: APIRoute):
     return route.name
 
 
+class Counter:
+    def __init__(self):
+        self.counter = 0
+
+    def increment(self):
+        self.counter += 1
+        return self.counter
+
+    def get(self):
+        return self.counter
+
+
 def get_server(
     schema: DatasetSchema,
     load_tables: Dict[str, pd.DataFrame],
@@ -46,10 +57,13 @@ def get_server(
 ) -> FastAPI:
 
     ### Database set up
-    duckdb_conn, vectordb_conn, schemaMap = initialize_databases(
+    duckdb_conn, vectordb_conn = initialize_databases(
         schema, load_tables, create_new_embedding_func
     )
     llm_client = LLMClient(api_key=api_key)
+
+    ### state tracking
+    embed_query_counter = Counter()
 
     ### Web server set up
     app = FastAPI(
@@ -97,15 +111,15 @@ def get_server(
         return "hello from backend server"
 
     @api_app.get(
-        "/all_dataset_info",
-        response_model=Dict[str, DatasetSchema],
+        "/get_dataset_schema",
+        response_model=DatasetSchema,
     )
     def read_dataset_info():
         """
         Get the datasets available along with a summary of their columns
         """
 
-        return schemaMap
+        return schema
 
     @api_app.post("/duckdb_query_json", response_model=DuckQueryResult)
     def duckdb_query_json(data: DuckQueryData):
@@ -121,21 +135,52 @@ def get_server(
         """
         return duckdb_conn._handle_arrow_message(data)
 
-    @api_app.get("/query_embed_from_id", response_model=VectorSearchResponse)
-    async def query_embed_from_id(datasetName: str, id: int):
-        vector = vectordb_conn.get_embedding_from_id(datasetName, id)
-        result_df = vectordb_conn.search(datasetName, vector)
-        return VectorSearchResponse(
-            success=True, result=result_df.to_dict(orient="records")
+    @api_app.get("/run_embed_search", response_model=Column)
+    async def run_embed_search(tableName: str, id: int = None, queryString: str = None):
+        if id is None and queryString is None:
+            raise ValueError("Must provide either id or queryString")
+
+        if id is not None:
+            vector = vectordb_conn.get_embedding_from_id(tableName, id)
+        else:
+            vector = vectordb_conn.get_embedding_from_string(tableName, queryString)
+
+        # local vars
+        new_col_name = "similarity_search_result"
+        embed_query_counter.increment()
+        id_col_name = schema.primary_key.name
+
+        # pd.Dataframe with [id, _distance] columns
+        result_df = vectordb_conn.search(tableName, vector)
+        result_df = result_df.rename(columns={"_distance": new_col_name})
+
+        # make sure indices align
+        df_ids = duckdb_conn.connection.execute(
+            f'SELECT "{id_col_name}" from "{tableName}"'
+        ).df()
+
+        merged_df = pd.merge(df_ids, result_df, on="id")
+        duckdb_conn.add_column(tableName, new_col_name, merged_df[new_col_name])
+
+        newColSchema = Column(
+            name=new_col_name,
+            type="number",
+            extra={
+                "search_id": id,
+                "search_query": queryString,
+            },
         )
 
-    @api_app.get("/query_embed_from_string", response_model=VectorSearchResponse)
-    async def query_embed_from_string(datasetName: str, queryString: str):
-        vector = vectordb_conn.get_embedding_from_string(datasetName, queryString)
-        result_df = vectordb_conn.search(datasetName, vector)
-        return VectorSearchResponse(
-            success=True, result=result_df.to_dict(orient="records")
-        )
+        if schema.search_result is not None:
+            # remove old search result from cols
+            schema.columns = [
+                col for col in schema.columns if col.name != schema.search_result.name
+            ]
+
+        schema.columns.insert(0, newColSchema)
+        schema.search_result = newColSchema
+
+        return newColSchema
 
     @api_app.post("/fetch_llm_response_format", response_model=TransformResponse)
     def get_llm_response_format(userPrompt: str):
@@ -230,7 +275,7 @@ def get_server(
                     ),
                 )
 
-            schemaMap[request.tableName].columns.insert(0, newColSchema)
+            schema.columns.insert(0, newColSchema)
 
             return TransformResponse(success=True, result=[])
 
@@ -317,7 +362,7 @@ def get_server(
                 ),
             )
 
-        schemaMap[request.tableName].columns.insert(0, newColSchema)
+        schema.columns.insert(0, newColSchema)
         return TransformResponse(success=True, result=[])
 
     @api_app.post("/save_to_file", response_model=bool)
@@ -325,7 +370,7 @@ def get_server(
 
         all_table_names = set([table_name])
         # get all table names
-        for col in schemaMap[table_name].columns:
+        for col in schema.columns:
             if col.table_name is not None:
                 all_table_names.add(col.table_name)
 

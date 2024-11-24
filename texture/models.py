@@ -9,7 +9,7 @@ DataType = Literal["text", "number", "date", "categorical"]
 
 class DerivedSchema(BaseModel):
     is_segment: bool  # corresponds to a segment of a text col
-    table_name: str  # table name for this data
+    table_name: Optional[str] = None  # table name for this data
     derived_from: Optional[str] = None  # name of col derived from
     derived_how: Optional[Literal["model", "code"]] = None
 
@@ -18,6 +18,7 @@ class Column(BaseModel):
     name: str
     type: DataType
     derivedSchema: Optional[DerivedSchema] = None
+    extra: Optional[Dict[str, Any]] = None
 
 
 class DatasetSchema(BaseModel):
@@ -27,6 +28,7 @@ class DatasetSchema(BaseModel):
     origin: Literal["example", "uploaded"]
     has_embeddings: bool = False
     has_projection: bool = False
+    search_result: Optional[Column] = None
 
 
 class ColumnSummary(BaseModel):

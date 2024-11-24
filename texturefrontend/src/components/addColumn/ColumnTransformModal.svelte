@@ -4,6 +4,7 @@
     datasetSchema,
     filteredIndices,
     filteredCount,
+    setSchema,
   } from "../../stores";
   import { Modal, Spinner, Select, Button } from "flowbite-svelte";
   import { TaskFormat } from "../../backendapi";
@@ -163,6 +164,7 @@
       console.log("finished with success, calling finish handler");
       commitError = undefined;
       finishedCommitHandler();
+      await setSchema();
     } else {
       commitError = r?.result?.error;
     }

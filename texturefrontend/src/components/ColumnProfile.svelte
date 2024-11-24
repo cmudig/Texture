@@ -14,9 +14,9 @@
   import { getUUID } from "../shared/utils";
   import DerivedIcon from "./icons/DerivedIcon.svelte";
   import { CogOutline } from "flowbite-svelte-icons";
-
   import Search from "./Search.svelte";
   import type { Column } from "../backendapi";
+  import Toggle from "./Toggle.svelte";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
@@ -25,28 +25,18 @@
 
   let active = true;
   let showSettings = false;
-  let mouseOver = false;
   $: showChartForType =
     displayCol.type === "number" ||
     displayCol.type === "categorical" ||
     displayCol.type === "date";
 </script>
 
-<div
-  on:mouseover={() => (mouseOver = true)}
-  on:focus={() => (mouseOver = true)}
-  on:mouseout={() => (mouseOver = false)}
-  on:blur={() => (mouseOver = false)}
-  role="group"
->
-  <!-- shadow is green-600 -->
-  <button
-    class={`space-between flex h-9 w-full items-center justify-between border-t-2 border-secondary-200 gap-2 px-2 hover:bg-gray-200 ${displayCol.derivedSchema?.derived_how ? "shadow-[inset_4px_0_0_0_#16a34a]" : ""}`}
-    class:bg-gray-100={active}
-    on:click={() => {
-      active = !active;
-    }}
-  >
+<Toggle bind:active>
+  <svelte:fragment slot="title">
+    {#if displayCol.derivedSchema?.derived_how}
+      <div class="w-2 h-8 bg-green-600 -ml-2" />
+    {/if}
+
     <DataTypeIcon {id} type={displayCol.type} />
 
     <p
@@ -75,8 +65,17 @@
         <NullDisplay nullPercentage={parseFloat(colSummary.null_percentage)} />
       </div>
     {/if}
-  </button>
-  <div class="w-full pl-4 py-1 mb-2" class:hidden={!active}>
+  </svelte:fragment>
+
+  <div slot="body" class="w-full pl-4 py-1 mb-2">
+    {#if displayCol.extra?.["search_id"] != undefined}
+      Similarity to id: {displayCol.extra?.["search_id"]}
+    {/if}
+    {#if displayCol.extra?.["search_query"] != undefined}
+      <span class="italic">Similarity to:</span>
+      "{displayCol.extra?.["search_query"]}"
+    {/if}
+
     {#if displayCol.type === "number"}
       <Histogram
         mainDatasetName={displayCol.derivedSchema?.table_name ??
@@ -139,4 +138,4 @@
       </div>
     {/if}
   </div>
-</div>
+</Toggle>

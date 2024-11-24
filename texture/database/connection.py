@@ -221,16 +221,20 @@ class VectorDBConnection:
         self.id_cols[table_name] = id_col_name
         self.embed_funcs[table_name] = embed_func
 
-    def search(self, table_name: str, vector: np.array, limit: int = 20):
+    def search(self, table_name: str, vector: np.array, limit: int = None):
         """
         Find ids of KNN docs to vector
         """
         self._check(table_name, check_conn=True, check_id=True)
 
         id_col = self.id_cols[table_name]
-        result = (
-            self.connection[table_name].search(vector).limit(limit).select([id_col])
-        )
+        vector_table = self.connection[table_name]
+
+        # FUTURE: might be able to not use all rows but quant charts need no nulls rn
+        if limit is None:
+            limit = vector_table.count_rows()
+
+        result = vector_table.search(vector).limit(limit).select([id_col])
 
         return result.to_pandas()[[id_col, "_distance"]]
 
@@ -259,11 +263,10 @@ def initialize_databases(
     schema: DatasetSchema,
     load_tables: Dict[str, pd.DataFrame],
     create_new_embedding_func: Optional[Callable] = None,
-) -> Tuple[DatabaseConnection, VectorDBConnection, Dict[str, DatasetSchema]]:
+) -> Tuple[DatabaseConnection, VectorDBConnection]:
     # Make DB
     duckdb_conn = DatabaseConnection()
     vectordb_conn = VectorDBConnection()
-    schemaStore = {}
 
     # load vector data first
     if schema.has_embeddings:
@@ -278,8 +281,7 @@ def initialize_databases(
         load_tables[schema.name] = load_tables[schema.name].drop(columns=[C_VECTOR])
 
     # Load data
-    schemaStore[schema.name] = schema
     for table_name, table_df in load_tables.items():
         duckdb_conn.load_dataframe(table_name, table_df)
 
-    return duckdb_conn, vectordb_conn, schemaStore
+    return duckdb_conn, vectordb_conn

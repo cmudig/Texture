@@ -12,6 +12,7 @@ export type DatasetSchema = {
   origin: DatasetSchema.origin;
   has_embeddings?: boolean;
   has_projection?: boolean;
+  search_result?: Column;
 };
 
 export namespace DatasetSchema {
