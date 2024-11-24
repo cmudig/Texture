@@ -34,7 +34,7 @@
 <Toggle bind:active>
   <svelte:fragment slot="title">
     {#if displayCol.derivedSchema?.derived_how}
-      <div class="w-2 h-6 bg-green-600" />
+      <div class="w-2 h-8 bg-green-600 -ml-2" />
     {/if}
 
     <DataTypeIcon {id} type={displayCol.type} />
