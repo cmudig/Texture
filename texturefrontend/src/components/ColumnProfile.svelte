@@ -68,6 +68,13 @@
   </svelte:fragment>
 
   <div slot="body" class="w-full pl-4 py-1 mb-2">
+    {#if displayCol.extra?.["search_id"] != undefined}
+      Similarity to id: {displayCol.extra?.["search_id"]}
+    {/if}
+    {#if displayCol.extra?.["search_query"] != undefined}
+      Similarity to query: {displayCol.extra?.["search_query"]}
+    {/if}
+
     {#if displayCol.type === "number"}
       <Histogram
         mainDatasetName={displayCol.derivedSchema?.table_name ??

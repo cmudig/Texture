@@ -167,23 +167,29 @@ def get_server(
 
         duckdb_conn.add_column(tableName, new_col_name, merged_df[new_col_name])
 
-        # THIS is causing issues in frontend because table_name is None
         newColSchema = Column(
             name=new_col_name,
             type="number",
-            derivedSchema=DerivedSchema(
-                is_segment=False,
-                table_name=None,
-                derived_from=None,
-                derived_how="search",
-            ),
+            # derivedSchema=DerivedSchema(
+            #     is_segment=False,
+            #     table_name=None,
+            #     derived_from=None,
+            #     derived_how="search",
+            # ),
             extra={
                 "search_id": id,
                 "search_query": queryString,
             },
         )
 
+        if schema.search_result is not None:
+            # remove old search result from cols
+            schema.columns = [
+                col for col in schema.columns if col.name != schema.search_result.name
+            ]
+
         schema.columns.insert(0, newColSchema)
+        schema.search_result = newColSchema
 
         return newColSchema
 

@@ -11,7 +11,7 @@ class DerivedSchema(BaseModel):
     is_segment: bool  # corresponds to a segment of a text col
     table_name: Optional[str] = None  # table name for this data
     derived_from: Optional[str] = None  # name of col derived from
-    derived_how: Optional[Literal["model", "code", "search"]] = None
+    derived_how: Optional[Literal["model", "code"]] = None
 
 
 class Column(BaseModel):
@@ -28,6 +28,7 @@ class DatasetSchema(BaseModel):
     origin: Literal["example", "uploaded"]
     has_embeddings: bool = False
     has_projection: bool = False
+    search_result: Optional[Column] = None
 
 
 class ColumnSummary(BaseModel):
