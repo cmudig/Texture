@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texture-viz"
-version = "0.0.4"
+version = "0.0.5"
 description = "Process and profile text datasets interactively"
 authors = ["Will Epperson <willepp@live.com>"]
 readme = "README.md"
