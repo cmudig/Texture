@@ -45,6 +45,7 @@ We provide various preprocessing functions to calculate embeddings, projections,
 ```python
 import pandas as pd
 import texture
+from texture.models import DatasetSchema, Column, DerivedSchema
 
 P = "https://raw.githubusercontent.com/cmudig/Texture/main/examples/vis_papers/"
 
