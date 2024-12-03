@@ -6,7 +6,7 @@ Texture is a system for exploring and creating structured insights with your tex
 
 1. **Interactive Attribute Profiles**: Texture visualizes structured attributes alongside your text data in interactive, cross-filterable charts.
 2. **Flexible attribute definitions**: Attribute charts can come from different tables and any level of a document such as words, sentences, or documents.
-3. **Derive new attributes**: Texture helps you derive new attributes during analysis with code and LLM transformations.
+3. **Embedding based operations**: Texture helps you use vector embeddings to search for similar text and summarize your data.
 
 ![screenshot of Texture interface](.github/screenshots/texture_sc.png)
 
@@ -27,11 +27,18 @@ texture.run(df)
 
 ## Texture Configuration
 
-You can optionally pass arguments to the [`run`](./texture/runner.py) command to configure the interface. Notable configuration options are:
+You can optionally pass arguments to the [`run`](./texture/runner.py) command to configure the interface. Configuration options are:
 
-- `embeddings: np.ndarray`: embeddings of your text data can be provided to enable similarity search and a projection overview. If you already have a 2d projection of these embeddings, you must provide it as columns `umap_x` and `umap_y` in the dataframe.
-- `column_info: List[ColumnInputInfo]`: Used to override default column types and provide derived tables. Texture will automatically infer the types (text, categorical, number, date) of your columns, but you can override here. Additionally, you can provide column information for columns from another table like words.
-- `api_key`: Your OpenAI API key to enable LLM attribute derivation.
+- `data: pd.DataFrame`: The dataframe to parse and visualize.
+- `schema`: a dataset schema describing the columns, types, and tables (calculated automatically if none provided)
+- `load_tables: Dict[str, pd.DataFrame]`: A dictionary of tables to load into the schema. The key is the table name and the value is the dataframe.
+- `create_new_embedding_func`: A function that takes a string and returns a vector embedding (see example below)
+
+There are several reserved column names in the main table that are used in the interface:
+
+- `id`: A unique identifier for each row.
+- `vector`: A column containing embeddings for the text data.
+- `umap_x` and `umap_y`: Columns containing 2d projections of the embeddings.
 
 We provide various preprocessing functions to calculate embeddings, projections, and word tables. You can use these functions to preprocess your data before launching the Texture app.
 
@@ -39,34 +46,88 @@ We provide various preprocessing functions to calculate embeddings, projections,
 import pandas as pd
 import texture
 
-df_vis_papers = pd.read_parquet("https://raw.githubusercontent.com/cmudig/Texture/main/examples/vis_papers/vis_paper_data.parquet")
+P = "https://raw.githubusercontent.com/cmudig/Texture/main/examples/vis_papers/"
 
-# get embeddings and projection
-embeddings, projection = texture.preprocess.get_embeddings_and_projection(
-    df_vis_papers["Abstract"], ".", "all-mpnet-base-v2"
+df_main = pd.read_parquet(P + "1_main.parquet")
+df_words = pd.read_parquet(P + "2_words.parquet")
+df_authors = pd.read_parquet(P + "3_authors.parquet")
+df_keywords = pd.read_parquet(P + "4_keywords.parquet")
+
+load_tables = {
+    "main_table": df_main,
+    "words_table": df_words,
+    "authors_table": df_authors,
+    "keywords_table": df_keywords,
+}
+
+# Create schema for the dataset that decides how the data will be visualized
+schema = DatasetSchema(
+    name="main_table",
+    columns=[
+        Column(name="Title", type="text"),
+        Column(name="Abstract", type="text"),
+        Column(
+            name="word",
+            type="categorical",
+            derivedSchema=DerivedSchema(
+                is_segment=True,
+                table_name="words_table",
+                derived_from="Abstract",
+                derived_how=None,
+            ),
+        ),
+        Column(
+            name="pos",
+            type="categorical",
+            derivedSchema=DerivedSchema(
+                is_segment=True,
+                table_name="words_table",
+                derived_from="Abstract",
+                derived_how=None,
+            ),
+        ),
+        Column(
+            name="author",
+            type="categorical",
+            derivedSchema=DerivedSchema(
+                is_segment=False,
+                table_name="authors_table",
+                derived_from=None,
+                derived_how=None,
+            ),
+        ),
+        Column(
+            name="keyword",
+            type="categorical",
+            derivedSchema=DerivedSchema(
+                is_segment=False,
+                table_name="keywords_table",
+                derived_from=None,
+                derived_how=None,
+            ),
+        ),
+        Column(name="Year", type="number"),
+        Column(name="Conference", type="categorical"),
+        Column(name="PaperType", type="categorical"),
+        Column(name="CitationCount_CrossRef", type="number"),
+        Column(name="Award", type="categorical"),
+    ],
+    primary_key=Column(name="id", type="number"),
+    origin="uploaded",
+    has_embeddings=True,
+    has_projection=True,
 )
 
-df_vis_papers["umap_x"] = projection[:, 0]
-df_vis_papers["umap_y"] = projection[:, 1]
+def get_embedding(value: str):
+    import sentence_transformers
 
-# get word table
-df_words = texture.preprocess.get_df_words_w_span(df_vis_papers["Abstract"], df_vis_papers["id"])
+    model = sentence_transformers.SentenceTransformer("all-mpnet-base-v2")
+    e = model.encode(value)
 
-# launch texture
+    return e
+
 texture.run(
-    df_vis_papers,
-    embeddings=embeddings,
-    column_info=[
-        {"name": "Abstract", "type": "text"},
-        {"name": "Title", "type": "categorical"},
-        {"name": "Year", "type": "number"},
-        {
-            "name": "word",
-            "derived_from": "Abstract",
-            "table_data": df_words,
-            "type": "categorical",
-        },
-    ],
+    schema=schema, load_tables=load_tables, create_new_embedding_func=get_embedding
 )
 ```
 
