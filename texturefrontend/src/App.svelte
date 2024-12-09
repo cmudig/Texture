@@ -32,7 +32,7 @@
 
     $showBackgroundDistMap = $datasetSchema.columns.reduce(
       (acc: Record<string, boolean>, col) => {
-        acc[col.name] = col.name !== "word";
+        acc[col.name] = false;
 
         return acc;
       },

@@ -1,24 +1,15 @@
 <script lang="ts">
+  import * as vg from "@uwdata/vgplot";
   import { onDestroy } from "svelte";
   import { SearchOutline } from "flowbite-svelte-icons";
   import { mosaicSelection, clearColumnSelections } from "../stores";
   import { isSelection } from "@uwdata/mosaic-core";
-  import {
-    regexp_matches,
-    contains,
-    prefix,
-    suffix,
-    literal,
-    eq,
-  } from "@uwdata/mosaic-sql";
+  import { literal, eq } from "@uwdata/mosaic-sql";
   import { getUUID } from "../shared/utils";
   import type { Column } from "../backendapi/models/Column";
 
-  const FUNCTIONS = { contains, prefix, suffix, regexp: regexp_matches };
-
   export let column: Column;
   export let tableName: string;
-  export let type = "contains";
   let currentQuery: string | undefined;
   let uuid = getUUID();
 
@@ -38,13 +29,11 @@
   function publishUpdate() {
     if (isSelection($mosaicSelection) && column != undefined) {
       let pred = null;
-      let cleanedQuery = currentQuery?.replaceAll("'", "''");
-
-      // TODO: support case-insensitive search
+      let cleanedQuery = currentQuery?.replaceAll("'", "''"); //.toLowerCase();
 
       if (cleanedQuery) {
         if (column.type === "text" || column.type === "categorical") {
-          pred = FUNCTIONS[type](column.name, literal(cleanedQuery));
+          pred = vg.sql`${vg.column(column.name)} ILIKE '%${cleanedQuery}%'`;
         } else if (column.type === "number") {
           pred = eq(column.name, literal(Number(cleanedQuery)));
         } else if (column.type === "date") {
@@ -54,7 +43,7 @@
 
       let updateInfo = {
         source: `${column.name}_search_${uuid}`,
-        schema: { type },
+        schema: { type: "contains" }, // idk what this does
         value: cleanedQuery,
         predicate: pred,
         clients: new Set().add({ source: { table: tableName } }),
