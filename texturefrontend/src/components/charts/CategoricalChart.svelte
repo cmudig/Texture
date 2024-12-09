@@ -57,8 +57,42 @@
       columnName,
     );
 
+    const plotDirectives = [
+      vg.barX(vg.from(table, { filterBy: $mosaicSelection }), {
+        x: vg.count(),
+        y: col,
+        fill: colorColName ?? "steelblue",
+        sort: { y: "-x", limit },
+      }),
+      vg.highlight({ by: selection }),
+      vg.toggleY({ as: selection }),
+      vg.toggleY({ as: $mosaicSelection }),
+      vg.text(vg.from(table, { filterBy: $mosaicSelection }), {
+        x: 0,
+        y: col,
+        sort: { y: "-x", limit },
+        text: vg.count(),
+        dx: -3,
+        textAnchor: "end",
+        textOverflow: "ellipsis",
+        fill: "black",
+      }),
+      vg.margins({ left: 250, bottom: 0, top: 0, right: 0 }),
+      vg.width(400),
+      vg.axis(null),
+      vg.axisY({
+        textOverflow: "ellipsis",
+        lineWidth: 15,
+        label: null,
+        textAnchor: "start",
+        dx: -220,
+        fontSize: 14,
+        tickSize: 0,
+      }),
+    ];
+
     if (showBackground) {
-      plotWrapper = getPlot(
+      plotDirectives.unshift(
         vg.barX(vg.from(table), {
           x: vg.count(),
           y: col,
@@ -66,74 +100,10 @@
           fillOpacity: 0.4,
           sort: { y: "-x", limit },
         }),
-        vg.barX(vg.from(table, { filterBy: $mosaicSelection }), {
-          x: vg.count(),
-          y: col,
-          fill: colorColName ?? "steelblue",
-          sort: { y: "-x", limit },
-        }),
-        vg.highlight({ by: selection }),
-        vg.toggleY({ as: selection }),
-        vg.toggleY({ as: $mosaicSelection }),
-        vg.text(vg.from(table, { filterBy: $mosaicSelection }), {
-          x: 0,
-          y: col,
-          sort: { y: "-x", limit },
-          text: vg.count(),
-          dx: -3,
-          textAnchor: "end",
-          textOverflow: "ellipsis",
-          fill: "black",
-        }),
-        vg.margins({ left: 250, bottom: 0, top: 0, right: 0 }),
-        vg.width(400),
-        vg.axis(null),
-        vg.axisY({
-          textOverflow: "ellipsis",
-          lineWidth: 15,
-          label: null,
-          textAnchor: "start",
-          dx: -220,
-          fontSize: 14,
-          tickSize: 0,
-        }),
-      );
-    } else {
-      plotWrapper = getPlot(
-        vg.barX(vg.from(table, { filterBy: $mosaicSelection }), {
-          x: vg.count(),
-          y: col,
-          fill: colorColName ?? "steelblue",
-          sort: { y: "-x", limit },
-        }),
-        vg.highlight({ by: selection }),
-        vg.toggleY({ as: selection }),
-        vg.toggleY({ as: $mosaicSelection }),
-        vg.text(vg.from(table, { filterBy: $mosaicSelection }), {
-          x: 0,
-          y: col,
-          sort: { y: "-x", limit },
-          text: vg.count(),
-          dx: -3,
-          textAnchor: "end",
-          textOverflow: "ellipsis",
-          fill: "black",
-        }),
-        vg.margins({ left: 250, bottom: 0, top: 0, right: 0 }),
-        vg.width(400),
-        vg.axis(null),
-        vg.axisY({
-          textOverflow: "ellipsis",
-          lineWidth: 15,
-          label: null,
-          textAnchor: "start",
-          dx: -220,
-          fontSize: 14,
-          tickSize: 0,
-        }),
       );
     }
 
+    plotWrapper = getPlot(...plotDirectives);
     el.replaceChildren(plotWrapper.element);
   }
 
