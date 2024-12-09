@@ -134,7 +134,9 @@
           bind:checked={$showBackgroundDistMap[displayCol.name]}
         />
 
-        <span class="text-sm text-gray-500"> Show original distribution </span>
+        <span class="text-sm text-gray-500">
+          Show background distribution
+        </span>
       </div>
     {/if}
   </div>
