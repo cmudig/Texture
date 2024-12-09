@@ -75,7 +75,7 @@
         fill: colorCol ?? "steelblue",
         fillOpacity: opacity,
       }),
-      vg.axis(null),
+      vg.axis(null), // TODO: look at axis bc points bleed over
       vg.highlight({ by: selection, opacity: 0.1 }),
       vg.intervalXY({ as: selection }),
       vg.intervalXY({ as: $mosaicSelection }),
