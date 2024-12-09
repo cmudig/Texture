@@ -7,24 +7,25 @@
   export let columnName: string;
   export let mainDatasetName: string;
   export let showBackground = true;
+  export let shouldBin = true;
 
   let el: HTMLElement;
   let plotWrapper;
 
-  async function renderChart(table: string, col: string) {
+  async function renderChart(table: string, col: string, shouldBin: boolean) {
     // FUTURE: this chart breaks if the col has null values; use a view or selection to filter out nulls or fix bins
 
     if (showBackground) {
       plotWrapper = getPlot(
         vg.rectY(vg.from(table), {
-          x: vg.bin(col),
+          x: shouldBin ? vg.bin(col) : col,
           y: vg.count(),
           fill: "#ccc",
           fillOpacity: 0.4,
           inset: 0.5,
         }),
         vg.rectY(vg.from(table, { filterBy: $mosaicSelection }), {
-          x: vg.bin(col),
+          x: shouldBin ? vg.bin(col) : col,
           y: vg.count(),
           fill: "steelblue",
           inset: 0.5,
@@ -40,7 +41,7 @@
     } else {
       plotWrapper = getPlot(
         vg.rectY(vg.from(table, { filterBy: $mosaicSelection }), {
-          x: vg.bin(col),
+          x: shouldBin ? vg.bin(col) : col,
           y: vg.count(),
           fill: "steelblue",
           inset: 0.5,
@@ -59,7 +60,7 @@
   }
 
   // This re-renders unnecessarily but is required or else will not re-render on $brush updates
-  afterUpdate(() => renderChart(mainDatasetName, columnName));
+  afterUpdate(() => renderChart(mainDatasetName, columnName, shouldBin));
 
   onDestroy(() => {
     if (plotWrapper) {
