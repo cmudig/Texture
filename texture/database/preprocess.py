@@ -93,6 +93,7 @@ def construct_schema_and_tables(
                 .explode()
                 .reset_index()
                 .rename(columns={"index": C_ID})
+                .dropna(subset=[col_name])
             )
 
             # NOTE: assumed these are non-segment lists so the spans are array index

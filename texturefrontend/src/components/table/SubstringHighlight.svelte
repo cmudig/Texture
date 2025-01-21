@@ -2,7 +2,7 @@
   /**
    * SubstringHighlight.svelte
    * Given a value string and an array of highlights, will highlight every
-   * intance of the highlights in the value string by matching substrings.
+   * instance of the highlights in the value string by matching substrings.
    */
   export let value: any;
   export let highlights: any[];
@@ -23,6 +23,10 @@
     let annotatedSpans: AnnotatedSpan[] = [];
     let lastIndex = 0;
 
+    // Convert value and highlights to lowercase for case-insensitive matching
+    const lowerValue = _value.toLowerCase();
+    const lowerHighlights = _highlights.map((h) => h.toLowerCase());
+
     // Function to add a new span
     const addSpan = (endIndex: number, included: boolean) => {
       if (lastIndex !== endIndex) {
@@ -34,12 +38,12 @@
       }
     };
 
-    for (let i = 0; i < _value.length; ) {
+    for (let i = 0; i < lowerValue.length; ) {
       let foundHighlight = false;
 
       // Check each highlight
-      for (const highlight of _highlights) {
-        if (_value.startsWith(highlight, i)) {
+      for (const highlight of lowerHighlights) {
+        if (lowerValue.startsWith(highlight, i)) {
           // Add non-highlighted part
           addSpan(i, false);
 

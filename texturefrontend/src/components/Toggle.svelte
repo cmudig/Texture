@@ -4,7 +4,7 @@
 
 <div>
   <button
-    class="flex gap-2 h-9 w-full items-center px-2 hover:bg-gray-200 border-t-2 border-secondary-200"
+    class="flex gap-2 min-h-9 w-full items-center px-2 hover:bg-gray-200 border-t-2 border-secondary-200"
     on:click={() => {
       active = !active;
     }}

@@ -41,7 +41,7 @@
 
     <p
       class:font-medium={active}
-      class="max-w-sm overflow-hidden text-ellipsis text-left"
+      class="overflow-hidden text-ellipsis text-left grow"
     >
       {displayCol.name}
     </p>
@@ -54,8 +54,6 @@
         <span>)</span>
       </div>
     {/if}
-
-    <div class="grow" />
 
     {#if colSummary?.cardinality !== undefined}
       <CardinalityDisplay cardinality={colSummary.cardinality} />
@@ -82,6 +80,8 @@
           $datasetSchema.name}
         columnName={displayCol.name}
         showBackground={$showBackgroundDistMap[displayCol.name]}
+        shouldBin={colSummary?.cardinality == undefined ||
+          colSummary.cardinality >= 10}
       />
     {:else if displayCol.type === "categorical"}
       <CategoricalChart
@@ -134,7 +134,9 @@
           bind:checked={$showBackgroundDistMap[displayCol.name]}
         />
 
-        <span class="text-sm text-gray-500"> Show original distribution </span>
+        <span class="text-sm text-gray-500">
+          Show background distribution
+        </span>
       </div>
     {/if}
   </div>
