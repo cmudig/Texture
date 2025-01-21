@@ -7,7 +7,10 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
 
-    logo: "../icon.svg",
+    logo: "/icon.svg",
+    search: {
+      provider: "local",
+    },
 
     nav: [
       { text: "Introduction", link: "/overview" },
