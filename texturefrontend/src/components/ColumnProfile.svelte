@@ -81,7 +81,7 @@
         columnName={displayCol.name}
         showBackground={$showBackgroundDistMap[displayCol.name]}
         shouldBin={colSummary?.cardinality == undefined ||
-          colSummary.cardinality > 15}
+          colSummary.cardinality >= 10}
       />
     {:else if displayCol.type === "categorical"}
       <CategoricalChart
