@@ -17,6 +17,10 @@ texture/frontend/
 texture/runner_dev_temp.py
 texturefrontend/src/.backendapi-manual/
 
+docs/.vitepress/cache
+docs/.vitepress/dist
+
+
 # Logs
 logs
 *.log
