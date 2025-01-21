@@ -4,6 +4,7 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   title: "Texture",
   description: "Structured Text Analytics",
+  head: [["link", { rel: "icon", href: "/icon.svg" }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
 
