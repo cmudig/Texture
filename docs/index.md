@@ -5,15 +5,17 @@ layout: home
 hero:
   name: "Texture"
   text: "Structured Text Analytics"
-  tagline: My great project tagline
+  tagline: Texture visualizes text data and structured attributes from Python
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: What is Texture?
+      link: /overview
     - theme: alt
-      text: API Examples
-      link: /api-examples
-
+      text: Get started
+      link: /quickstart
+    - theme: alt
+      text: Examples
+      link: /demo-1
 features:
   - title: Feature A
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
@@ -22,4 +24,3 @@ features:
   - title: Feature C
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
 ---
-

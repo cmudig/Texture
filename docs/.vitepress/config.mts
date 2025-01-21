@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -6,23 +6,38 @@ export default defineConfig({
   description: "Structured Text Analytics",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
+
+    logo: "../icon.svg",
+
     nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Examples', link: '/markdown-examples' }
+      { text: "Introduction", link: "/overview" },
+      { text: "Examples", link: "/demo-1" },
     ],
 
     sidebar: [
       {
-        text: 'Examples',
+        text: "Introduction",
         items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
-        ]
-      }
+          { text: "Overview", link: "/overview" },
+          { text: "Quickstart", link: "/quickstart" },
+        ],
+      },
+      {
+        text: "Examples",
+        items: [
+          { text: "Demo 1", link: "/demo-1" },
+          { text: "Demo 2", link: "/demo-2" },
+          { text: "Demo 3", link: "/demo-3" },
+        ],
+      },
+      {
+        text: "Vite",
+        items: [{ text: "Vite Examples", link: "/vite-examples" }],
+      },
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
-    ]
-  }
-})
+      { icon: "github", link: "https://github.com/cmudig/Texture" },
+    ],
+  },
+});
