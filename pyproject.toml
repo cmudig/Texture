@@ -1,29 +1,36 @@
-[tool.poetry]
+[project]
 name = "texture-viz"
 version = "0.0.6"
 description = "Process and profile text datasets interactively"
-authors = ["Will Epperson <willepp@live.com>"]
+authors = [{ name = "Will Epperson", email = "willepp@live.com" }]
 readme = "README.md"
+keywords = ["text", "nlp", "data profiling", "llm"]
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.1.0",
+    "fastapi>=0.104.1",
+    "pydantic>=2.5.2",
+    "duckdb>=0.10.2",
+    "pyarrow>=14.0.1",
+    "orjson>=3.9.10",
+    "uvicorn[standard]>=0.24.0.post1",
+    "tiktoken>=0.5.2",
+    "lancedb>=0.5.1",
+    "openai>=1.20.0",
+    "multiprocess>=0.70.16",
+    "anywidget>=0.9.13",
+]
+
+[project.urls]
 repository = "https://github.com/cmudig/Texture"
 homepage = "https://github.com/cmudig/Texture"
-keywords = ["text", "nlp", "data profiling", "llm"]
+
+[project.scripts]
+run_server = "texture.runner_dev_temp:dev_run"
+
+[tool.poetry]
 packages = [{ include = "texture" }]
 include = ["texture/frontend/**/*"]
-
-[tool.poetry.dependencies]
-python = "^3.10"
-pandas = "^2.1.0"
-fastapi = "^0.104.1"
-pydantic = "^2.5.2"
-duckdb = "^0.10.2"
-pyarrow = "^14.0.1"
-orjson = "^3.9.10"
-uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
-tiktoken = "^0.5.2"
-lancedb = "^0.5.1"
-openai = "^1.20.0"
-multiprocess = "^0.70.16"
-anywidget = "^0.9.13"
 
 [tool.poetry.group.extra]
 optional = true
@@ -37,6 +44,3 @@ umap-learn = "^0.5.5"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-run_server = "texture.runner_dev_temp:dev_run"
