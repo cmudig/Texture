@@ -13,24 +13,26 @@ include = ["texture/frontend/**/*"]
 [tool.poetry.dependencies]
 python = "^3.10"
 pandas = "^2.1.0"
-sentence-transformers = "^2.2.2"
-pyod = "^1.1.0"
-torch = "^2.1.1"
 fastapi = "^0.104.1"
 pydantic = "^2.5.2"
 duckdb = "^0.10.2"
 pyarrow = "^14.0.1"
 orjson = "^3.9.10"
 uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
-python-multipart = "^0.0.6"
-nltk = "^3.8.1"
 tiktoken = "^0.5.2"
 lancedb = "^0.5.1"
-umap-learn = "^0.5.5"
 openai = "^1.20.0"
 multiprocess = "^0.70.16"
 anywidget = "^0.9.13"
 
+[tool.poetry.group.extra]
+optional = true
+
+[tool.poetry.group.extra.dependencies]
+sentence-transformers = "^2.2.2"
+torch = "^2.1.1"
+nltk = "^3.8.1"
+umap-learn = "^0.5.5"
 
 [build-system]
 requires = ["poetry-core"]
