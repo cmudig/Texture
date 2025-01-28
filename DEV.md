@@ -7,7 +7,7 @@ The backend hosts a FastAPI server and data processing functions along with the 
 Pre-requisites
 
 1. Install conda
-2. Install poetry
+2. Install poetry (>=2.0.1)
 
 Make a new conda environment, can be called whatever
 

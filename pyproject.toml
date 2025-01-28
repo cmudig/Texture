@@ -1,40 +1,47 @@
-[tool.poetry]
+[project]
 name = "texture-viz"
-version = "0.0.6"
+version = "0.0.7"
 description = "Process and profile text datasets interactively"
-authors = ["Will Epperson <willepp@live.com>"]
+authors = [{ name = "Will Epperson", email = "willepp@live.com" }]
 readme = "README.md"
+keywords = ["text", "nlp", "data profiling", "llm"]
+requires-python = ">=3.10"
+dependencies = [
+    "pandas (>=2.2.3,<3.0.0)",
+    "fastapi (>=0.115.7,<0.116.0)",
+    "pydantic (>=2.10.6,<3.0.0)",
+    "duckdb (>=1.1.3,<2.0.0)",
+    "pyarrow (>=19.0.0,<20.0.0)",
+    "orjson (>=3.10.15,<4.0.0)",
+    "uvicorn[standard] (>=0.34.0,<0.35.0)",
+    "tiktoken (>=0.8.0,<0.9.0)",
+    "lancedb (>=0.18.0,<0.19.0)",
+    "openai (>=1.60.2,<2.0.0)",
+    "multiprocess (>=0.70.17,<0.71.0)",
+    "anywidget (>=0.9.13,<0.10.0)",
+    "numpy (>=2.2.2,<3.0.0)",
+]
+
+[project.optional-dependencies]
+extra = [
+    "sentence-transformers>=2.2.2",
+    "torch>=2.1.1",
+    "nltk>=3.8.1",
+    "umap-learn>=0.5.5",
+]
+
+[project.urls]
 repository = "https://github.com/cmudig/Texture"
 homepage = "https://github.com/cmudig/Texture"
-keywords = ["text", "nlp", "data profiling", "llm"]
+
+[project.scripts]
+run_server = "texture.runner_dev_temp:dev_run"
+
+[tool.poetry]
 packages = [{ include = "texture" }]
-include = ["texture/frontend/**/*"]
-
-[tool.poetry.dependencies]
-python = "^3.10"
-pandas = "^2.1.0"
-sentence-transformers = "^2.2.2"
-pyod = "^1.1.0"
-torch = "^2.1.1"
-fastapi = "^0.104.1"
-pydantic = "^2.5.2"
-duckdb = "^0.10.2"
-pyarrow = "^14.0.1"
-orjson = "^3.9.10"
-uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
-python-multipart = "^0.0.6"
-nltk = "^3.8.1"
-tiktoken = "^0.5.2"
-lancedb = "^0.5.1"
-umap-learn = "^0.5.5"
-openai = "^1.20.0"
-multiprocess = "^0.70.16"
-anywidget = "^0.9.13"
-
+include = [{ path = "texture/frontend/**/*", format = ["sdist", "wheel"] }]
+exclude = ["texture/extra"]
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-run_server = "texture.runner_dev_temp:dev_run"
