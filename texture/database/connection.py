@@ -71,7 +71,7 @@ class DatabaseConnection:
             df: DataFrame to load
         """
         q = f"CREATE TABLE '{table_name}' AS SELECT * FROM df"
-        self.execute(q)
+        self.connection.sql(q)
 
     def add_column(self, tableName, columnName, data):
         """
