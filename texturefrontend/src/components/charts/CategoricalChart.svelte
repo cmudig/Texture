@@ -8,7 +8,6 @@
   } from "../../stores";
   import { getUUID } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
-  import { formatInt } from "../../shared/format";
 
   export let columnName: string;
   export let mainDatasetName: string;
