@@ -3,7 +3,6 @@ from typing import Dict, Tuple
 import pandas as pd
 import numpy as np
 
-from texture.extra.embeddings import get_projection
 from texture.models import DatasetSchema, Column, DataType
 from texture.names import (
     C_VECTOR,
@@ -33,11 +32,11 @@ def preprocess(
 
         if not (C_EMBED_X in df.columns and C_EMBED_Y in df.columns):
             print(
-                f"Found '{C_VECTOR}' column but no projection (missing '{C_EMBED_X}', '{C_EMBED_Y}'). Projecting now..."
+                f"Found '{C_VECTOR}' column but no projection (missing '{C_EMBED_X}', '{C_EMBED_Y}')."
             )
-            projection = get_projection(df[C_VECTOR])
-            df[C_EMBED_X] = projection[:, 0]
-            df[C_EMBED_Y] = projection[:, 1]
+            # projection = get_projection(df[C_VECTOR])
+            # df[C_EMBED_X] = projection[:, 0]
+            # df[C_EMBED_Y] = projection[:, 1]
 
     # or just projection of embeddings
     if C_EMBED_X in df.columns and C_EMBED_Y in df.columns:
