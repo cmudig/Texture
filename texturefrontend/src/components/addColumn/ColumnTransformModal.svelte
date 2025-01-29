@@ -23,7 +23,7 @@
   import { sampleTransforms } from "./CodeTransform/sampleCodeTransforms";
 
   // props
-  export let panelOpen: boolean;
+  export let panelOpen: boolean = false;
   export let finishedCommitHandler: () => void;
 
   $: textCols = $datasetSchema?.columns.filter((col) => col.type === "text");
@@ -33,6 +33,7 @@
   // locals
   let targetColName: string;
   let transformType: "llm" | "code" = "code";
+  let initPromise: Promise<void>;
 
   // example data
   // TODO: make this dynamic becuase if the id is not 0 indexed won't work
@@ -192,7 +193,9 @@
     }
   }
 
-  $: initPromise = init(textCols);
+  $: if (panelOpen && !initPromise) {
+    initPromise = init(textCols);
+  }
   // error handling
   $: namingErrorExists =
     responseSchema?.name && allColNames.includes(responseSchema.name);
@@ -207,7 +210,7 @@
 >
   {#await initPromise}
     <div class="p-2">
-      <Spinner />
+      <Spinner /> Waiting for data...
     </div>
   {:then _}
     {#if textCols}
