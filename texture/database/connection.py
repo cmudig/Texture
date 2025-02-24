@@ -70,8 +70,10 @@ class DatabaseConnection:
             dataset_name: name of the dataset
             df: DataFrame to load
         """
-        q = f"CREATE TABLE '{table_name}' AS SELECT * FROM df"
-        self.connection.sql(q)
+        arrow_table = pa.Table.from_pandas(df)
+        self.connection.register("arrow_temp", arrow_table)
+        self.execute(f"CREATE TABLE {table_name} AS SELECT * FROM arrow_temp;")
+        self.connection.unregister("arrow_temp")
 
     def add_column(self, tableName, columnName, data):
         """
