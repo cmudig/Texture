@@ -6,8 +6,7 @@ from fastapi.responses import ORJSONResponse
 from typing import Dict, Callable, Optional
 import os
 import pandas as pd
-import datetime
-
+from datetime import datetime
 from texture.database.connection import initialize_databases
 from texture.models import (
     DatasetSchema,
@@ -377,7 +376,7 @@ def get_server(
         print("Saving tables: ", all_table_names)
 
         for t_name in all_table_names:
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+            current_time = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
             file_path = f"{t_name}_{current_time}.parquet"
             duckdb_conn.write_table_to_file(t_name, file_path)
 
