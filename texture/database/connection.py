@@ -109,6 +109,8 @@ class DatabaseConnection:
         sql = data.sql
         response_message = None
 
+        # print("Executing SQL (json): ", sql)
+
         try:
             if data.type == "exec":
                 self.connection.execute(sql)
@@ -143,6 +145,8 @@ class DatabaseConnection:
         uuid = data.uuid
         sql = data.sql
         response_message = None
+
+        # print("Executing SQL (arrow): ", sql)
 
         try:
             if data.type == "arrow":
