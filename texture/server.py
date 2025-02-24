@@ -54,7 +54,6 @@ def get_server(
     create_new_embedding_func: Optional[Callable] = None,
     api_key: str = None,
 ) -> FastAPI:
-
     ### Database set up
     duckdb_conn, vectordb_conn = initialize_databases(
         schema, load_tables, create_new_embedding_func
@@ -366,7 +365,6 @@ def get_server(
 
     @api_app.post("/save_to_file", response_model=bool)
     def save_database_to_file(table_name: str):
-
         all_table_names = set([table_name])
         # get all table names
         for col in schema.columns:

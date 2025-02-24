@@ -11,7 +11,6 @@ def get_words_w_span(text):
         return pd.DataFrame(columns=["span_start", "span_end", "word"])
 
     try:
-
         token_idx = twt_tokenizer.span_tokenize(text)
         _df = pd.DataFrame(token_idx, columns=["span_start", "span_end"])
         _df["word"] = _df.apply(lambda x: text[x.span_start : x.span_end], axis=1)

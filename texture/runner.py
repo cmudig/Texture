@@ -77,7 +77,6 @@ def run_server(
     port: Optional[int] = 8080,
     create_new_embedding_func: Optional[Callable] = None,
 ):
-
     app = get_server(
         dataset_schema,
         load_tables,
