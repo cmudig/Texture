@@ -4,7 +4,7 @@ export type SelectionMap = {
   [key: string]: SelectionRange;
 };
 
-export type SelectionRange = string[] | number[];
+export type SelectionRange = string[] | number[] | boolean[];
 
 // Type guard for number array
 export function isNumberArray(
@@ -18,6 +18,13 @@ export function isStringArray(
   selectionRange: SelectionRange,
 ): selectionRange is string[] {
   return selectionRange.length === 0 || typeof selectionRange[0] === "string";
+}
+
+// Type guard for boolean array
+export function isBoolArray(
+  selectionRange: SelectionRange,
+): selectionRange is boolean[] {
+  return selectionRange.length === 0 || typeof selectionRange[0] === "boolean";
 }
 
 // this is format from `summarize tablename` in duckdb

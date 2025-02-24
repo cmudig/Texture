@@ -3,7 +3,7 @@
   import { CloseSolid } from "flowbite-svelte-icons";
   import { deleteFilters } from "../stores";
   import { formatValue } from "../shared/format";
-  import { isStringArray } from "../shared/types";
+  import { isBoolArray, isStringArray } from "../shared/types";
 
   export let colName: string;
   export let filterRange: SelectionRange;
@@ -13,15 +13,19 @@
 </script>
 
 <div
-  class={`flex gap-1 items-center  bg-white rounded-lg border-2 p-1  ${isStringArray(filterRange) || filterRange[0] == undefined ? "border-highlight-500 " : "border-highlight-500"}`}
+  class={`flex gap-1 items-center  bg-white rounded-lg border-2 p-1 border-highlight-500`}
 >
   <div>
-    {#if isStringArray(filterRange) || filterRange[0] == undefined}
+    {#if isStringArray(filterRange) || isBoolArray(filterRange) || filterRange[0] == undefined}
       <span class="font-semibold text-gray-800">{colName}</span>
       <span> == </span>
       <span class="italic">
         {filterRange
-          .map((item) => (item ? `"${item.replaceAll("''", "'")}"` : `${item}`))
+          .map((item) =>
+            typeof item === "string"
+              ? `"${item.replaceAll("''", "'")}"`
+              : `${item}`,
+          )
           .join(", ")}
       </span>
     {:else}
