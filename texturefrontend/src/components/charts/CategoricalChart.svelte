@@ -51,6 +51,7 @@
     selection: any,
     colorColName?: string,
   ) {
+    // TODO -- I think this is uncessary and perhaps not even working?
     colCount = await databaseConnection.getColCount(
       mainDatasetName,
       columnName,
