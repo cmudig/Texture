@@ -1,7 +1,7 @@
 <script lang="ts">
   import { databaseConnection, datasetSchema, setSchema } from "../stores";
   import { SearchOutline } from "flowbite-svelte-icons";
-  import Toggle from "./Toggle.svelte";
+  import Toggle from "./layout/Toggle.svelte";
   import { QueryStatus } from "../shared/types";
   import { Spinner } from "flowbite-svelte";
 
@@ -29,7 +29,7 @@
   }
 </script>
 
-<Toggle>
+<Toggle showTopBorder={false}>
   <div slot="title">Similarity Search</div>
 
   <div slot="body" class="flex flex-col gap-1">

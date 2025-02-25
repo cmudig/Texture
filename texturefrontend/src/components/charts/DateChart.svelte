@@ -1,17 +1,18 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { mosaicSelection } from "../../stores";
+  import { mosaicSelection, sidebarWidth } from "../../stores";
   import { getPlot } from "./chartUtils";
 
   export let columnName: string;
   export let mainDatasetName: string;
+  $: width = $sidebarWidth - 50;
 
   let el: HTMLElement;
   let plotWrapper;
 
   // FUTURE: if vg.bin() works for dates might be nice here so less crowded line...
-  function renderChart(table: string, col: string) {
+  function renderChart(table: string, col: string, chartWidth) {
     plotWrapper = getPlot(
       vg.lineY(vg.from(table, { filterBy: $mosaicSelection }), {
         x: col,
@@ -21,7 +22,7 @@
       }),
       vg.intervalX({ as: $mosaicSelection }),
       vg.xDomain(vg.Fixed),
-      vg.width(400),
+      vg.width(chartWidth),
       vg.height(150),
       vg.axisX({ label: null }),
       vg.axisY({ label: null }),
@@ -31,7 +32,7 @@
     el.replaceChildren(plotWrapper.element);
   }
 
-  afterUpdate(() => renderChart(mainDatasetName, columnName));
+  afterUpdate(() => renderChart(mainDatasetName, columnName, width));
 
   onDestroy(() => {
     if (plotWrapper) {

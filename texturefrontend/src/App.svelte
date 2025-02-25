@@ -8,6 +8,7 @@
     showBackgroundDistMap,
     filteredCount,
     setSchema,
+    sidebarWidth,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import TableView from "./components/table/TableView.svelte";
@@ -19,6 +20,7 @@
   import FilterBar from "./components/FilterBar.svelte";
   import TableSort from "./components/table/TableSort.svelte";
   import { formatNumber } from "./shared/format";
+  import Draggable from "./components/layout/Draggable.svelte";
 
   // Locals
   let datasetSize: number;
@@ -50,12 +52,12 @@
 <div class="h-screen flex flex-col">
   <!-- Top bar -->
   <div class="flex gap-2 border-b-2 border-gray-300 bg-secondary-200 p-4">
-    <div class="mr-8"><TextureIcon size={40} /></div>
+    <div class="mr-4"><TextureIcon size={40} /></div>
 
     <div class="grow self-center">
       <FilterBar />
     </div>
-    <div class="text-md self-center">
+    <div class="self-center">
       {formatNumber($filteredCount)} / {formatNumber(datasetSize)} documents
     </div>
 
@@ -90,10 +92,14 @@
     </div>
   {:then}
     <div class="flex flex-1 overflow-hidden bg-gray-50">
-      <div class="w-[450px] shrink-0 overflow-auto border-r-2 border-gray-300">
+      <!-- <div class="w-[450px] shrink-0 overflow-auto border-r-2 border-gray-300">
         <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
-      </div>
-      <div class="flex-1 min-w-[450px] overflow-auto">
+      </div> -->
+
+      <Draggable minWidth={300} bind:width={$sidebarWidth}>
+        <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
+      </Draggable>
+      <div class="flex-1 min-w-[450px] overflow-y-auto">
         <TableView />
       </div>
     </div>

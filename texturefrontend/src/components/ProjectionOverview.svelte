@@ -4,7 +4,7 @@
   import type { Column } from "../backendapi";
   import { Select } from "flowbite-svelte";
   import { projectionColorColumn } from "../stores";
-  import Toggle from "./Toggle.svelte";
+  import Toggle from "./layout/Toggle.svelte";
   import { CogOutline } from "flowbite-svelte-icons";
 
   export let colorCols: Column[] = [];

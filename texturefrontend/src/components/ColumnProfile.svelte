@@ -16,7 +16,7 @@
   import { CogOutline } from "flowbite-svelte-icons";
   import Search from "./Search.svelte";
   import type { Column } from "../backendapi";
-  import Toggle from "./Toggle.svelte";
+  import Toggle from "./layout/Toggle.svelte";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
@@ -91,6 +91,10 @@
         showBackground={$showBackgroundDistMap[displayCol.name]}
         colorColName={$projectionColorColumn === displayCol.name
           ? displayCol.name
+          : undefined}
+        initialCardinality={colSummary
+          ? colSummary.cardinality +
+            Number(parseFloat(colSummary.null_percentage) > 0)
           : undefined}
       />
     {:else if displayCol.type === "date"}

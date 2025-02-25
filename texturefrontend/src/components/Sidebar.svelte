@@ -8,11 +8,11 @@
   import SimilaritySearch from "./SimilaritySearch.svelte";
 
   export let datasetColSummaries: Map<string, ColumnSummary>;
-  export let showAddColModal;
-  export let allowDeriveNew;
+  export let showAddColModal: boolean;
+  export let allowDeriveNew: boolean;
 </script>
 
-<div class="flex flex-col">
+<div class="flex flex-col h-full overflow-y-auto">
   {#if allowDeriveNew}
     <div class="flex justify-center py-2">
       <Button on:click={() => (showAddColModal = true)} size="sm">
@@ -31,12 +31,9 @@
   />
 
   {#each $datasetSchema.columns as col}
-    <!-- Dont make row entry for text cols -->
-    {#if col.type === "categorical" || col.type === "number" || col.type === "date" || col.type === "text"}
-      <ColumnProfile
-        displayCol={col}
-        colSummary={datasetColSummaries.get(col.name)}
-      />
-    {/if}
+    <ColumnProfile
+      displayCol={col}
+      colSummary={datasetColSummaries.get(col.name)}
+    />
   {/each}
 </div>
