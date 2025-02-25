@@ -5,6 +5,7 @@
     mosaicSelection,
     clearColumnSelections,
     databaseConnection,
+    sidebarWidth,
   } from "../../stores";
   import { getUUID } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
@@ -19,6 +20,7 @@
   $: height = initialCardinality
     ? Math.min(initialCardinality, limit) * 28
     : 250;
+  $: width = $sidebarWidth - 50;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -55,6 +57,7 @@
     col: string,
     selection: any,
     chartHeight: number,
+    chartWidth: number,
     colorColName?: string,
   ) {
     // TODO -- I think this is uncessary and perhaps not even working?
@@ -62,6 +65,12 @@
       mainDatasetName,
       columnName,
     );
+
+    const LEFT_HEAD = 25;
+    const BAR_WIDTH = 210;
+    const LEFT_MARGIN = chartWidth - BAR_WIDTH;
+    const D_X_Y = LEFT_HEAD - LEFT_MARGIN;
+    const lineWidth = Math.floor(Math.abs(D_X_Y) / 12);
 
     const plotDirectives = [
       vg.barX(vg.from(table, { filterBy: $mosaicSelection }), {
@@ -83,16 +92,16 @@
         textOverflow: "ellipsis",
         fill: "black",
       }),
-      vg.margins({ left: 250, bottom: 0, top: 0, right: 0 }),
-      vg.width(400),
+      vg.margins({ left: LEFT_MARGIN, bottom: 0, top: 0, right: 0 }),
+      vg.width(chartWidth),
       vg.height(chartHeight),
       vg.axis(null),
       vg.axisY({
         textOverflow: "ellipsis",
-        lineWidth: 15,
+        lineWidth: lineWidth,
         label: null,
         textAnchor: "start",
-        dx: -220,
+        dx: D_X_Y,
         fontSize: 12,
         tickSize: 0,
       }),
@@ -120,6 +129,7 @@
       columnName,
       thisSelection,
       height,
+      width,
       colorColName,
     );
   });

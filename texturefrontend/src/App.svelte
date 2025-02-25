@@ -8,6 +8,7 @@
     showBackgroundDistMap,
     filteredCount,
     setSchema,
+    sidebarWidth,
   } from "./stores";
   import Sidebar from "./components/Sidebar.svelte";
   import TableView from "./components/table/TableView.svelte";
@@ -95,7 +96,7 @@
         <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
       </div> -->
 
-      <Draggable minWidth={300} width={400}>
+      <Draggable minWidth={300} bind:width={$sidebarWidth}>
         <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
       </Draggable>
       <div class="flex-1 min-w-[450px] overflow-y-auto">
