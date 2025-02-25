@@ -1,7 +1,11 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { mosaicSelection, clearColumnSelections } from "../../stores";
+  import {
+    mosaicSelection,
+    clearColumnSelections,
+    sidebarWidth,
+  } from "../../stores";
   import { getUUID } from "../../shared/utils";
   import { getPlot } from "./chartUtils";
 
@@ -11,10 +15,10 @@
   export let colorColName: string | undefined = undefined;
   export let opacity: number = 0.4;
 
+  $: width = $sidebarWidth - 50;
   let el: HTMLElement;
   let plotWrapper;
   let thisSelection = vg.Selection.single();
-
   let uuid = getUUID();
   $: saveSelectionToCache(thisSelection, `${columnX}_${columnY}`);
 
@@ -57,6 +61,7 @@
     selection: any,
     colorCol: string | undefined,
     opacity = 0.4,
+    chartWidth: number,
   ) {
     destroy(); // TODO: this in incredibly inefficient, should use a param or something so do not need to re-render
     plotWrapper = getPlot(
@@ -79,8 +84,8 @@
       vg.highlight({ by: selection, opacity: 0.1 }),
       vg.intervalXY({ as: selection }),
       vg.intervalXY({ as: $mosaicSelection }),
-      vg.width(400),
-      vg.height(250),
+      vg.width(chartWidth),
+      vg.height(200),
       vg.margins({ top: 10, right: 10, left: 10, bottom: 10 }),
     );
 
@@ -95,6 +100,7 @@
       thisSelection,
       colorColName,
       opacity,
+      width,
     );
   });
 

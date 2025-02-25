@@ -1,7 +1,11 @@
 <script lang="ts">
   import * as vg from "@uwdata/vgplot";
   import { afterUpdate, onDestroy } from "svelte";
-  import { mosaicSelection, clearColumnSelections } from "../../stores";
+  import {
+    mosaicSelection,
+    clearColumnSelections,
+    sidebarWidth,
+  } from "../../stores";
   import { getPlot } from "./chartUtils";
   import { getUUID } from "../../shared/utils";
 
@@ -10,11 +14,10 @@
   export let showBackground = true;
   export let shouldBin = true;
 
+  $: width = $sidebarWidth - 50;
   let uuid = getUUID();
-
   let el: HTMLElement;
   let plotWrapper;
-
   let thisSelection = vg.Selection.single();
   $: saveSelectionToCache(thisSelection, columnName);
 
@@ -44,6 +47,7 @@
     col: string,
     shouldBin: boolean,
     selection,
+    chartWidth: number,
   ) {
     // FUTURE: this chart breaks if the col has null values; use a view or selection to filter out nulls or fix bins
 
@@ -68,7 +72,7 @@
       }),
       ...interactors,
       vg.xDomain(vg.Fixed),
-      vg.width(400),
+      vg.width(chartWidth),
       vg.height(150),
       vg.axisX({ label: null }),
       vg.axisY({ label: null }),
@@ -94,7 +98,7 @@
 
   // This re-renders unnecessarily but is required or else will not re-render on $brush updates
   afterUpdate(() =>
-    renderChart(mainDatasetName, columnName, shouldBin, thisSelection),
+    renderChart(mainDatasetName, columnName, shouldBin, thisSelection, width),
   );
 
   onDestroy(() => {
