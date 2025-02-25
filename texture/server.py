@@ -58,7 +58,12 @@ def get_server(
     duckdb_conn, vectordb_conn = initialize_databases(
         schema, load_tables, create_new_embedding_func
     )
-    llm_client = LLMClient(api_key=api_key)
+
+    try:
+        llm_client = LLMClient(api_key=api_key)
+    except Exception:
+        # print("LLM features unavailable because no OPENAI_API_KEY")
+        llm_client = None
 
     ### state tracking
     embed_query_counter = Counter()
@@ -183,6 +188,9 @@ def get_server(
     @api_app.post("/fetch_llm_response_format", response_model=TransformResponse)
     def get_llm_response_format(userPrompt: str):
         try:
+            if llm_client is None:
+                raise Exception("No LLM client.")
+
             task_format = llm_client.get_response_format(userPrompt)
             return TransformResponse(success=True, result=task_format)
         except Exception as e:
@@ -192,6 +200,9 @@ def get_server(
     @api_app.post("/fetch_llm_transform_result", response_model=TransformResponse)
     def get_llm_transform_result(request: LLMTransformRequest):
         try:
+            if llm_client is None:
+                raise Exception("No LLM client.")
+
             results = llm_client.get_transformations(
                 request.userPrompt,
                 request.taskFormat,
@@ -208,6 +219,9 @@ def get_server(
     @api_app.post("/commit_llm_transform_result", response_model=TransformResponse)
     def commit_llm_transform_result(request: LLMTransformCommit):
         try:
+            if llm_client is None:
+                raise Exception("No LLM client.")
+
             new_col_name = request.taskFormat.name
 
             # Step 1: get data
