@@ -1,10 +1,9 @@
 <script lang="ts">
-  export let minWidth: number | null = null;
+  export let minWidth: number = 0;
   export let maxWidth: number | null = null;
   export let width: number = 100;
 
   let isHovering = false;
-
   let lastX: number | null = null;
   let lastY: number | null = null;
   let draggingDirection: string | null = null;
@@ -19,10 +18,22 @@
   function onMousemove(e: PointerEvent) {
     if (draggingDirection === null) return;
     let xDelta = e.pageX - lastX!;
-    let yDelta = e.pageY - lastY!;
-    if (draggingDirection == "left") width = (width as number) - xDelta;
-    else if (draggingDirection == "right") width = (width as number) + xDelta;
+    let tempWidth = width;
 
+    if (draggingDirection == "left") {
+      tempWidth = width - xDelta;
+    } else if (draggingDirection == "right") {
+      tempWidth = width + xDelta;
+    }
+
+    if (minWidth != null && tempWidth < minWidth) {
+      tempWidth = minWidth;
+    }
+    if (maxWidth != null && tempWidth > maxWidth) {
+      tempWidth = maxWidth;
+    }
+
+    width = tempWidth;
     lastX = e.pageX;
     lastY = e.pageY;
   }
@@ -35,7 +46,7 @@
 
   let maxWidthStyle: string = "";
   let minWidthStyle: string = "";
-  $: minWidthStyle = minWidth === null ? "" : `min-width: ${minWidth}px;`;
+  $: minWidthStyle = `min-width: ${minWidth}px;`;
   $: maxWidthStyle = maxWidth === null ? "" : `max-width: ${maxWidth}px;`;
   $: widthStyle = `width: ${width}px;`;
 </script>
