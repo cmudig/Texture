@@ -15,11 +15,9 @@
   export let showBackground = true;
   export let limit = 10;
   export let colorColName: string | undefined = undefined;
-  export let initialCardinality: number | undefined = undefined;
-
-  $: height = initialCardinality
-    ? Math.min(initialCardinality, limit) * 28
-    : 250;
+  // $: height = initialCardinality
+  //   ? Math.min(initialCardinality, limit) * 28
+  //   : 250;
   $: width = $sidebarWidth - 50;
 
   let el: HTMLElement;
@@ -56,7 +54,6 @@
     table: string,
     col: string,
     selection: any,
-    chartHeight: number,
     chartWidth: number,
     colorColName?: string,
   ) {
@@ -94,7 +91,6 @@
       }),
       vg.margins({ left: LEFT_MARGIN, bottom: 0, top: 0, right: 0 }),
       vg.width(chartWidth),
-      vg.height(chartHeight),
       vg.axis(null),
       vg.axisY({
         textOverflow: "ellipsis",
@@ -128,7 +124,6 @@
       mainDatasetName,
       columnName,
       thisSelection,
-      height,
       width,
       colorColName,
     );
