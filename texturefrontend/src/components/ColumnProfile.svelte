@@ -92,6 +92,10 @@
         colorColName={$projectionColorColumn === displayCol.name
           ? displayCol.name
           : undefined}
+        initialCardinality={colSummary
+          ? colSummary.cardinality +
+            Number(parseFloat(colSummary.null_percentage) > 0)
+          : undefined}
       />
     {:else if displayCol.type === "date"}
       <DateChart

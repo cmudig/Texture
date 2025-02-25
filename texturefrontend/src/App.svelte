@@ -95,7 +95,7 @@
         <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
       </div> -->
 
-      <Draggable minWidth={300} width={450}>
+      <Draggable minWidth={300} width={400}>
         <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
       </Draggable>
       <div class="flex-1 min-w-[450px] overflow-y-auto">

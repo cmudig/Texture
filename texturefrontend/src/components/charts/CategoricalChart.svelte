@@ -14,6 +14,11 @@
   export let showBackground = true;
   export let limit = 10;
   export let colorColName: string | undefined = undefined;
+  export let initialCardinality: number | undefined = undefined;
+
+  $: height = initialCardinality
+    ? Math.min(initialCardinality, limit) * 28
+    : 250;
 
   let el: HTMLElement;
   let plotWrapper;
@@ -49,6 +54,7 @@
     table: string,
     col: string,
     selection: any,
+    chartHeight: number,
     colorColName?: string,
   ) {
     // TODO -- I think this is uncessary and perhaps not even working?
@@ -79,6 +85,7 @@
       }),
       vg.margins({ left: 250, bottom: 0, top: 0, right: 0 }),
       vg.width(400),
+      vg.height(chartHeight),
       vg.axis(null),
       vg.axisY({
         textOverflow: "ellipsis",
@@ -108,7 +115,13 @@
   }
 
   afterUpdate(() => {
-    renderChart(mainDatasetName, columnName, thisSelection, colorColName);
+    renderChart(
+      mainDatasetName,
+      columnName,
+      thisSelection,
+      height,
+      colorColName,
+    );
   });
 
   onDestroy(() => {
