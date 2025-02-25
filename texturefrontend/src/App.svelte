@@ -55,7 +55,7 @@
     <div class="grow self-center">
       <FilterBar />
     </div>
-    <div class="text-md self-center">
+    <div class="self-center">
       {formatNumber($filteredCount)} / {formatNumber(datasetSize)} documents
     </div>
 
