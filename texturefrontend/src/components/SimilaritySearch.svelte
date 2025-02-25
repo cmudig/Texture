@@ -29,7 +29,7 @@
   }
 </script>
 
-<Toggle>
+<Toggle showTopBorder={false}>
   <div slot="title">Similarity Search</div>
 
   <div slot="body" class="flex flex-col gap-1">
