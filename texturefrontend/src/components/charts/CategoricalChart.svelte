@@ -86,7 +86,7 @@
         label: null,
         textAnchor: "start",
         dx: -220,
-        fontSize: 14,
+        fontSize: 12,
         tickSize: 0,
       }),
     ];
