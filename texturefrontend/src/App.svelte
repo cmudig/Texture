@@ -14,7 +14,10 @@
   import TableView from "./components/table/TableView.svelte";
   import ColumnTransformModal from "./components/addColumn/ColumnTransformModal.svelte";
   import { Popover, Spinner } from "flowbite-svelte";
-  import { AdjustmentsHorizontalOutline } from "flowbite-svelte-icons";
+  import {
+    AdjustmentsHorizontalOutline,
+    BullhornOutline,
+  } from "flowbite-svelte-icons";
   import SettingsPanel from "./components/settings/SettingsPanel.svelte";
   import TextureIcon from "./components/icons/TextureIcon.svelte";
   import FilterBar from "./components/FilterBar.svelte";
@@ -51,23 +54,33 @@
 
 <div class="h-screen flex flex-col">
   <!-- Top bar -->
-  <div class="flex gap-2 border-b-2 border-gray-300 bg-secondary-200 p-4">
-    <div class="mr-4"><TextureIcon size={40} /></div>
+  <div
+    class="flex items-center gap-4 border-b-2 border-gray-300 bg-secondary-200 p-4"
+  >
+    <TextureIcon size={40} />
 
-    <div class="grow self-center">
+    <div class="grow">
       <FilterBar />
     </div>
-    <div class="self-center">
+    <div>
       {formatNumber($filteredCount)} / {formatNumber(datasetSize)} documents
     </div>
-
     <TableSort />
-
     <AdjustmentsHorizontalOutline
+      title="Settings"
       id="settingsToggle"
       size="md"
-      class="ml-4 self-center text-gray-500 hover:text-gray-700"
+      class="text-gray-500 hover:text-gray-700"
     />
+    <a
+      href="https://forms.gle/seACEDSvJLey17M57"
+      target="_blank"
+      class="text-gray-500 hover:text-highlight-700"
+      title="Feedback form"
+    >
+      <BullhornOutline id="settingsToggle" size="md" />
+    </a>
+
     <Popover
       triggeredBy="#settingsToggle"
       trigger="click"
