@@ -19,6 +19,7 @@
   import FilterBar from "./components/FilterBar.svelte";
   import TableSort from "./components/table/TableSort.svelte";
   import { formatNumber } from "./shared/format";
+  import Draggable from "./components/layout/Draggable.svelte";
 
   // Locals
   let datasetSize: number;
@@ -90,10 +91,14 @@
     </div>
   {:then}
     <div class="flex flex-1 overflow-hidden bg-gray-50">
-      <div class="w-[450px] shrink-0 overflow-auto border-r-2 border-gray-300">
+      <!-- <div class="w-[450px] shrink-0 overflow-auto border-r-2 border-gray-300">
         <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
-      </div>
-      <div class="flex-1 min-w-[450px] overflow-auto">
+      </div> -->
+
+      <Draggable minWidth={300} width={450}>
+        <Sidebar bind:showAddColModal {allowDeriveNew} {datasetColSummaries} />
+      </Draggable>
+      <div class="flex-1 min-w-[450px] overflow-y-auto">
         <TableView />
       </div>
     </div>

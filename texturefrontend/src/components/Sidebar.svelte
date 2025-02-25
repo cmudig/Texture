@@ -8,11 +8,11 @@
   import SimilaritySearch from "./SimilaritySearch.svelte";
 
   export let datasetColSummaries: Map<string, ColumnSummary>;
-  export let showAddColModal;
-  export let allowDeriveNew;
+  export let showAddColModal: boolean;
+  export let allowDeriveNew: boolean;
 </script>
 
-<div class="flex flex-col">
+<div class="flex flex-col h-full overflow-y-auto">
   {#if allowDeriveNew}
     <div class="flex justify-center py-2">
       <Button on:click={() => (showAddColModal = true)} size="sm">
