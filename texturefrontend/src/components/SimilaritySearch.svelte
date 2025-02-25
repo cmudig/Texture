@@ -1,7 +1,7 @@
 <script lang="ts">
   import { databaseConnection, datasetSchema, setSchema } from "../stores";
   import { SearchOutline } from "flowbite-svelte-icons";
-  import Toggle from "./Toggle.svelte";
+  import Toggle from "./layout/Toggle.svelte";
   import { QueryStatus } from "../shared/types";
   import { Spinner } from "flowbite-svelte";
 

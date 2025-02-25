@@ -16,7 +16,7 @@
   import { CogOutline } from "flowbite-svelte-icons";
   import Search from "./Search.svelte";
   import type { Column } from "../backendapi";
-  import Toggle from "./Toggle.svelte";
+  import Toggle from "./layout/Toggle.svelte";
 
   export let displayCol: Column;
   export let colSummary: ColumnSummary | undefined;
