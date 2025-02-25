@@ -31,12 +31,9 @@
   />
 
   {#each $datasetSchema.columns as col}
-    <!-- Dont make row entry for text cols -->
-    {#if col.type === "categorical" || col.type === "number" || col.type === "date" || col.type === "text"}
-      <ColumnProfile
-        displayCol={col}
-        colSummary={datasetColSummaries.get(col.name)}
-      />
-    {/if}
+    <ColumnProfile
+      displayCol={col}
+      colSummary={datasetColSummaries.get(col.name)}
+    />
   {/each}
 </div>
