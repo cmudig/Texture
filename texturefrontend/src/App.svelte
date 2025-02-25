@@ -50,7 +50,7 @@
 <div class="h-screen flex flex-col">
   <!-- Top bar -->
   <div class="flex gap-2 border-b-2 border-gray-300 bg-secondary-200 p-4">
-    <div class="mr-8"><TextureIcon size={40} /></div>
+    <div class="mr-4"><TextureIcon size={40} /></div>
 
     <div class="grow self-center">
       <FilterBar />
