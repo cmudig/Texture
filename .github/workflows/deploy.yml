@@ -36,6 +36,8 @@ jobs:
       #   with:
       #     version: 9 # Not needed if you've set "packageManager" in package.json
       # - uses: oven-sh/setup-bun@v1 # Uncomment this if you're using Bun
+      - name: Change directory to /docs
+        run: cd docs
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -50,7 +52,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/.vitepress/dist
+          path: .vitepress/dist
 
   # Deployment job
   deploy:
