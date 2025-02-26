@@ -3,6 +3,7 @@ import { defineConfig } from "vitepress";
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Texture",
+  base: "/Texture/",
   description: "Structured Text Analytics",
   head: [["link", { rel: "icon", href: "/icon.svg" }]],
   themeConfig: {
