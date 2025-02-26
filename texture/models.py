@@ -25,7 +25,7 @@ class DatasetSchema(BaseModel):
     name: str
     columns: List[Column]
     primary_key: Column
-    origin: Literal["example", "uploaded"]
+    origin: Literal["example", "uploaded"] = "uploaded"
     has_embeddings: bool = False
     has_projection: bool = False
     search_result: Optional[Column] = None
