@@ -24,6 +24,8 @@ export default defineConfig({
         items: [
           { text: "Overview", link: "/overview" },
           { text: "Quickstart", link: "/quickstart" },
+          { text: "UI Configuration", link: "/ui-config" },
+          { text: "Table Configuration", link: "/table-config" },
         ],
       },
       {
