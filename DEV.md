@@ -1,18 +1,18 @@
-# Dev loop for python package `texturebackend`
+# Texture Development
 
-The backend hosts a FastAPI server and data processing functions along with the in process duckdb database for storing and filtering data.
+Texture includes a python backend and a svelte frontend.
 
 ## First time
 
-Pre-requisites
+Pre-requisites:
 
 1. Install conda
 2. Install poetry (>=2.0.1)
 
-Make a new conda environment, can be called whatever
+Make a new conda environment
 
 ```bash
-conda create -n texture python=3.10 # python 3.10 recommended for some package compatability
+conda create -n texture python=3.12
 ```
 
 Installs dependencies AND builds in dev mode in current conda env
@@ -23,18 +23,13 @@ poetry install
 
 ## Backend dev loop [`texture`](./texture/)
 
-The backend can be run in two ways. We recommend running the uvicorn server directly for development since it has hot reloading and is faster. The `run_server` command is a wrapper around this runs the `texture.run()` command.
+The backend is launched with the `texture.run()` command. This command will launch the backend server with a simple dataset.
 
-1. `uvicorn --factory texture.server:get_server --port 8080 --reload`
-   OR
-2. `poetry run run_server`
+```bash
+python texture/runner_dev.py
+```
 
-This will launch the server to whatever port is specified with the frontend hosted at the root and api. To launch the server. Be sure to build frontend first or nothing will show up!
-
-Other notes:
-
-- If you add a new python package, do it with poetry since will also install in current conda env with `poetry add name`.
-- If you add a new route or model to the backend, you can re-generate the api client in the frontend automatically (server must be running when this happens!). This overwrites some files that we edited manually so be careful (this is why we have a rectify step): `npm run gen-api && npm run rectify-gen-api`
+Make sure to build frontend first or run a dev server or nothing will show up!
 
 ## Frontend dev loop [`texturefrontend`](./texturefrontend/)
 
@@ -52,7 +47,6 @@ npm install
 Will start local server and hot re-load changes. This will try to connect to the backend server at `localhost:8080` by default so make sure one of the server commands is running.
 
 ```bash
-cd texturefrontend
 npm run dev
 ```
 
@@ -62,10 +56,21 @@ To see on same port as backend server, frontend must be built. The frontend buil
 npm run build
 ```
 
-# Notes
+## Docs
 
+The docs are in a separate folder `/docs` and uses vitepress. Doc website is re-built on pushes to main. To run local doc server:
+
+```bash
+cd docs
+npm run docs:dev
+```
+
+## Important Notes
+
+- If you add a new python package, do it with poetry since will also install in current conda env with `poetry add name`.
+- If you add a new route or model to the backend, you can re-generate the api client in the frontend automatically (server must be running when this happens!). This overwrites some files that we edited manually so be careful (this is why we have a rectify step): `npm run gen-api && npm run rectify-gen-api`
 - Right now manually linking mosaic (all packages) in `package.json` but can only do one install later
-- IMPORTANT: need to have an envionment vaiable `OPENAI_API_KEY` set to use the openai api in the python environment
+- Need to have an envionment vaiable `OPENAI_API_KEY` set to use the openai api in the python environment
 
 # Publish
 
