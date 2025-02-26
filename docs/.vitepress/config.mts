@@ -23,7 +23,7 @@ export default defineConfig({
         text: "Introduction",
         items: [
           { text: "Overview", link: "/overview" },
-          { text: "Quickstart", link: "/quickstart" },
+          { text: "Quickstart & Install", link: "/quickstart" },
           { text: "UI Configuration", link: "/ui-config" },
           { text: "Table Configuration", link: "/table-config" },
         ],
@@ -35,10 +35,6 @@ export default defineConfig({
           { text: "Social media topics", link: "/demo-2" },
           { text: "LLM output comparison", link: "/demo-3" },
         ],
-      },
-      {
-        text: "Vite",
-        items: [{ text: "Vite Examples", link: "/vite-examples" }],
       },
     ],
 

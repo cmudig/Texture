@@ -1,4 +1,4 @@
-# Demo: LLM output comparison
+# Demo: LLM Output Comparison
 
 In this demo, we compare the outputs of various LLM models. This data is originally from the [LLMComparator](https://github.com/PAIR-code/llm-comparator) paper and system.
 

@@ -1,4 +1,4 @@
-# Quickstart
+# Quickstart & Install
 
 Install texture with pip:
 

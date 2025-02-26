@@ -5,7 +5,7 @@ You can pass arguments to the `run` command to configure the Texture interface.
 - `data: pd.DataFrame`: The dataframe to parse and visualize.
 - `schema: DatasetSchema`: a dataset schema (calculated automatically if none provided)
 - `load_tables: Dict[str, pd.DataFrame]`: A dictionary of tables to load.
-- `create_new_embedding_func`: A function that takes a string and returns a vector embedding (see example below)
+- `create_new_embedding_func`: A function that takes a string and returns a vector embedding
 
 If only `data` is provided, Texture will automatically calculate the schema and load tables. The schema and tables can also be calculated manually by calling the `preprocess` function then passed to `run`:
 
@@ -39,6 +39,21 @@ The schema is a `DatasetSchema` object that describes the columns, types, and ta
   - `derived_from`: The column in the main table that the column is derived from.
   - `derived_how`: How the column is derived from the derived table.
 
+## Embedding Functions
+
+To support similarity search, Texture allows you to pass a function that will create a new embedding for a given string. This allows you to create embeddings on the fly for query strings. We recommend pre-computing embeddings for your data and passing them to Texture in the `vector` column and then using the same model in this function to create embeddings for query strings.
+
+For example, the following code creates a new embedding for a given string using the `sentence-transformers` library:
+
+```python
+def get_embedding(value: str):
+    import sentence_transformers
+    model = sentence_transformers.SentenceTransformer("all-mpnet-base-v2")
+    e = model.encode(value)
+    return e
+
+```
+
 ## Example Usage
 
-See the [demos](/demo-1) for examples of how to configure the schema.
+See the [demos](/demo-1) for examples of how to configure the schema, columns, and embedding functions.
