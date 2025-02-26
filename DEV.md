@@ -77,9 +77,12 @@ npm run docs:dev
 First need to bump the version:
 
 ```bash
-poetry version patch # bump version
-git commit -am "chore: bump version to $(poetry version -s)" # commit version
-git tag "v$(poetry version -s)" # tag version
+# bump version
+poetry version patch
+# commit version
+git commit -am "chore: bump version to $(poetry version -s)"
+# tag version
+git tag "v$(poetry version -s)"
 ```
 
 Then build package:
