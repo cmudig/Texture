@@ -31,9 +31,9 @@ export default defineConfig({
       {
         text: "Examples",
         items: [
-          { text: "Demo 1", link: "/demo-1" },
-          { text: "Demo 2", link: "/demo-2" },
-          { text: "Demo 3", link: "/demo-3" },
+          { text: "Paper abstracts", link: "/demo-1" },
+          { text: "Social media topics", link: "/demo-2" },
+          { text: "LLM output comparison", link: "/demo-3" },
         ],
       },
       {

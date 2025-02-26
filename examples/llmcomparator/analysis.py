@@ -33,7 +33,6 @@ def launch():
                     is_segment=True,
                     table_name="ngramsA_table",
                     derived_from="A_output_text",
-                    derived_how=None,
                 ),
             ),
             Column(
@@ -43,7 +42,6 @@ def launch():
                     is_segment=True,
                     table_name="ngramsB_table",
                     derived_from="B_output_text",
-                    derived_how=None,
                 ),
             ),
             # RATIONALES and ratings
@@ -56,8 +54,6 @@ def launch():
                 derivedSchema=DerivedSchema(
                     is_segment=False,
                     table_name="ratings",
-                    derived_from=None,
-                    derived_how=None,
                 ),
             ),
             Column(
@@ -66,8 +62,6 @@ def launch():
                 derivedSchema=DerivedSchema(
                     is_segment=False,
                     table_name="ratings",
-                    derived_from=None,
-                    derived_how=None,
                 ),
             ),
             Column(
@@ -76,8 +70,6 @@ def launch():
                 derivedSchema=DerivedSchema(
                     is_segment=False,
                     table_name="clusters",
-                    derived_from=None,
-                    derived_how=None,
                 ),
             ),
             # METADATA
@@ -93,14 +85,10 @@ def launch():
             Column(
                 name="A_has_bullet_lists",
                 type="categorical",
-                derivedSchema=None,
-                extra=None,
             ),
             Column(
                 name="B_has_bullet_lists",
                 type="categorical",
-                derivedSchema=None,
-                extra=None,
             ),
             Column(name="A_has_headings", type="categorical"),
             Column(name="B_has_headings", type="categorical"),
@@ -110,10 +98,8 @@ def launch():
             Column(name="B_has_sure", type="categorical"),
         ],
         primary_key=Column(name="id", type="number"),
-        origin="uploaded",
         has_embeddings=False,
         has_projection=False,
-        search_result=None,
     )
 
     texture.run(schema=schema, load_tables=load_tables)

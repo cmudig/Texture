@@ -38,7 +38,6 @@ def launch():
                     is_segment=True,
                     table_name="words_table",
                     derived_from="text",
-                    derived_how=None,
                 ),
             ),
             Column(
@@ -47,8 +46,6 @@ def launch():
                 derivedSchema=DerivedSchema(
                     is_segment=False,
                     table_name="topics_table",
-                    derived_from=None,
-                    derived_how=None,
                 ),
             ),
             Column(
@@ -111,26 +108,10 @@ def launch():
                 name="Q13_Does this text discuss legislative efforts, actions, or conflicts within political parties?",
                 type="number",
             ),
-            # Column(name="Q0_rationale", type="text"),
-            # Column(name="Q1_rationale", type="text"),
-            # Column(name="Q2_rationale", type="text"),
-            # Column(name="Q3_rationale", type="text"),
-            # Column(name="Q4_rationale", type="text"),
-            # Column(name="Q5_rationale", type="text"),
-            # Column(name="Q6_rationale", type="text"),
-            # Column(name="Q7_rationale", type="text"),
-            # Column(name="Q8_rationale", type="text"),
-            # Column(name="Q9_rationale", type="text"),
-            # Column(name="Q10_rationale", type="text"),
-            # Column(name="Q11_rationale", type="text"),
-            # Column(name="Q12_rationale", type="text"),
-            # Column(name="Q13_rationale", type="text"),
         ],
         primary_key=Column(name="id", type="number"),
-        origin="uploaded",
         has_embeddings=True,
         has_projection=True,
-        search_result=None,
     )
 
     texture.run(
