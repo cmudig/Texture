@@ -279,12 +279,6 @@ def get_server(
                 newColSchema = Column(
                     name=new_col_name,
                     type=colType,
-                    derivedSchema=DerivedSchema(
-                        is_segment=False,
-                        table_name=newTableName,
-                        derived_from=request.columnName,
-                        derived_how="model",
-                    ),
                 )
 
             schema.columns.insert(0, newColSchema)
@@ -363,16 +357,7 @@ def get_server(
             duckdb_conn.add_column(
                 request.tableName, new_col_name, all_merged[new_col_name]
             )
-            newColSchema = Column(
-                name=new_col_name,
-                type=colType,
-                derivedSchema=DerivedSchema(
-                    is_segment=False,
-                    table_name=newTableName,
-                    derived_from=request.columnName,
-                    derived_how="code",
-                ),
-            )
+            newColSchema = Column(name=new_col_name, type=colType)
 
         schema.columns.insert(0, newColSchema)
         return TransformResponse(success=True, result=[])

@@ -164,6 +164,10 @@
     if (r?.success) {
       console.log("finished with success, calling finish handler");
       commitError = undefined;
+
+      // TODO issue #136: hack to force table reload
+      window.location.reload();
+
       finishedCommitHandler();
       await setSchema();
     } else {
