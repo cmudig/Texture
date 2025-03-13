@@ -148,7 +148,10 @@ export class TableClient extends vg.MosaicClient {
     if (newData) {
       let thisData = [...newData];
 
-      this.data.update((oldItems) => [...oldItems, ...thisData]);
+      this.data.update((oldItems) => {
+        if (oldItems != undefined) return [...oldItems, ...thisData];
+        return [...thisData];
+      });
 
       this.getOtherTableData().then((newResult) => {
         this.arrayColData.update((oldMap) => {
