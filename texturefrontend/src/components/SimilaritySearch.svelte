@@ -22,6 +22,8 @@
         console.log("Finished similarity search", res);
         searchStatus = QueryStatus.NOT_STARTED;
         setSchema();
+        // TODO issue #136: hack to force table reload
+        window.location.reload();
       });
     } else {
       console.error("no search query");

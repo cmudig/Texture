@@ -83,6 +83,9 @@
     prom.then((res) => {
       console.log("Finished similarity search", res);
       setSchema();
+
+      // TODO issue #136: hack to force table reload
+      window.location.reload();
     });
   }
 </script>
