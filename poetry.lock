@@ -3236,4 +3236,4 @@ extra = ["nltk", "sentence-transformers", "torch", "umap-learn"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "7c43d6f6687e195aec0014c5088dcf8c79699fceca125335df1e5eded50badea"
+content-hash = "3bc8d288c66042328e6f318376001bd33d3210c2759a2c0b22dd9921fb7d95ad"
