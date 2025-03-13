@@ -149,7 +149,7 @@ def get_server(
             vector = vectordb_conn.get_embedding_from_string(tableName, queryString)
 
         # local vars
-        new_col_name = "similarity_search_result"
+        new_col_name = "search_result_distance"
         embed_query_counter.increment()
         id_col_name = schema.primary_key.name
 

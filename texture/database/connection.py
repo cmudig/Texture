@@ -240,7 +240,9 @@ class VectorDBConnection:
         if limit is None:
             limit = vector_table.count_rows()
 
-        result = vector_table.search(vector).limit(limit).select([id_col])
+        result = (
+            vector_table.search(vector).metric("cosine").limit(limit).select([id_col])
+        )
 
         return result.to_pandas()[[id_col, "_distance"]]
 

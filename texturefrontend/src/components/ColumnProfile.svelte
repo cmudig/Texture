@@ -67,10 +67,11 @@
 
   <div slot="body" class="w-full pl-4 py-1 mb-2">
     {#if displayCol.extra?.["search_id"] != undefined}
-      Similarity to id: {displayCol.extra?.["search_id"]}
+      <span class="italic">Cosine distance to id:</span>
+      {displayCol.extra?.["search_id"]}
     {/if}
     {#if displayCol.extra?.["search_query"] != undefined}
-      <span class="italic">Similarity to:</span>
+      <span class="italic">Cosine distance to:</span>
       "{displayCol.extra?.["search_query"]}"
     {/if}
 
