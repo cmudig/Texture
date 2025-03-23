@@ -2,6 +2,16 @@
   export let value: any;
   export let highlights: any[]; // {id, span_start, span_end}
 
+  // Escape HTML characters
+  function escapeHTML(str: string) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   // run tagging pipeline
   function runProcess(input_string, highlight_array) {
     const numericHighlights = highlight_array.map((v) => ({
@@ -45,13 +55,13 @@
     let lastIndex = 0;
 
     highlights.forEach(({ span_start, span_end }) => {
-      result += value.substring(lastIndex, span_start);
-      const match = value.substring(span_start, span_end);
+      result += escapeHTML(value.substring(lastIndex, span_start));
+      const match = escapeHTML(value.substring(span_start, span_end));
       result += `<span class="bg-highlight-300">${match}</span>`;
       lastIndex = span_end;
     });
 
-    result += value.substring(lastIndex);
+    result += escapeHTML(value.substring(lastIndex));
     return result;
   }
 
