@@ -1,6 +1,6 @@
 [project]
 name = "texture-viz"
-version = "0.0.10"
+version = "0.0.11"
 description = "Process and profile text datasets interactively"
 authors = [{ name = "Will Epperson", email = "willepp@live.com" }]
 readme = "README.md"
