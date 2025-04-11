@@ -13,6 +13,7 @@
   export let mainDatasetName: string;
   export let showBackground = true;
   export let shouldBin = true;
+  export let useLogScale = false;
 
   $: width = $sidebarWidth - 50;
   let uuid = getUUID();
@@ -78,6 +79,11 @@
       vg.axisY({ label: null }),
       vg.margins({ top: 10, right: 15, left: 40 }),
     ];
+
+    if (useLogScale) {
+      console.log("using log scale");
+      plotDirectives.push(vg.xScale("log"));
+    }
 
     if (showBackground) {
       plotDirectives.unshift(

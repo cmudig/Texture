@@ -25,6 +25,7 @@
 
   let active = true;
   let showSettings = false;
+  let useLogScale = false;
   $: showChartForType =
     displayCol.type === "number" ||
     displayCol.type === "categorical" ||
@@ -83,6 +84,7 @@
         showBackground={$showBackgroundDistMap[displayCol.name]}
         shouldBin={colSummary?.cardinality == undefined ||
           colSummary.cardinality >= 10}
+        {useLogScale}
       />
     {:else if displayCol.type === "categorical"}
       <CategoricalChart
@@ -135,6 +137,16 @@
           />
           <span> Show background distribution </span>
         </label>
+        {#if displayCol.type === "number"}
+          <label class="flex items-center gap-2 text-sm text-gray-500 mt-2">
+            <input
+              type="checkbox"
+              class="w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 me-2 dark:bg-gray-700 dark:border-gray-600 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600"
+              bind:checked={useLogScale}
+            />
+            <span> Use log scale </span>
+          </label>
+        {/if}
       </div>
     {/if}
   </div>
